@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+</head>
+<body>
+<h2>Accedi</h2>
+<form method="post" action="/login">
+    <label>Username:</label>
+    <input type="text" name="username" required><br>
+    <label>Password:</label>
+    <input type="password" name="password" required><br>
+    <button type="submit">Login</button>
+</form>
+<p th:if="${param.error}">Credenziali errate!</p>
+<p th:if="${param.logout}">Sei stato disconnesso.</p>
+</body>
+</html>

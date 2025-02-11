@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Commerce</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: white;
+        }
+        header {
+            background-color: blue;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            width: 100%;
+        }
+        nav {
+            display: flex;
+            justify-content: center;
+            background-color: green;
+            padding: 10px;
+            flex-wrap: wrap;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+        }
+        nav a:hover {
+            background-color: red;
+        }
+        .hero {
+            background: url('https://source.unsplash.com/1600x500/?shopping') no-repeat center center/cover;
+            color: white;
+            text-align: center;
+            padding: 100px 20px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .categories {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            padding: 20px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .category {
+            text-align: center;
+            padding: 20px;
+            background: #f4f4f4;
+            border-radius: 10px;
+            width: 30%;
+            border: 2px solid blue;
+            box-sizing: border-box;
+            margin: 10px;
+        }
+        .category img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+        footer {
+            background-color: red;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            margin-top: 20px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        @media screen and (max-width: 768px) {
+            .categories {
+                flex-direction: column;
+                align-items: center;
+            }
+            .category {
+                width: 80%;
+            }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Benvenuto nel nostro E-Commerce</h1>
+</header>
+<nav>
+    <a href="#">Home</a>
+    <a href="#">Prodotti</a>
+    <a href="#">Offerte</a>
+    <a href="#">Contatti</a>
+</nav>
+<div class="hero">
+    <h2>Scopri le migliori offerte del giorno!</h2>
+</div>
+<div class="categories">
+    <div class="category">
+        <img src="https://source.unsplash.com/300x200/?electronics" alt="Elettronica">
+        <h3>Elettronica</h3>
+    </div>
+    <div class="category">
+        <img src="https://source.unsplash.com/300x200/?fashion" alt="Moda">
+        <h3>Moda</h3>
+    </div>
+    <div class="category">
+        <img src="https://source.unsplash.com/300x200/?home" alt="Casa">
+        <h3>Casa</h3>
+    </div>
+</div>
+<footer>
+    <p>&copy; 2025 E-Commerce. Tutti i diritti riservati.</p>
+</footer>
+</body>
+</html>
