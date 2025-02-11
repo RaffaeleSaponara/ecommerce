@@ -22,4 +22,7 @@ public class Products {
     @ManyToMany(mappedBy = "products")
     private List<Orders> orders;
 
+    @ManyToMany(mappedBy = "products")
+    private List<Cart> carts;
+
 }

@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-Commerce</title>
-    <style>
-        * {
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prodotti - E-Commerce</title>
+  <style>
+         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -96,7 +96,6 @@
             height: 40px;
             border-radius: 50%;
             cursor: pointer;
-            hover: none;
         }
         .profile-icon a:hover {
             background-color: initial;
@@ -125,45 +124,110 @@
                 margin-bottom: 20px;
             }
         }
+        .auth-container {
+            display: flex;
+            align-items: center;
+        }
+        .products {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            padding: 40px 20px;
+            flex-grow: 1;
+        }
+        .product {
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            width: 30%;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+        .product:hover {
+            transform: translateY(-5px);
+        }
+        .product img {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+        }
+        .product h3 {
+            margin-top: 15px;
+            font-size: 18px;
+            color: #007bff;
+        }
+        .product p {
+            font-size: 16px;
+            color: #666;
+        }
+        .product .price {
+            font-size: 18px;
+            color: #007bff;
+            margin-top: 10px;
+        }
+        footer {
+            background-color: #343a40;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            font-size: 14px;
+        }
+        @media screen and (max-width: 768px) {
+            .products {
+                flex-direction: column;
+                align-items: center;
+            }
+            .product {
+                width: 90%;
+                margin-bottom: 20px;
+            }
+        }
     </style>
 </head>
 <body>
 <div class="container">
-    <header>
-        Benvenuto nel nostro E-Commerce
-    </header>
-    <nav>
-        <div>
-            <a href="#">Home</a>
-            <a href="/prodotti">Prodotti</a>
-            <a href="#">Offerte</a>
-            <a href="#">Contatti</a>
-        </div>
-        <div class="auth-container">
-            <a href="/login" class="login-button" id="loginButton">Login</a>
-            <a href="/logout" class="logout-button" id="logoutButton" style="display: none;">Logout</a>
-            <div class="profile-icon" id="profileIcon" style="display: none;">
-                <a href="/profilo"><img src="/images/icon.jpg" alt="Profilo"></a>
-            </div>
-        </div>
-    </nav>
-    <div class="categories">
-        <div class="category">
-            <img src="/images/casa.webp" alt="Casa">
-            <h3>Elettronica</h3>
-        </div>
-        <div class="category">
-            <img src="/images/elettrodomestici.webp" alt="Elettronica">
-            <h3>Moda</h3>
-        </div>
-        <div class="category">
-            <img src="/images/moda.jpg" alt="Moda">
-            <h3>Casa</h3>
-        </div>
+  <header>
+    Benvenuto nella sezione Prodotti
+  </header>
+  <nav>
+    <div>
+      <a href="/home">Home</a>
+      <a href="/prodotti">Prodotti</a>
+      <a href="#">Offerte</a>
+      <a href="#">Contatti</a>
     </div>
+    <div class="auth-container">
+      <a href="/login" class="login-button" id="loginButton">Login</a>
+      <a href="/logout" class="logout-button" id="logoutButton" style="display: none;">Logout</a>
+      <div class="profile-icon" id="profileIcon" style="display: none;">
+        <a href="/profilo"><img src="/images/icon.jpg" alt="Profilo"></a>
+      </div>
+    </div>
+  </nav>
+  <div class="products">
+    <div class="product">
+      <img src="/images/prodotto1.jpg" alt="Prodotto 1">
+      <h3>Smartphone</h3>
+      <p>Descrizione del prodotto 1.</p>
+      <p class="price">€299,99</p>
+    </div>
+    <div class="product">
+      <img src="/images/prodotto2.jpg" alt="Prodotto 2">
+      <h3>Cuffie Wireless</h3>
+      <p>Descrizione del prodotto 2.</p>
+      <p class="price">€89,99</p>
+    </div>
+    <div class="product">
+      <img src="/images/prodotto3.jpg" alt="Prodotto 3">
+      <h3>Laptop</h3>
+      <p>Descrizione del prodotto 3.</p>
+      <p class="price">€999,99</p>
+    </div>
+  </div>
 </div>
 <footer>
-    &copy; 2025 E-Commerce. Tutti i diritti riservati.
+  &copy; 2025 E-Commerce. Tutti i diritti riservati.
 </footer>
 <script>
     document.addEventListener("DOMContentLoaded", function() {

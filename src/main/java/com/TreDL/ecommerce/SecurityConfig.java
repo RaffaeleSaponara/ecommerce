@@ -16,9 +16,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/user/**").hasAnyRole("USER", "ADMIN")
-                        .anyRequest().authenticated()
+                        .requestMatchers("/", "/home", "/prodotti","/css/**", "/js/**", "/images/**", "/auth/check").permitAll() // Permetti accesso alla homepage e risorse statiche
+                        .anyRequest().authenticated() // Tutti gli altri URL richiedono autenticazione
                 )
                 .formLogin(login -> login
                         .loginPage("/login")
@@ -27,32 +26,12 @@ public class SecurityConfig {
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout")
+                        .logoutSuccessUrl("/home")
                         .permitAll()
                 )
                 .csrf(AbstractHttpConfigurer::disable);
 
         return http.build();
     }
-
-
-
-//    @Bean
-//    public UserDetailsService userDetailsService() {
-//        UserDetails user = User.withDefaultPasswordEncoder()
-//                .username("user")
-//                .password("{noop}password")
-//                .roles("USER")
-//                .build();
-//
-//        UserDetails admin = User.withDefaultPasswordEncoder()
-//                .username("admin")
-//                .password("{noop}admin")
-//                .roles("ADMIN")
-//                .build();
-//
-//        return new InMemoryUserDetailsManager(user, admin);
-//    }
-//
 
 }
