@@ -20,6 +20,8 @@ public class Customers {
     @OneToMany(mappedBy = "customers", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
     private List<Orders> orders;
+    @OneToOne(mappedBy = "customer", cascade = CascadeType.ALL)
+    private Cart cart;
     @Column(name = "username")
     private String username;
     @Column(name = "password")
@@ -58,5 +60,13 @@ public class Customers {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public Cart getCart() {
+        return cart;
+    }
+
+    public void setCart(Cart cart) {
+        this.cart = cart;
     }
 }

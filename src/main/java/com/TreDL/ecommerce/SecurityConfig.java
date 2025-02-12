@@ -16,7 +16,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/home", "/prodotti","/css/**", "/js/**", "/images/**", "/auth/check").permitAll() // Permetti accesso alla homepage e risorse statiche
+                        .requestMatchers("/", "/home", "/prodotti", "/prodotti/all","/css/**", "/js/**", "/images/**", "/auth/check").permitAll() // Permetti accesso alla homepage e risorse statiche
                         .anyRequest().authenticated() // Tutti gli altri URL richiedono autenticazione
                 )
                 .formLogin(login -> login

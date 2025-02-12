@@ -91,14 +91,14 @@
             padding: 15px;
             font-size: 14px;
         }
-        .profile-icon img {
+        .profile-icon img, .cart-icon img {
             width: 40px;
             height: 40px;
             border-radius: 50%;
             cursor: pointer;
             hover: none;
         }
-        .profile-icon a:hover {
+        .profile-icon a:hover, .cart-icon a:hover {
             background-color: initial;
             color: initial;
             cursor: default;
@@ -145,6 +145,9 @@
             <div class="profile-icon" id="profileIcon" style="display: none;">
                 <a href="/profilo"><img src="/images/icon.jpg" alt="Profilo"></a>
             </div>
+            <div class="cart-icon" id="cartIcon" style="display: none;">
+                <a href="/cart"><img src="/images/cart.png" alt="Cart"></a>
+            </div>
         </div>
     </nav>
     <div class="categories">
@@ -170,6 +173,7 @@
         const loginButton = document.getElementById("loginButton");
         const profileIcon = document.getElementById("profileIcon");
         const logoutButton = document.getElementById("logoutButton");
+        const cartIcon = document.getElementById("cartIcon");
 
         fetch("/auth/check")
             .then(response => response.json())
@@ -179,11 +183,13 @@
                     loginButton.style.display = "none";
                     logoutButton.style.display = "block";
                     profileIcon.style.display = "block";
+                    cartIcon.style.display = "block";
                 } else {
                     localStorage.removeItem("isAuthenticated");
                     loginButton.style.display = "block";
                     logoutButton.style.display = "none";
                     profileIcon.style.display = "none";
+                    cartIcon.style.display = "none";
                 }
             })
             .catch(error => console.error("Errore nel recupero dell'autenticazione:", error));

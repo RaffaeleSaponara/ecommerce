@@ -1,16 +1,16 @@
 package com.TreDL.ecommerce.service;
 
 import com.TreDL.ecommerce.model.Products;
-import com.TreDL.ecommerce.repository.ProductRepository;
+import com.TreDL.ecommerce.repository.ProductsRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-public class ProductService {
-    private final ProductRepository productRepository;
+public class ProductsService {
+    private final ProductsRepository productRepository;
 
-    public ProductService(ProductRepository productRepository) {
+    public ProductsService(ProductsRepository productRepository) {
         this.productRepository = productRepository;
     }
 

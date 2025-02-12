@@ -91,13 +91,14 @@
             padding: 15px;
             font-size: 14px;
         }
-        .profile-icon img {
+        .profile-icon img, .cart-icon img {
             width: 40px;
             height: 40px;
             border-radius: 50%;
             cursor: pointer;
+            hover: none;
         }
-        .profile-icon a:hover {
+        .profile-icon a:hover, .cart-icon a:hover {
             background-color: initial;
             color: initial;
             cursor: default;
@@ -203,26 +204,29 @@
       <div class="profile-icon" id="profileIcon" style="display: none;">
         <a href="/profilo"><img src="/images/icon.jpg" alt="Profilo"></a>
       </div>
+      <div class="cart-icon" id="cartIcon" style="display: none;">
+        <a href="/cart"><img src="/images/cart.png" alt="Cart"></a>
+      </div>
     </div>
   </nav>
   <div class="products">
-    <div class="product">
-      <img src="/images/prodotto1.jpg" alt="Prodotto 1">
-      <h3>Smartphone</h3>
-      <p>Descrizione del prodotto 1.</p>
-      <p class="price">€299,99</p>
-    </div>
-    <div class="product">
-      <img src="/images/prodotto2.jpg" alt="Prodotto 2">
-      <h3>Cuffie Wireless</h3>
-      <p>Descrizione del prodotto 2.</p>
-      <p class="price">€89,99</p>
-    </div>
-    <div class="product">
-      <img src="/images/prodotto3.jpg" alt="Prodotto 3">
-      <h3>Laptop</h3>
-      <p>Descrizione del prodotto 3.</p>
-      <p class="price">€999,99</p>
+<!--    <div class="product">-->
+<!--      <img src="/images/prodotto1.jpg" alt="Prodotto 1">-->
+<!--      <h3>Smartphone</h3>-->
+<!--      <p>Descrizione del prodotto 1.</p>-->
+<!--      <p class="price">€299,99</p>-->
+<!--    </div>-->
+<!--    <div class="product">-->
+<!--      <img src="/images/prodotto2.jpg" alt="Prodotto 2">-->
+<!--      <h3>Cuffie Wireless</h3>-->
+<!--      <p>Descrizione del prodotto 2.</p>-->
+<!--      <p class="price">€89,99</p>-->
+<!--    </div>-->
+<!--    <div class="product">-->
+<!--      <img src="/images/prodotto3.jpg" alt="Prodotto 3">-->
+<!--      <h3>Laptop</h3>-->
+<!--      <p>Descrizione del prodotto 3.</p>-->
+<!--      <p class="price">€999,99</p>-->
     </div>
   </div>
 </div>
@@ -243,15 +247,58 @@
                     loginButton.style.display = "none";
                     logoutButton.style.display = "block";
                     profileIcon.style.display = "block";
+                    cartIcon.style.display = "block";
                 } else {
                     localStorage.removeItem("isAuthenticated");
                     loginButton.style.display = "block";
                     logoutButton.style.display = "none";
                     profileIcon.style.display = "none";
+                    cartIcon.style.display = "none";
                 }
             })
             .catch(error => console.error("Errore nel recupero dell'autenticazione:", error));
     });
 </script>
+<script>
+    class Prodotto {
+        constructor(id, nome, descrizione, prezzo, image) {
+            this.id = id;
+            this.nome = nome;
+            this.descrizione = descrizione;
+            this.prezzo = prezzo;
+            this.image = image;
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+    fetch("/prodotti/all")
+        .then(response => response.json()) // Converte la risposta in JSON
+        .then(prodottiData => {
+            const prodottiContainer = document.querySelector(".products");
+            prodottiContainer.innerHTML = ""; // Svuota il contenitore
+
+            // Converte ogni oggetto JSON in una istanza di Prodotto
+            const prodotti = prodottiData.map(p => new Prodotto(p.id, p.nome, p.descrizione, p.prezzo, p.image));
+
+            prodotti.forEach(prodotto => {
+                const prodottoDiv = document.createElement("div");
+                prodottoDiv.classList.add("product");
+
+                prodottoDiv.innerHTML = `
+                    <img src="${prodotto.image}" alt="${prodotto.nome}">
+                    <h3>${prodotto.nome}</h3>
+                    <p>${prodotto.descrizione}</p>
+                    <p class="price">€${prodotto.prezzo}</p>
+                `;
+
+                prodottiContainer.appendChild(prodottoDiv);
+            });
+        })
+        .catch(error => console.error("Errore nel recupero dei prodotti:", error));
+});
+
+</script>
+
+
 </body>
 </html>
