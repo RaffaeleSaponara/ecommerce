@@ -69,4 +69,9 @@ public class Customers {
     public void setCart(Cart cart) {
         this.cart = cart;
     }
+
+    public Long getId() {
+        return id;
+    }
+
 }

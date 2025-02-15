@@ -1,190 +1,10 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="it" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Prodotti - E-Commerce</title>
-  <style>
-         * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        html, body {
-            font-family: 'Poppins', sans-serif;
-            height: 100%;
-            background-color: #f8f9fa;
-            color: #333;
-            display: flex;
-            flex-direction: column;
-        }
-        .container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        header {
-            background: url('/images/background.jpg') no-repeat center center/cover;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            font-size: 24px;
-            font-weight: bold;
-        }
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: #343a40;
-            padding: 15px 20px;
-            flex-wrap: wrap;
-        }
-        nav a {
-            color: white;
-            text-decoration: none;
-            padding: 10px 15px;
-            font-size: 16px;
-            transition: background 0.3s;
-        }
-        nav a:hover {
-            background-color: #007bff;
-            border-radius: 5px;
-        }
-        .auth-container {
-            display: flex;
-            align-items: center;
-        }
-        .categories {
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
-            padding: 40px 20px;
-            flex-grow: 1;
-        }
-        .category {
-            text-align: center;
-            padding: 20px;
-            background: white;
-            border-radius: 12px;
-            width: 30%;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s;
-        }
-        .category:hover {
-            transform: translateY(-5px);
-        }
-        .category img {
-            width: 100%;
-            height: auto;
-            border-radius: 12px;
-        }
-        .category h3 {
-            margin-top: 15px;
-            font-size: 18px;
-            color: #007bff;
-        }
-        footer {
-            background-color: #343a40;
-            color: white;
-            text-align: center;
-            padding: 15px;
-            font-size: 14px;
-        }
-        .profile-icon img, .cart-icon img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            hover: none;
-        }
-        .profile-icon a:hover, .cart-icon a:hover {
-            background-color: initial;
-            color: initial;
-            cursor: default;
-        }
-        .login-button, .logout-button {
-            background-color: #007bff;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-size: 14px;
-            transition: background 0.3s;
-        }
-        .login-button:hover, .logout-button:hover {
-            background-color: #0056b3;
-        }
-        @media screen and (max-width: 768px) {
-            .categories {
-                flex-direction: column;
-                align-items: center;
-            }
-            .category {
-                width: 90%;
-                margin-bottom: 20px;
-            }
-        }
-        .auth-container {
-            display: flex;
-            align-items: center;
-        }
-        .products {
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
-            padding: 40px 20px;
-            flex-grow: 1;
-        }
-        .product {
-            text-align: center;
-            padding: 20px;
-            background: white;
-            border-radius: 12px;
-            width: 30%;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s;
-        }
-        .product:hover {
-            transform: translateY(-5px);
-        }
-        .product img {
-            width: 100%;
-            height: auto;
-            border-radius: 12px;
-        }
-        .product h3 {
-            margin-top: 15px;
-            font-size: 18px;
-            color: #007bff;
-        }
-        .product p {
-            font-size: 16px;
-            color: #666;
-        }
-        .product .price {
-            font-size: 18px;
-            color: #007bff;
-            margin-top: 10px;
-        }
-        footer {
-            background-color: #343a40;
-            color: white;
-            text-align: center;
-            padding: 15px;
-            font-size: 14px;
-        }
-        @media screen and (max-width: 768px) {
-            .products {
-                flex-direction: column;
-                align-items: center;
-            }
-            .product {
-                width: 90%;
-                margin-bottom: 20px;
-            }
-        }
-    </style>
+  <link rel="stylesheet" th:href="@{/css/prodotti.css}">
 </head>
 <body>
 <div class="container">
@@ -209,24 +29,8 @@
       </div>
     </div>
   </nav>
-  <div class="products">
-<!--    <div class="product">-->
-<!--      <img src="/images/prodotto1.jpg" alt="Prodotto 1">-->
-<!--      <h3>Smartphone</h3>-->
-<!--      <p>Descrizione del prodotto 1.</p>-->
-<!--      <p class="price">€299,99</p>-->
-<!--    </div>-->
-<!--    <div class="product">-->
-<!--      <img src="/images/prodotto2.jpg" alt="Prodotto 2">-->
-<!--      <h3>Cuffie Wireless</h3>-->
-<!--      <p>Descrizione del prodotto 2.</p>-->
-<!--      <p class="price">€89,99</p>-->
-<!--    </div>-->
-<!--    <div class="product">-->
-<!--      <img src="/images/prodotto3.jpg" alt="Prodotto 3">-->
-<!--      <h3>Laptop</h3>-->
-<!--      <p>Descrizione del prodotto 3.</p>-->
-<!--      <p class="price">€999,99</p>-->
+    <div class="products">
+
     </div>
   </div>
 </div>
@@ -289,14 +93,37 @@
                     <h3>${prodotto.nome}</h3>
                     <p>${prodotto.descrizione}</p>
                     <p class="price">€${prodotto.prezzo}</p>
+                    <button class="add-to-cart" data-id="${prodotto.id}">Aggiungi al carrello</button>
                 `;
-
+                // Aggiungi l'evento di clic per aggiungere al carrello
+                const button = prodottoDiv.querySelector(".add-to-cart");
+                button.addEventListener("click", function() {
+                    aggiungiAlCarrello(prodotto.id);
+                });
                 prodottiContainer.appendChild(prodottoDiv);
             });
         })
         .catch(error => console.error("Errore nel recupero dei prodotti:", error));
 });
 
+    // Funzione per aggiungere il prodotto al carrello
+    function aggiungiAlCarrello(prodotto) {
+        fetch("/cart/add", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(prodotto) // Converte l'oggetto prodotto in JSON
+        })
+        .then(response => {
+            if (response.ok) {
+                alert("Prodotto aggiunto al carrello!");
+            } else {
+                alert("Errore nell'aggiungere il prodotto al carrello.");
+            }
+        })
+        .catch(error => console.error("Errore nella chiamata al backend:", error));
+    }
 </script>
 
 

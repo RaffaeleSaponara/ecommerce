@@ -27,6 +27,8 @@ public class Products {
     private String descrizione;
     @Column(name = "categoria")
     private String categoria;
+    @Column(name = "image")
+    private String image;
 
     @ManyToMany(mappedBy = "products")
     private List<Orders> orders;
@@ -86,5 +88,13 @@ public class Products {
 
     public void setCarts(List<Cart> carts) {
         this.carts = carts;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 }

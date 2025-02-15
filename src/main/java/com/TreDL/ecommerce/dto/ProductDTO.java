@@ -11,6 +11,7 @@ public class ProductDTO {
     private String descrizione;
     private double prezzo;
     private String categoria;
+    private String image;
 
 
     public static ProductDTO convertToDTO(Products prodotto) {
@@ -20,6 +21,7 @@ public class ProductDTO {
         userDTO.setCategoria(prodotto.getCategoria());
         userDTO.setDescrizione(prodotto.getDescrizione());
         userDTO.setPrezzo(prodotto.getPrezzo());
+        userDTO.setImage(prodotto.getImage());
         return userDTO;
     }
 
@@ -61,5 +63,13 @@ public class ProductDTO {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 }

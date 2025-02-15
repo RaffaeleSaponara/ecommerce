@@ -5,6 +5,7 @@ import com.TreDL.ecommerce.repository.ProductsRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ProductsService {
@@ -16,5 +17,9 @@ public class ProductsService {
 
     public List<Products> getAllProducts() {
         return productRepository.findAll();
+    }
+
+    public Products getById(Long id) {
+        return productRepository.findById(id).isPresent() ? productRepository.findById(id).get() : new Products();
     }
 }
