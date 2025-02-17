@@ -5,6 +5,101 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carrello Ecommerce</title>
     <link rel="stylesheet" href="/css/home.css">
+    <style>
+        /* Aggiunta di stile specifico per il carrello */
+        .carrello-container {
+            width: 80%;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .carrello-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .carrello-item img {
+            max-width: 100px;
+            height: auto;
+        }
+
+        .carrello-item-info {
+            flex: 1;
+            margin-left: 15px;
+        }
+
+        .carrello-item h3 {
+            margin: 0;
+            font-size: 16px;
+            color: #007bff;
+        }
+
+        .carrello-item p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .carrello-item-price {
+            font-size: 16px;
+            font-weight: bold;
+            color: #28a745;
+        }
+
+        .remove-button {
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 3px 6px; /* Ridotto a metà della dimensione precedente */
+            font-size: 12px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            margin-left: 15px; /* Aggiunto spazio tra il bottone e il prezzo */
+        }
+
+        .remove-button:hover {
+            background-color: #cc0000;
+        }
+
+        .totale-container {
+            display: flex;
+            justify-content: flex-end;
+            padding-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .payment-button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 16px;
+            display: block;
+            margin-top: 20px;
+            width: 100%;
+            text-align: center;
+            transition: background 0.3s;
+        }
+
+        .payment-button:hover {
+            background-color: #0056b3;
+        }
+
+        .no-items {
+            text-align: center;
+            font-size: 18px;
+            color: #888;
+        }
+    </style>
 </head>
 <body>
 <div class="container">
@@ -30,9 +125,15 @@
         </div>
     </nav>
 
-    <div id="carrello-container">
+    <div id="carrello-container" class="carrello-container">
         <p>Caricamento del carrello...</p>
     </div>
+
+    <div class="totale-container" id="totale-container">
+        <span>Totale: €<span id="totale">0.00</span></span>
+    </div>
+
+    <a href="/checkout" class="payment-button" id="paymentButton">Procedi con il pagamento</a>
 
 </div>
 <footer>
@@ -40,6 +141,22 @@
 </footer>
 
 <script>
+ // Funzione per rimuovere il prodotto dal carrello
+        function rimuoviProdotto(id) {
+            fetch(`/cart/remove/${id}`, {  // URL per rimuovere il prodotto
+                method: 'DELETE'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Errore nella rimozione del prodotto');
+                }
+                // Ricarica il carrello dopo la rimozione
+                caricaCarrello();
+            })
+            .catch(error => {
+                alert(`Errore nella rimozione del prodotto: ${error.message}`);
+            });
+        }
     document.addEventListener('DOMContentLoaded', function() {
         // Funzione per ottenere il carrello tramite Fetch API
         function caricaCarrello() {
@@ -52,33 +169,42 @@
                 })
                 .then(data => {
                     if (data && data.items && data.items.length > 0) {
-                        let carrelloHTML = '<div class="categories">';
+                        let carrelloHTML = '';
+                        let totale = 0;
+
                         data.items.forEach(item => {
+                            const prezzo = item.prezzo;
+                            totale += prezzo;
+
                             carrelloHTML += `
-                                <div class="category">
+                                <div class="carrello-item" data-item-id="${item.id}">
                                     <img src="${item.image}" alt="${item.nome}">
-                                    <h3>${item.nome}</h3>
-                                    <p><strong>Descrizione:</strong> ${item.descrizione}</p>
-                                    <p><strong>Categoria:</strong> ${item.categoria}</p>
-                                    <p><strong>Prezzo:</strong> €${item.prezzo}</p>
+                                    <div class="carrello-item-info">
+                                        <h3>${item.nome}</h3>
+                                        <p><strong>Descrizione:</strong> ${item.descrizione}</p>
+                                        <p><strong>Categoria:</strong> ${item.categoria}</p>
+                                    </div>
+                                    <div class="carrello-item-price">€${prezzo}</div>
+                                    <button class="remove-button" onclick="rimuoviProdotto(${item.id})">x</button>
                                 </div>
                             `;
                         });
-                        carrelloHTML += '</div>';
+
                         document.getElementById('carrello-container').innerHTML = carrelloHTML;
+                        document.getElementById('totale').textContent = totale.toFixed(2);
                     } else {
-                        document.getElementById('carrello-container').innerHTML = '<p>Il carrello è vuoto.</p>';
+                        document.getElementById('carrello-container').innerHTML = '<p class="no-items">Il carrello è vuoto.</p>';
                     }
                 })
                 .catch(error => {
-                    document.getElementById('carrello-container').innerHTML = `<p>Errore nel caricamento del carrello: ${error.message}</p>`;
+                    document.getElementById('carrello-container').innerHTML = `<p class="no-items">Errore nel caricamento del carrello: ${error.message}</p>`;
                 });
         }
 
         // Carica il carrello quando la pagina è pronta
         caricaCarrello();
 
-        // Gestione dell'autenticazione (riga già inclusa dalla homepage)
+        // Gestione dell'autenticazione
         const loginButton = document.getElementById("loginButton");
         const profileIcon = document.getElementById("profileIcon");
         const logoutButton = document.getElementById("logoutButton");

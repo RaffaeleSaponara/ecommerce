@@ -30,25 +30,17 @@ public class CartController {
         return CartDTO.convertToDTO(cartService.getCart(customer));
     }
 
-//    @PostMapping("/{customerId}/add")
-//    public CartDTO addProduct(@PathVariable Long customerId, @RequestBody Products product) {
-//        return cartService.addProductToCart(customerId, product);
-//    }
-
     @PostMapping("/add")
-    public Cart addProduct(@RequestBody Long id, Principal principal) {
+    public Cart addProduct(@RequestBody Long productId, Principal principal) {
         Customers customer= customersService.getByUsername(principal.getName());
-        Products product = productsService.getById(id);
+        Products product = productsService.getById(productId);
         return cartService.addProductToCart(customer, product);
     }
 
-//    @PostMapping("/{customerId}/remove")
-//    public CartDTO removeProduct(@PathVariable Long customerId, @RequestBody Products product) {
-//        return cartService.removeProductToCart(customerId, product);
-//    }
-
-    @DeleteMapping("/{customerId}/clear")
-    public void clearCart(@PathVariable Long customerId) {
-        cartService.clearCart(customerId);
+    @DeleteMapping("/remove/{productId}")
+    public void clearCart(@PathVariable Long productId, Principal principal) {
+        Customers customer= customersService.getByUsername(principal.getName());
+        Products product = productsService.getById(productId);
+        cartService.removeProductToCart(customer, product);
     }
 }
