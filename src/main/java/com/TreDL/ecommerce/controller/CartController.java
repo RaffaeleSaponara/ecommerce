@@ -1,5 +1,6 @@
 package com.TreDL.ecommerce.controller;
 
+import com.TreDL.ecommerce.dto.CartDTO;
 import com.TreDL.ecommerce.model.Cart;
 import com.TreDL.ecommerce.model.Customers;
 import com.TreDL.ecommerce.model.Products;
@@ -23,13 +24,14 @@ public class CartController {
     @Autowired
     private CustomersService customersService;
 
-//    @GetMapping("/{customerId}")
-//    public Cart getCart(@PathVariable Long customerId) {
-//        return cartService.getCart(customerId);
-//    }
+    @GetMapping("/view")
+    public CartDTO getCart(Principal principal) {
+        Customers customer= customersService.getByUsername(principal.getName());
+        return CartDTO.convertToDTO(cartService.getCart(customer));
+    }
 
 //    @PostMapping("/{customerId}/add")
-//    public Cart addProduct(@PathVariable Long customerId, @RequestBody Products product) {
+//    public CartDTO addProduct(@PathVariable Long customerId, @RequestBody Products product) {
 //        return cartService.addProductToCart(customerId, product);
 //    }
 
@@ -41,7 +43,7 @@ public class CartController {
     }
 
 //    @PostMapping("/{customerId}/remove")
-//    public Cart removeProduct(@PathVariable Long customerId, @RequestBody Products product) {
+//    public CartDTO removeProduct(@PathVariable Long customerId, @RequestBody Products product) {
 //        return cartService.removeProductToCart(customerId, product);
 //    }
 

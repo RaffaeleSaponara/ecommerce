@@ -6,7 +6,6 @@ import com.TreDL.ecommerce.model.Products;
 import com.TreDL.ecommerce.repository.CartRepository;
 import com.TreDL.ecommerce.repository.CustomersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

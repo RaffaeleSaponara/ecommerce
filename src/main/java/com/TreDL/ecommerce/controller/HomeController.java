@@ -29,6 +29,12 @@ public class HomeController {
         return "prodotti";
     }
 
+    @GetMapping("/cart")
+    public String getCart() {
+        return "cart";
+    }
+
+
 
 
 

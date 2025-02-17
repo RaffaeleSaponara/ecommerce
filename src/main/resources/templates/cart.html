@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrello Ecommerce</title>
+    <link rel="stylesheet" href="/css/home.css">
+</head>
+<body>
+<div class="container">
+    <header>
+        Il tuo Carrello
+    </header>
+    <nav>
+        <div>
+            <a href="#">Home</a>
+            <a href="/prodotti">Prodotti</a>
+            <a href="#">Offerte</a>
+            <a href="#">Contatti</a>
+        </div>
+        <div class="auth-container">
+            <a href="/login" class="login-button" id="loginButton">Login</a>
+            <a href="/logout" class="logout-button" id="logoutButton" style="display: none;">Logout</a>
+            <div class="profile-icon" id="profileIcon" style="display: none;">
+                <a href="/profilo"><img src="/images/icon.jpg" alt="Profilo"></a>
+            </div>
+            <div class="cart-icon" id="cartIcon" style="display: none;">
+                <a href="/cart"><img src="/images/cart.png" alt="Cart"></a>
+            </div>
+        </div>
+    </nav>
+
+    <div id="carrello-container">
+        <p>Caricamento del carrello...</p>
+    </div>
+
+</div>
+<footer>
+    &copy; 2025 E-Commerce. Tutti i diritti riservati.
+</footer>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Funzione per ottenere il carrello tramite Fetch API
+        function caricaCarrello() {
+            fetch('/cart/view')  // URL del controller Spring MVC
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Errore nel recupero del carrello');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && data.items && data.items.length > 0) {
+                        let carrelloHTML = '<div class="categories">';
+                        data.items.forEach(item => {
+                            carrelloHTML += `
+                                <div class="category">
+                                    <img src="${item.image}" alt="${item.nome}">
+                                    <h3>${item.nome}</h3>
+                                    <p><strong>Descrizione:</strong> ${item.descrizione}</p>
+                                    <p><strong>Categoria:</strong> ${item.categoria}</p>
+                                    <p><strong>Prezzo:</strong> €${item.prezzo}</p>
+                                </div>
+                            `;
+                        });
+                        carrelloHTML += '</div>';
+                        document.getElementById('carrello-container').innerHTML = carrelloHTML;
+                    } else {
+                        document.getElementById('carrello-container').innerHTML = '<p>Il carrello è vuoto.</p>';
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('carrello-container').innerHTML = `<p>Errore nel caricamento del carrello: ${error.message}</p>`;
+                });
+        }
+
+        // Carica il carrello quando la pagina è pronta
+        caricaCarrello();
+
+        // Gestione dell'autenticazione (riga già inclusa dalla homepage)
+        const loginButton = document.getElementById("loginButton");
+        const profileIcon = document.getElementById("profileIcon");
+        const logoutButton = document.getElementById("logoutButton");
+        const cartIcon = document.getElementById("cartIcon");
+
+        fetch("/auth/check")
+            .then(response => response.json())
+            .then(isAuthenticated => {
+                if (isAuthenticated) {
+                    localStorage.setItem("isAuthenticated", "true");
+                    loginButton.style.display = "none";
+                    logoutButton.style.display = "block";
+                    profileIcon.style.display = "block";
+                    cartIcon.style.display = "block";
+                } else {
+                    localStorage.removeItem("isAuthenticated");
+                    loginButton.style.display = "block";
+                    logoutButton.style.display = "none";
+                    profileIcon.style.display = "none";
+                    cartIcon.style.display = "none";
+                }
+            })
+            .catch(error => console.error("Errore nel recupero dell'autenticazione:", error));
+    });
+</script>
+
+</body>
+</html>
