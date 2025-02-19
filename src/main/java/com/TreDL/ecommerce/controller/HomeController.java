@@ -24,6 +24,11 @@ public class HomeController {
         return "login";
     }
 
+    @GetMapping("/registrazione")
+    public String registrazionePage() {
+        return "registrazione";
+    }
+
     @GetMapping("/prodotti")
     public String getProdotti() {
         return "prodotti";

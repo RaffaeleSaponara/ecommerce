@@ -108,7 +108,7 @@
     </header>
     <nav>
         <div>
-            <a href="#">Home</a>
+            <a href="/home">Home</a>
             <a href="/prodotti">Prodotti</a>
             <a href="#">Offerte</a>
             <a href="#">Contatti</a>
@@ -157,49 +157,51 @@
                 alert(`Errore nella rimozione del prodotto: ${error.message}`);
             });
         }
-    document.addEventListener('DOMContentLoaded', function() {
-        // Funzione per ottenere il carrello tramite Fetch API
-        function caricaCarrello() {
-            fetch('/cart/view')  // URL del controller Spring MVC
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Errore nel recupero del carrello');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data && data.items && data.items.length > 0) {
-                        let carrelloHTML = '';
-                        let totale = 0;
 
-                        data.items.forEach(item => {
-                            const prezzo = item.prezzo;
-                            totale += prezzo;
+// Funzione per ottenere il carrello tramite Fetch API
+function caricaCarrello() {
+    fetch('/cart/view')  // URL del controller Spring MVC
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Errore nel recupero del carrello');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data && data.items && data.items.length > 0) {
+                let carrelloHTML = '';
+                let totale = 0;
 
-                            carrelloHTML += `
-                                <div class="carrello-item" data-item-id="${item.id}">
-                                    <img src="${item.image}" alt="${item.nome}">
-                                    <div class="carrello-item-info">
-                                        <h3>${item.nome}</h3>
-                                        <p><strong>Descrizione:</strong> ${item.descrizione}</p>
-                                        <p><strong>Categoria:</strong> ${item.categoria}</p>
-                                    </div>
-                                    <div class="carrello-item-price">€${prezzo}</div>
-                                    <button class="remove-button" onclick="rimuoviProdotto(${item.id})">x</button>
-                                </div>
-                            `;
-                        });
+                data.items.forEach(item => {
+                    const prezzo = item.prezzo;
+                    totale += prezzo;
 
-                        document.getElementById('carrello-container').innerHTML = carrelloHTML;
-                        document.getElementById('totale').textContent = totale.toFixed(2);
-                    } else {
-                        document.getElementById('carrello-container').innerHTML = '<p class="no-items">Il carrello è vuoto.</p>';
-                    }
-                })
-                .catch(error => {
-                    document.getElementById('carrello-container').innerHTML = `<p class="no-items">Errore nel caricamento del carrello: ${error.message}</p>`;
+                    carrelloHTML += `
+                        <div class="carrello-item" data-item-id="${item.id}">
+                            <img src="${item.image}" alt="${item.nome}">
+                            <div class="carrello-item-info">
+                                <h3>${item.nome}</h3>
+                                <p><strong>Descrizione:</strong> ${item.descrizione}</p>
+                                <p><strong>Categoria:</strong> ${item.categoria}</p>
+                            </div>
+                            <div class="carrello-item-price">€${prezzo}</div>
+                            <button class="remove-button" onclick="rimuoviProdotto(${item.id})">x</button>
+                        </div>
+                    `;
                 });
-        }
+
+                document.getElementById('carrello-container').innerHTML = carrelloHTML;
+                document.getElementById('totale').textContent = totale.toFixed(2);
+            } else {
+                document.getElementById('carrello-container').innerHTML = '<p class="no-items">Il carrello è vuoto.</p>';
+            }
+        })
+        .catch(error => {
+            document.getElementById('carrello-container').innerHTML = `<p class="no-items">Errore nel caricamento del carrello: ${error.message}</p>`;
+    });
+}
+    document.addEventListener('DOMContentLoaded', function() {
+
 
         // Carica il carrello quando la pagina è pronta
         caricaCarrello();

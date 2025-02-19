@@ -26,20 +26,20 @@ public class CartController {
 
     @GetMapping("/view")
     public CartDTO getCart(Principal principal) {
-        Customers customer= customersService.getByUsername(principal.getName());
+        Customers customer= customersService.getByEmail(principal.getName());
         return CartDTO.convertToDTO(cartService.getCart(customer));
     }
 
     @PostMapping("/add")
     public Cart addProduct(@RequestBody Long productId, Principal principal) {
-        Customers customer= customersService.getByUsername(principal.getName());
+        Customers customer= customersService.getByEmail(principal.getName());
         Products product = productsService.getById(productId);
         return cartService.addProductToCart(customer, product);
     }
 
     @DeleteMapping("/remove/{productId}")
-    public void clearCart(@PathVariable Long productId, Principal principal) {
-        Customers customer= customersService.getByUsername(principal.getName());
+    public void removeProduct(@PathVariable Long productId, Principal principal) {
+        Customers customer= customersService.getByEmail(principal.getName());
         Products product = productsService.getById(productId);
         cartService.removeProductToCart(customer, product);
     }

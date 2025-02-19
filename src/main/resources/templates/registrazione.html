@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="it" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <link rel="stylesheet" href="/css/home.css">
-    <style>
-        .login-container {
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registrazione</title>
+  <link rel="stylesheet" href="/css/home.css">
+  <style>
+        .register-container {
             width: 80%;
             max-width: 500px;
             margin: 50px auto;
@@ -16,20 +16,21 @@
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
         }
 
-        .login-container h2 {
+        .register-container h2 {
             text-align: center;
             color: #007bff;
         }
 
-        .login-container label {
+        .register-container label {
             font-size: 16px;
             color: #333;
             margin-bottom: 10px;
             display: block;
         }
 
-        .login-container input[type="text"],
-        .login-container input[type="password"] {
+        .register-container input[type="text"],
+        .register-container input[type="password"],
+        .register-container input[type="email"] {
             width: 100%;
             padding: 10px;
             margin-bottom: 20px;
@@ -38,7 +39,7 @@
             border-radius: 5px;
         }
 
-        .login-container button {
+        .register-container button {
             width: 100%;
             padding: 12px;
             background-color: #007bff;
@@ -50,7 +51,7 @@
             transition: background-color 0.3s;
         }
 
-        .login-container button:hover {
+        .register-container button:hover {
             background-color: #0056b3;
         }
 
@@ -79,51 +80,56 @@
 </head>
 <body>
 <div class="container">
-    <header>
-        Benvenuto nel nostro E-Commerce
-    </header>
-    <nav>
-        <div>
-            <a href="#">Home</a>
-            <a href="/prodotti">Prodotti</a>
-            <a href="#">Offerte</a>
-            <a href="#">Contatti</a>
-        </div>
-        <div class="auth-container">
-            <a href="/login" class="login-button" id="loginButton">Login</a>
-            <a href="/logout" class="logout-button" id="logoutButton" style="display: none;">Logout</a>
-            <div class="profile-icon" id="profileIcon" style="display: none;">
-                <a href="/profilo"><img src="/images/icon.jpg" alt="Profilo"></a>
-            </div>
-            <div class="cart-icon" id="cartIcon" style="display: none;">
-                <a href="/cart"><img src="/images/cart.png" alt="Cart"></a>
-            </div>
-        </div>
-    </nav>
-
-    <div class="login-container">
-        <h2>Accedi</h2>
-        <form method="post" action="/login">
-            <label for="username">Email:</label>
-            <input type="text" name="username" id="username" required>
-
-            <label for="password">Password:</label>
-            <input type="password" name="password" id="password" required>
-
-            <button type="submit">Login</button>
-        </form>
-
-        <p th:if="${param.error}" class="error-message">Credenziali errate!</p>
-        <p th:if="${param.logout}" class="error-message">Sei stato disconnesso.</p>
-
-        <div class="auth-links">
-            <a href="/registrazione">Non hai un account? Registrati</a>
-        </div>
+  <header>
+    Benvenuto nel nostro E-Commerce
+  </header>
+  <nav>
+    <div>
+      <a href="#">Home</a>
+      <a href="/prodotti">Prodotti</a>
+      <a href="#">Offerte</a>
+      <a href="#">Contatti</a>
     </div>
+    <div class="auth-container">
+      <a href="/login" class="login-button" id="loginButton">Login</a>
+      <a href="/logout" class="logout-button" id="logoutButton" style="display: none;">Logout</a>
+      <div class="profile-icon" id="profileIcon" style="display: none;">
+        <a href="/profilo"><img src="/images/icon.jpg" alt="Profilo"></a>
+      </div>
+      <div class="cart-icon" id="cartIcon" style="display: none;">
+        <a href="/cart"><img src="/images/cart.png" alt="Cart"></a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="register-container">
+    <h2>Registrati</h2>
+    <form method="post" action="/signup">
+      <label for="username">Username:</label>
+      <input type="text" name="username" id="username" required>
+
+      <label for="email">Email:</label>
+      <input type="email" name="email" id="email" required>
+
+      <label for="password">Password:</label>
+      <input type="password" name="password" id="password" required>
+
+      <label for="confirmPassword">Conferma Password:</label>
+      <input type="password" name="confirmPassword" id="confirmPassword" required>
+
+      <button type="submit">Registrati</button>
+    </form>
+
+    <p th:if="${param.error}" class="error-message">Errore durante la registrazione. Riprova.</p>
+
+    <div class="auth-links">
+      <a href="/login">Hai già un account? Accedi</a>
+    </div>
+  </div>
 
 </div>
 <footer>
-    &copy; 2025 E-Commerce. Tutti i diritti riservati.
+  &copy; 2025 E-Commerce. Tutti i diritti riservati.
 </footer>
 
 <script>

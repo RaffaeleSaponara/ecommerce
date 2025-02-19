@@ -26,6 +26,8 @@ public class Customers {
     private String username;
     @Column(name = "password")
     private String password;
+    @Column(name = "email")
+    private String email;
     @Column(name = "role")
     private String role;
 
@@ -74,4 +76,11 @@ public class Customers {
         return id;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
 }

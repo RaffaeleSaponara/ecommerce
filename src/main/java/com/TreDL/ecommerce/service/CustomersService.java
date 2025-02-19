@@ -14,4 +14,14 @@ public class CustomersService {
     public Customers getByUsername(String name) {
         return customersRepository.findByUsername(name).isPresent() ? customersRepository.findByUsername(name).get() : new Customers();
     }
+
+    public Customers getByEmail(String email) {
+        return customersRepository.findByEmail(email).isPresent() ? customersRepository.findByEmail(email).get() : new Customers();
+    }
+
+    public Customers addCustomer(Customers customer) {
+        return customersRepository.save(customer);
+    }
+
+
 }
