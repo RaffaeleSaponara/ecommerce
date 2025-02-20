@@ -17,7 +17,7 @@ public class Customers {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @OneToMany(mappedBy = "customers", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
     private List<Orders> orders;
     @OneToOne(mappedBy = "customer", cascade = CascadeType.ALL)

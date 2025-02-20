@@ -4,7 +4,9 @@ import com.TreDL.ecommerce.model.Cart;
 import com.TreDL.ecommerce.model.Products;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class CartDTO {
     private Long id;
@@ -41,9 +43,22 @@ public class CartDTO {
 
     public void setItems(List<Products> items) {
         List<ProductDTO> productsDTO = new ArrayList<>();
+        Map<Long, Integer> map = new HashMap<>();
+
         for (Products p: items) {
-            productsDTO.add(ProductDTO.convertToDTO(p));
+            if(map.containsKey(p.getId())){
+                map.put(p.getId(), map.get(p.getId())+1);
+            }else{
+                map.put(p.getId(), 1);
+                ProductDTO prodotto = ProductDTO.convertToDTO(p);
+                productsDTO.add(prodotto);
+            }
         }
+
+        for (ProductDTO dto: productsDTO) {
+            dto.setQuantita(map.get(dto.getId()));
+        }
+
         this.items = productsDTO;
     }
 }

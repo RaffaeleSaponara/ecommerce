@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dettaglio Utente - E-Commerce</title>
+  <link rel="stylesheet" href="/css/home.css">
+  <style>
+    /* Stili aggiuntivi per la pagina Dettaglio Utente */
+    /* In questo caso, manteniamo il CSS di base della home e aggiungiamo solo gli extra per la sezione user-details */
+    main {
+      flex: 1; /* assicura che l'area contenuto si espanda */
+    }
+    .user-details {
+      padding: 20px;
+      background-color: white;
+      margin: 20px;
+      border-radius: 12px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .user-section {
+      margin-bottom: 30px;
+    }
+    .user-section h3 {
+      color: #007bff;
+      margin-bottom: 10px;
+    }
+    .user-section p {
+      margin: 5px 0;
+    }
+    .orders-table, .payments-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    .orders-table th, .orders-table td,
+    .payments-table th, .payments-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    .orders-table th, .payments-table th {
+      background-color: #f2f2f2;
+    }
+    .button {
+      background-color: #007bff;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      text-decoration: none;
+      font-size: 16px;
+      display: inline-block;
+      margin-top: 10px;
+      transition: background 0.3s;
+    }
+    .button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+<!-- Il CSS della home prevede che html e body siano flex in colonna e .container abbia min-height:100vh -->
+<div class="container">
+  <header>
+    Dettaglio Utente
+  </header>
+
+  <nav>
+    <div>
+      <a href="/home">Home</a>
+      <a href="/prodotti">Prodotti</a>
+      <a href="#">Offerte</a>
+      <a href="#">Contatti</a>
+    </div>
+    <div class="auth-container">
+      <a href="/login" class="login-button" id="loginButton">Login</a>
+      <a href="/logout" class="logout-button" id="logoutButton" style="display: none;">Logout</a>
+      <div class="profile-icon" id="profileIcon" style="display: none;">
+        <a href="/user"><img src="/images/icon.jpg" alt="Profilo"></a>
+      </div>
+      <div class="cart-icon" id="cartIcon" style="display: none;">
+        <a href="/cart"><img src="/images/cart.png" alt="Carrello"></a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- main si espande grazie a flex: 1 -->
+  <main>
+    <div class="user-details">
+      <!-- Informazioni di Base -->
+      <div class="user-section">
+        <h2>Benvenuto, Mario Rossi!</h2>
+        <p><strong>Email:</strong> mario.rossi@example.com</p>
+        <p><strong>Telefono:</strong> 123-456-7890</p>
+        <a href="/modifica-dati" class="button">Modifica Dati</a>
+      </div>
+
+      <!-- I tuoi Ordini -->
+      <div class="user-section">
+        <h3>I tuoi Ordini</h3>
+        <table class="orders-table">
+          <thead>
+          <tr>
+            <th>Numero Ordine</th>
+            <th>Data</th>
+            <th>Totale</th>
+            <th>Stato</th>
+            <th>Dettagli</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td>#12345</td>
+            <td>2025-02-10</td>
+            <td>€150.00</td>
+            <td>Spedito</td>
+            <td><a href="/ordine/12345" class="button">Vedi Dettagli</a></td>
+          </tr>
+          <tr>
+            <td>#12346</td>
+            <td>2025-02-12</td>
+            <td>€99.99</td>
+            <td>In elaborazione</td>
+            <td><a href="/ordine/12346" class="button">Vedi Dettagli</a></td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Metodi di Pagamento -->
+      <div class="user-section">
+        <h3>Metodi di Pagamento</h3>
+        <table class="payments-table">
+          <thead>
+          <tr>
+            <th>Metodo</th>
+            <th>Dettagli</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td>Visa</td>
+            <td>**** **** **** 1234</td>
+          </tr>
+          <tr>
+            <td>MasterCard</td>
+            <td>**** **** **** 5678</td>
+          </tr>
+          </tbody>
+        </table>
+        <a href="/aggiungi-metodo" class="button">Aggiungi Metodo</a>
+      </div>
+
+      <!-- Indirizzi -->
+      <div class="user-section">
+        <h3>Indirizzi</h3>
+        <p><strong>Spedizione:</strong> Via Roma 1, Milano, Italia</p>
+        <p><strong>Fatturazione:</strong> Via Roma 2, Milano, Italia</p>
+        <a href="/modifica-indirizzo" class="button">Modifica Indirizzi</a>
+      </div>
+
+      <!-- Cambio Password -->
+      <div class="user-section">
+        <h3>Cambia Password</h3>
+        <a href="/cambia-password" class="button">Cambia Password</a>
+      </div>
+    </div>
+  </main>
+</div>
+
+<footer>
+  &copy; 2025 E-Commerce. Tutti i diritti riservati.
+</footer>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const loginButton = document.getElementById("loginButton");
+      const profileIcon = document.getElementById("profileIcon");
+      const logoutButton = document.getElementById("logoutButton");
+      const cartIcon = document.getElementById("cartIcon");
+
+      fetch("/auth/check")
+        .then(response => response.json())
+        .then(isAuthenticated => {
+          if (isAuthenticated) {
+            localStorage.setItem("isAuthenticated", "true");
+            loginButton.style.display = "none";
+            logoutButton.style.display = "block";
+            profileIcon.style.display = "block";
+            cartIcon.style.display = "block";
+          } else {
+            localStorage.removeItem("isAuthenticated");
+            loginButton.style.display = "block";
+            logoutButton.style.display = "none";
+            profileIcon.style.display = "none";
+            cartIcon.style.display = "none";
+          }
+        })
+        .catch(error => console.error("Errore nel recupero dell'autenticazione:", error));
+    });
+  </script>
+</body>
+</html>

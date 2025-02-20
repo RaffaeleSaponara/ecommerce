@@ -3,9 +3,11 @@ package com.TreDL.ecommerce.controller;
 import com.TreDL.ecommerce.dto.CartDTO;
 import com.TreDL.ecommerce.model.Cart;
 import com.TreDL.ecommerce.model.Customers;
+import com.TreDL.ecommerce.model.Orders;
 import com.TreDL.ecommerce.model.Products;
 import com.TreDL.ecommerce.service.CartService;
 import com.TreDL.ecommerce.service.CustomersService;
+import com.TreDL.ecommerce.service.OrdersService;
 import com.TreDL.ecommerce.service.ProductsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +25,8 @@ public class CartController {
     private ProductsService productsService;
     @Autowired
     private CustomersService customersService;
+    @Autowired
+    private OrdersService ordersService;
 
     @GetMapping("/view")
     public CartDTO getCart(Principal principal) {
@@ -42,5 +46,12 @@ public class CartController {
         Customers customer= customersService.getByEmail(principal.getName());
         Products product = productsService.getById(productId);
         cartService.removeProductToCart(customer, product);
+    }
+
+    @GetMapping("/checkout")
+    public Orders checkout(Principal principal) {
+        Customers customer= customersService.getByEmail(principal.getName());
+        Cart cart = cartService.getCart(customer);
+        return ordersService.createOrder(cart);
     }
 }

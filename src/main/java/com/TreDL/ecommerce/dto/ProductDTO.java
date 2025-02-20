@@ -12,6 +12,7 @@ public class ProductDTO {
     private double prezzo;
     private String categoria;
     private String image;
+    private int quantita;
 
 
     public static ProductDTO convertToDTO(Products prodotto) {
@@ -71,5 +72,13 @@ public class ProductDTO {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public int getQuantita() {
+        return quantita;
+    }
+
+    public void setQuantita(int quantita) {
+        this.quantita = quantita;
     }
 }

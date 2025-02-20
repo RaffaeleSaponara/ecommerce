@@ -33,6 +33,10 @@ public class HomeController {
     public String getProdotti() {
         return "prodotti";
     }
+    @GetMapping("/user")
+    public String getUser() {
+        return "user";
+    }
 
     @GetMapping("/cart")
     public String getCart() {
