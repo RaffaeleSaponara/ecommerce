@@ -20,10 +20,9 @@ public class OrdersService {
     public Orders createOrder(Cart cart) {
 
         double total=0;
-        List<Products> listaProdotti = new ArrayList<>();
+
         for (Products p: cart.getProducts()) {
             total+=p.getPrezzo();
-            listaProdotti.add(p);
         }
 
         Orders order = new Orders();
@@ -31,7 +30,7 @@ public class OrdersService {
         order.setDate(LocalDateTime.now());
         order.setShipment("In elaborazione");
         order.setTotal(total);
-        order.setProducts(listaProdotti);
+        order.setProducts(new ArrayList<>(cart.getProducts()));
 
         return ordersRepository.save(order);
     }

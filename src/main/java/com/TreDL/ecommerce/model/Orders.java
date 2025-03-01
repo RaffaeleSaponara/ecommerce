@@ -24,7 +24,7 @@ public class Orders {
     private double total;
     @Column(name = "ship_status")
     private String shipment;
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(
             name = "order_details",
             joinColumns = @JoinColumn(name = "id_order"),
