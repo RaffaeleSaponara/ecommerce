@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Full Screen Slider</title>
+
+  <!-- Includi il CSS di Materialize -->
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+</head>
+<body>
+<div class="navbar-fixed">
+  <nav>
+    <div class="nav-wrapper blue darken-3">
+      <a href="/" class="brand-logo right">
+        <img src="images/3Dlogo_resize.png" alt="Logo" style="max-height: 55px; padding: 10px;">
+      </a>
+      <!-- Aggiungi il bottone per il menu mobile -->
+      <a href="#" data-target="slide-out" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+
+      <!-- Menu per dispositivi desktop -->
+      <ul id="nav-mobile" class="left hide-on-med-and-down">
+        <li><a href="badges.html">Link 1</a></li>
+        <li><a href="collapsible.html">Link 2</a></li>
+      </ul>
+    </div>
+  </nav>
+</div>
+
+<!-- Menu mobile -->
+<ul id="slide-out" class="sidenav">
+  <li>
+    <div class="user-view">
+      <div class="background blue darken-4"></div>
+      <img src="images/3Dlogo.png" style="max-height: 200px; max-width: 280px; object-fit: contain;">
+    </div>
+  </li>
+  <li><a href="#!"><i class="material-icons">cloud</i>First Link With Icon</a></li>
+  <li><a href="#!">Second Link</a></li>
+  <li><div class="divider"></div></li>
+  <li><a class="subheader">Lures</a></li>
+  <li><a class="waves-effect" href="#!">Third Link With Waves</a></li>
+  <li class="no-padding">
+    <ul class="collapsible collapsible-accordion">
+      <li>
+        <a class="collapsible-header">Hardbaits<i class="material-icons">arrow_drop_down</i></a>
+        <div class="collapsible-body">
+          <ul>
+            <li><a href="/home">Jig</a></li>
+            <li><a href="#!">Chatterbait</a></li>
+            <li><a href="#!">Spinnerbait</a></li>
+            <li><a href="#!">Crank</a></li>
+          </ul>
+        </div>
+      </li>
+    </ul>
+  </li>
+  <li class="no-padding">
+    <ul class="collapsible collapsible-accordion">
+      <li>
+        <a class="collapsible-header">Softbaits<i class="material-icons">arrow_drop_down</i></a>
+        <div class="collapsible-body">
+          <ul>
+            <li><a href="#!">Worms</a></li>
+            <li><a href="#!">Shad</a></li>
+            <li><a href="#!">Craw</a></li>
+            <li><a href="#!">Creatures</a></li>
+          </ul>
+        </div>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<!-- Slider full-screen -->
+<div class="slider fullscreen">
+  <ul class="slides">
+    <li>
+      <img src="images/a7resize.jpg" alt="Immagine 1"> <!-- Prima immagine -->
+      <div class="caption center-align">
+        <h3>Benvenuto nel nostro sito!</h3>
+        <h5 class="light grey-text text-lighten-3">Questo è un esempio di slider full-screen.</h5>
+      </div>
+    </li>
+    <li>
+      <img src="images/a10.jpg" alt="Immagine 2"> <!-- Seconda immagine -->
+      <div class="caption left-align">
+        <h3>Scopri di più!</h3>
+        <h5 class="light grey-text text-lighten-3">Questo slider è costruito con Materialize CSS.</h5>
+      </div>
+    </li>
+    <li>
+      <img src="images/a4.jpg" alt="Immagine 3"> <!-- Terza immagine -->
+      <div class="caption right-align">
+        <h3>Esplora il nostro progetto</h3>
+        <h5 class="light grey-text text-lighten-3">Materialize rende facile creare interfacce moderne e responsive.</h5>
+      </div>
+    </li>
+    <li>
+      <img src="images/a6.jpg" alt="Immagine 4"> <!-- Terza immagine -->
+      <div class="caption right-align">
+        <h3>Altolà il sudore!</h3>
+        <h5 class="light grey-text text-lighten-3">Evita di puzzare in palestra.</h5>
+      </div>
+    </li>
+  </ul>
+
+  <div class="fixed-action-btn">
+    <a class="btn-floating btn-large blue darken-3">
+      <i class="fas fa-share-alt"></i>
+    </a>
+    <ul>
+      <li><a class="btn-floating blue" href="https://facebook.com" target="_blank"><i class="fab fa-facebook-f"></i></a></li>
+      <li><a class="btn-floating purple" href="https://instagram.com" target="_blank"><i class="fab fa-instagram"></i></a></li>
+      <li><a class="btn-floating green" href="https://wa.me/3406894426" target="_blank"><i class="fab fa-whatsapp"></i></a></li>
+    </ul>
+  </div>
+</div>
+
+<script>
+    // Inizializza lo slider quando la pagina è pronta
+    $(document).ready(function(){
+      $('.slider').slider();
+      // Inizializza il sidenav per il menu mobile
+      $('.sidenav').sidenav();
+      // Inizializza il collapsible per il dropdown
+      $('.collapsible').collapsible();
+       $('.fixed-action-btn').floatingActionButton({
+    direction: 'up',
+    hoverEnabled: false // Click-only
+  });
+    });
+</script>
+
+</body>
+</html>
