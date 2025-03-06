@@ -4,76 +4,189 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>E-Commerce</title>
-    <link rel="stylesheet" th:href="@{/css/home.css}">
 
+    <!-- jQuery e Materialize -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <style>
+        /* Stile per rendere il menu sovrapposto */
+        #collapsibleSoft, #collapsibleHard {
+            position: absolute;
+            top: 64px;
+            left: 0;
+            background-color: white;
+            z-index: 1000;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            display: none;
+            width: 200px;
+            max-height: calc(100vh - 64px);
+            overflow-y: auto;
+            margin: 0;
+        }
+
+        #collapsibleSoft li, #collapsibleHard li {
+            border-bottom: 1px solid #ddd;
+        }
+
+        #collapsibleSoft a, #collapsibleHard a {
+            display: block;
+            padding: 10px 15px;
+            color: #333;
+            text-decoration: none;
+        }
+
+        #collapsibleSoft a:hover, #collapsibleHard a:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* Stile per il carousel ingrandito */
+        .carousel {
+            height: 300px; /* Puoi aumentare o ridurre a piacere */
+        }
+        .carousel .carousel-item {
+            height: 100%;
+        }
+        .carousel .carousel-item img {
+
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Mostra tutta l'immagine senza tagliarla */
+        }
+    </style>
 </head>
 <body>
-<div class="container">
-    <header>
-        Benvenuto nel nostro E-Commerce
-    </header>
+<div class="navbar-fixed">
     <nav>
-        <div>
-            <a href="/home">Home</a>
-            <a href="/prodotti">Prodotti</a>
-            <a href="#">Offerte</a>
-            <a href="#">Contatti</a>
-        </div>
-        <div class="auth-container">
-            <a href="/login" class="login-button" id="loginButton">Login</a>
-            <a href="/logout" class="logout-button" id="logoutButton" style="display: none;">Logout</a>
-            <div class="profile-icon" id="profileIcon" style="display: none;">
-                <a href="/user"><img src="/images/icon.jpg" alt="Profilo"></a>
-            </div>
-            <div class="cart-icon" id="cartIcon" style="display: none;">
-                <a href="/cart"><img src="/images/cart.png" alt="Cart"></a>
-            </div>
+        <div class="nav-wrapper blue darken-3">
+            <a href="/" class="brand-logo right">
+                <img src="images/3Dlogo.png" alt="Logo" style="max-height: 64px; object-fit: contain;">
+            </a>
+            <!-- Aggiungi il bottone per il menu mobile -->
+            <a href="#" data-target="slide-out" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+
+            <!-- Menu per dispositivi desktop -->
+            <ul id="nav-mobile" class="left hide-on-med-and-down">
+                <li><a href="badges.html">Link 1</a></li>
+                <li><a href="collapsible.html">Link 2</a></li>
+            </ul>
         </div>
     </nav>
-    <div class="categories">
-        <div class="category">
-            <img src="/images/casa.webp" alt="Casa">
-            <h3>Casa</h3>
+</div>
+
+<!-- Menu mobile -->
+<ul id="slide-out" class="sidenav">
+    <li>
+        <div class="user-view">
+            <div class="background blue darken-4"></div>
+            <img src="images/3Dlogo.png" style="max-height: 200px; max-width: 280px; object-fit: contain;">
         </div>
-        <div class="category">
-            <img src="/images/elettrodomestici.webp" alt="Elettronica">
-            <h3>Elettrodomestici</h3>
-        </div>
-        <div class="category">
-            <img src="/images/moda.jpg" alt="Moda">
-            <h3>Moda</h3>
+    </li>
+    <li><a href="#!"><i class="material-icons">cloud</i>First Link With Icon</a></li>
+    <li><a href="#!">Second Link</a></li>
+    <li><div class="divider"></div></li>
+    <li><a class="subheader">Lures</a></li>
+    <li><a class="waves-effect" href="#!">Third Link With Waves</a></li>
+    <li class="no-padding">
+        <ul class="collapsible collapsible-accordion">
+            <li>
+                <a class="collapsible-header">Hardbaits<i class="material-icons">arrow_drop_down</i></a>
+                <div class="collapsible-body">
+                    <ul>
+                        <li><a href="/home">Jig</a></li>
+                        <li><a href="#!">Chatterbait</a></li>
+                        <li><a href="#!">Spinnerbait</a></li>
+                        <li><a href="#!">Crank</a></li>
+                    </ul>
+                </div>
+            </li>
+        </ul>
+    </li>
+    <li class="no-padding">
+        <ul class="collapsible collapsible-accordion">
+            <li>
+                <a class="collapsible-header">Softbaits<i class="material-icons">arrow_drop_down</i></a>
+                <div class="collapsible-body">
+                    <ul>
+                        <li><a href="#!">Worms</a></li>
+                        <li><a href="#!">Shad</a></li>
+                        <li><a href="#!">Craw</a></li>
+                        <li><a href="#!">Creatures</a></li>
+                    </ul>
+                </div>
+            </li>
+        </ul>
+    </li>
+</ul>
+
+<div class="parallax-container">
+    <div class="parallax"><img src="images/a12.jpg"></div>
+</div>
+<div class="section white">
+    <div class="row container">
+        <h2 class="header center-align">Jig</h2>
+        <p class="grey-text text-darken-3 lighten-3 center-align">
+            Il jig è composto da una testa piombata (spesso colorata o con una finitura che imita una preda)
+            e da una gonna in silicone o gomma che crea movimento in acqua. Spesso al jig si aggiunge un trailer,
+            cioè una softbait tipo craw (gambero) o shad, per renderlo ancora più realistico
+        </p>
+        <div class="carousel">
+            <a class="carousel-item" href="#one!"><img src="images/b1.jpg"></a>
+            <a class="carousel-item" href="#two!"><img src="images/b2.jpg"></a>
+            <a class="carousel-item" href="#three!"><img src="images/b3.jpg"></a>
+            <a class="carousel-item" href="#four!"><img src="images/b4.jpg"></a>
+            <a class="carousel-item" href="#five!"><img src="images/b5.jpg"></a>
+            <a class="carousel-item" href="#one!"><img src="images/b6.jpg"></a>
+            <a class="carousel-item" href="#two!"><img src="images/b7.jpg"></a>
+            <a class="carousel-item" href="#three!"><img src="images/b8.jpg"></a>
+            <a class="carousel-item" href="#four!"><img src="images/b9.jpg"></a>
+            <a class="carousel-item" href="#five!"><img src="images/b10.jpg"></a>
         </div>
     </div>
 </div>
-<footer>
-    &copy; 2025 E-Commerce. Tutti i diritti riservati.
-</footer>
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const loginButton = document.getElementById("loginButton");
-        const profileIcon = document.getElementById("profileIcon");
-        const logoutButton = document.getElementById("logoutButton");
-        const cartIcon = document.getElementById("cartIcon");
+<div class="parallax-container">
+    <div class="parallax"><img src="images/a1.jpg"></div>
+</div>
 
-        fetch("/auth/check")
-            .then(response => response.json())
-            .then(isAuthenticated => {
-                if (isAuthenticated) {
-                    localStorage.setItem("isAuthenticated", "true");
-                    loginButton.style.display = "none";
-                    logoutButton.style.display = "block";
-                    profileIcon.style.display = "block";
-                    cartIcon.style.display = "block";
-                } else {
-                    localStorage.removeItem("isAuthenticated");
-                    loginButton.style.display = "block";
-                    logoutButton.style.display = "none";
-                    profileIcon.style.display = "none";
-                    cartIcon.style.display = "none";
-                }
-            })
-            .catch(error => console.error("Errore nel recupero dell'autenticazione:", error));
-    });
+<footer class="page-footer blue darken-3">
+    <div class="container">
+        <div class="row">
+            <div class="col l6 s12">
+                <h5 class="white-text">Footer Content</h5>
+                <p class="grey-text text-lighten-4">You can use rows and columns here to organize your footer content.</p>
+            </div>
+            <div class="col l4 offset-l2 s12">
+                <h5 class="white-text">Links</h5>
+                <ul>
+                    <li><a class="grey-text text-lighten-3" href="#!">Link 1</a></li>
+                    <li><a class="grey-text text-lighten-3" href="#!">Link 2</a></li>
+                    <li><a class="grey-text text-lighten-3" href="#!">Link 3</a></li>
+                    <li><a class="grey-text text-lighten-3" href="#!">Link 4</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="footer-copyright">
+        <div class="container">
+            © 2014 Copyright Text
+            <a class="grey-text text-lighten-4 right" href="#!">More Links</a>
+        </div>
+    </div>
+</footer>
+
+<script>
+$(document).ready(function(){
+    $('.parallax').parallax();
+    $('.carousel').carousel();
+      // Inizializza il sidenav per il menu mobile
+      $('.sidenav').sidenav();
+      // Inizializza il collapsible per il dropdown
+      $('.collapsible').collapsible();
+});
+
+
 </script>
 </body>
 </html>
