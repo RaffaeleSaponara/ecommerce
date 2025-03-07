@@ -91,7 +91,9 @@
         </div>
         <div class="auth-container">
             <a href="/login" class="login-button" id="loginButton">Login</a>
-            <a href="/logout" class="logout-button" id="logoutButton" style="display: none;">Logout</a>
+            <form id="logoutForm" method="post" action="/auth/logout" style="display:inline;">
+                <button type="submit" class="logout-button" id="logoutButton" style="display: none;">Logout</button>
+            </form>
             <div class="profile-icon" id="profileIcon" style="display: none;">
                 <a href="/profilo"><img src="/images/icon.jpg" alt="Profilo"></a>
             </div>
@@ -154,7 +156,6 @@
             return response.text(); // il token JWT
         })
         .then(token => {
-            alert('Login riuscito! Token: ' + token);
             localStorage.setItem('authToken', token);
             window.location.href = '/home';
         })

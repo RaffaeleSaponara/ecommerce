@@ -3,6 +3,7 @@ package com.TreDL.ecommerce.controller;
 import com.TreDL.ecommerce.security.JwtUtil;
 import com.TreDL.ecommerce.service.CustomUserDetailsService;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
@@ -53,14 +54,17 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletResponse response) {
-        Cookie cookie = new Cookie("jwt", "");
+    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+        Cookie cookie = new Cookie("jwt", null);
         cookie.setHttpOnly(true);
-        cookie.setSecure(true); // solo se https
+        cookie.setSecure(false); // true in produzione con HTTPS
         cookie.setPath("/");
-        cookie.setMaxAge(0); // Scadenza immediata
+        cookie.setMaxAge(0);  // elimina il cookie
         response.addCookie(cookie);
-        return ResponseEntity.ok("Logout eseguito");
+        request.getSession().invalidate();
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .header("Location", "/")
+                .build();
     }
 
     @GetMapping("/check")
