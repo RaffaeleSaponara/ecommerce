@@ -76,30 +76,22 @@
             text-decoration: underline;
         }
     </style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
-<div class="container">
     <header>
         Benvenuto nel nostro E-Commerce
     </header>
     <nav>
-        <div>
-            <a href="#">Home</a>
-            <a href="/prodotti">Prodotti</a>
-            <a href="#">Offerte</a>
-            <a href="#">Contatti</a>
-        </div>
-        <div class="auth-container">
-            <a href="/login" class="login-button" id="loginButton">Login</a>
-            <form id="logoutForm" method="post" action="/auth/logout" style="display:inline;">
-                <button type="submit" class="logout-button" id="logoutButton" style="display: none;">Logout</button>
-            </form>
-            <div class="profile-icon" id="profileIcon" style="display: none;">
-                <a href="/profilo"><img src="/images/icon.jpg" alt="Profilo"></a>
-            </div>
-            <div class="cart-icon" id="cartIcon" style="display: none;">
-                <a href="/cart"><img src="/images/cart.png" alt="Cart"></a>
-            </div>
+        <div class="nav-wrapper grey darken-4">
+            <!-- Navbar Left Links -->
+            <ul class="left hide-on-med-and-down">
+                <li><a href="/home">Home</a></li>
+                <li><a href="/prodotti">Prodotti</a></li>
+                <li><a href="#">Offerte</a></li>
+                <li><a href="#">Contatti</a></li>
+            </ul>
         </div>
     </nav>
 
@@ -123,10 +115,12 @@
         </div>
     </div>
 
-</div>
-<footer>
-    &copy; 2025 E-Commerce. Tutti i diritti riservati.
-</footer>
+
+    <footer class="page-footer grey darken-4">
+        <div class="container">
+            <p>&copy; 2025 E-Commerce. Tutti i diritti riservati.</p>
+        </div>
+    </footer>
 
 <script>
     // Gestione dell'autenticazione
@@ -165,30 +159,7 @@
         });
     });
 
-    // Gestione dell'autenticazione nella barra di navigazione
-    const loginButton = document.getElementById("loginButton");
-    const profileIcon = document.getElementById("profileIcon");
-    const logoutButton = document.getElementById("logoutButton");
-    const cartIcon = document.getElementById("cartIcon");
 
-    fetch("/auth/check")
-        .then(response => response.json())
-        .then(isAuthenticated => {
-            if (isAuthenticated) {
-                localStorage.setItem("isAuthenticated", "true");
-                loginButton.style.display = "none";
-                logoutButton.style.display = "block";
-                profileIcon.style.display = "block";
-                cartIcon.style.display = "block";
-            } else {
-                localStorage.removeItem("isAuthenticated");
-                loginButton.style.display = "block";
-                logoutButton.style.display = "none";
-                profileIcon.style.display = "none";
-                cartIcon.style.display = "none";
-            }
-        })
-        .catch(error => console.error("Errore nel recupero dell'autenticazione:", error));
 </script>
 
 </body>

@@ -97,30 +97,30 @@
             color: #888;
         }
     </style>
+    <!-- Materialize CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
-<div class="container">
     <header>
         Il tuo Carrello
     </header>
     <nav>
-        <div>
-            <a href="/home">Home</a>
-            <a href="/prodotti">Prodotti</a>
-            <a href="#">Offerte</a>
-            <a href="#">Contatti</a>
-        </div>
-        <div class="auth-container">
-            <a href="/login" class="login-button" id="loginButton">Login</a>
-            <form id="logoutForm" method="post" action="/auth/logout" style="display:inline;">
-                <button type="submit" class="logout-button" id="logoutButton" style="display: none;">Logout</button>
-            </form>
-            <div class="profile-icon" id="profileIcon" style="display: none;">
-                <a href="/user"><img src="/images/icon.jpg" alt="Profilo"></a>
-            </div>
-            <div class="cart-icon" id="cartIcon" style="display: none;">
-                <a href="/cart"><img src="/images/cart.png" alt="Cart"></a>
-            </div>
+        <div class="nav-wrapper grey darken-4">
+            <!-- Navbar Left Links -->
+            <ul class="left hide-on-med-and-down">
+                <li><a href="/home">Home</a></li>
+                <li><a href="/prodotti">Prodotti</a></li>
+                <li><a href="#">Offerte</a></li>
+                <li><a href="#">Contatti</a></li>
+            </ul>
+            <!-- Navbar Right Links -->
+            <ul class="right hide-on-med-and-down">
+                <li> <a href="/login" id="loginButton"><i class="material-icons">person</i></a></li>
+                <li><div class="cart-icon" id="cartIcon" style="display:none;"><a href="/cart"><i class="material-icons">shopping_cart</i></a></div></li>
+                <li><div class="profile-icon" id="profileIcon" style="display:none;"><a href="/user"><i class="material-icons">person</i></a></div></li>
+                <li><div class="logout-icon" id="logoutButton" style="display:none;"><a href="#" onclick="logout()"><i class="material-icons">exit_to_app</i></a></div></li>
+            </ul>
         </div>
     </nav>
 
@@ -135,12 +135,39 @@
     <!-- Posizioniamo il tasto di pagamento sotto il totale del carrello -->
     <a href="/cart/checkout" class="payment-button" id="paymentButton">Procedi con il pagamento</a>
 
-</div>
-<footer>
-    &copy; 2025 E-Commerce. Tutti i diritti riservati.
-</footer>
-
+    <footer class="page-footer grey darken-4">
+        <div class="container">
+            <p>&copy; 2025 E-Commerce. Tutti i diritti riservati.</p>
+        </div>
+    </footer>
+<!-- Materialize JavaScript -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 <script>
+// Funzione di logout
+    function logout() {
+        fetch('/auth/logout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'logout'
+            })
+        })
+        .then(response => {
+            if (response.ok) {
+                // Se il logout ha successo, ricarica la pagina o fai redirect
+                window.location.href = '/home';
+            } else {
+                alert('Errore durante il logout');
+            }
+        })
+        .catch(error => {
+            console.error('Errore nel logout:', error);
+            alert('Errore nel logout');
+        });
+    }
 // Funzione per rimuovere il prodotto dal carrello
 function rimuoviProdotto(id) {
     fetch(`/cart/remove/${id}`, {  // URL per rimuovere il prodotto
@@ -201,7 +228,7 @@ function caricaCarrello() {
                                 <th>Prodotto</th>
                                 <th>Quantità</th>
                                 <th>Prezzo</th>
-                                <th>Rimuovi</th>
+                                <th>Modifica</th>
                             </tr>
                         </thead>
                         <tbody>
