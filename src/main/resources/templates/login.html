@@ -103,7 +103,8 @@
 
     <div class="login-container">
         <h2>Accedi</h2>
-        <form method="post" action="/login">
+        <!-- Form senza il metodo post, gestito da JS -->
+        <form id="loginForm">
             <label for="username">Email:</label>
             <input type="text" name="username" id="username" required>
 
@@ -113,8 +114,7 @@
             <button type="submit">Login</button>
         </form>
 
-        <p th:if="${param.error}" class="error-message">Credenziali errate!</p>
-        <p th:if="${param.logout}" class="error-message">Sei stato disconnesso.</p>
+        <p id="errorMessage" class="error-message" style="display: none;">Credenziali errate!</p>
 
         <div class="auth-links">
             <a href="/registrazione">Non hai un account? Registrati</a>
@@ -128,6 +128,43 @@
 
 <script>
     // Gestione dell'autenticazione
+    const loginForm = document.getElementById("loginForm");
+    const errorMessage = document.getElementById("errorMessage");
+
+    loginForm.addEventListener("submit", function(event) {
+        event.preventDefault(); // Impedisce il normale submit del form
+
+        const payload = {
+            username: document.getElementById('username').value,
+            password: document.getElementById('password').value
+        };
+
+        // Invia la richiesta POST con i dati in JSON
+        fetch("/auth/login", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Credenziali errate!');
+            }
+            return response.text(); // il token JWT
+        })
+        .then(token => {
+            alert('Login riuscito! Token: ' + token);
+            localStorage.setItem('authToken', token);
+            window.location.href = '/home';
+        })
+        .catch(error => {
+            errorMessage.textContent = error.message;
+            errorMessage.style.display = 'block';
+        });
+    });
+
+    // Gestione dell'autenticazione nella barra di navigazione
     const loginButton = document.getElementById("loginButton");
     const profileIcon = document.getElementById("profileIcon");
     const logoutButton = document.getElementById("logoutButton");
