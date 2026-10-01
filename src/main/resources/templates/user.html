@@ -3,207 +3,109 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dettaglio Utente - E-Commerce</title>
-  <link rel="stylesheet" href="/css/home.css">
-  <style>
-    /* Stili aggiuntivi per la pagina Dettaglio Utente */
-    /* In questo caso, manteniamo il CSS di base della home e aggiungiamo solo gli extra per la sezione user-details */
-    main {
-      flex: 1; /* assicura che l'area contenuto si espanda */
-    }
-    .user-details {
-      padding: 20px;
-      background-color: white;
-      margin: 20px;
-      border-radius: 12px;
-      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-    }
-    .user-section {
-      margin-bottom: 30px;
-    }
-    .user-section h3 {
-      color: #007bff;
-      margin-bottom: 10px;
-    }
-    .user-section p {
-      margin: 5px 0;
-    }
-    .orders-table, .payments-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-    .orders-table th, .orders-table td,
-    .payments-table th, .payments-table td {
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid #ddd;
-    }
-    .orders-table th, .payments-table th {
-      background-color: #f2f2f2;
-    }
-    .button {
-      background-color: #007bff;
-      color: white;
-      padding: 10px 20px;
-      border-radius: 5px;
-      text-decoration: none;
-      font-size: 16px;
-      display: inline-block;
-      margin-top: 10px;
-      transition: background 0.3s;
-    }
-    .button:hover {
-      background-color: #0056b3;
-    }
-  </style>
-  <!-- Materialize CSS -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <title>Area cliente - Lure Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/account.css">
 </head>
 <body>
-<!-- Il CSS della home prevede che html e body siano flex in colonna e .container abbia min-height:100vh -->
-
-  <header>
-    Dettaglio Utente
-  </header>
-
-  <nav>
-    <div class="nav-wrapper grey darken-4">
-      <!-- Navbar Left Links -->
-      <ul class="left hide-on-med-and-down">
-        <li><a href="/home">Home</a></li>
-        <li><a href="/prodotti">Prodotti</a></li>
-        <li><a href="#">Offerte</a></li>
-        <li><a href="#">Contatti</a></li>
-      </ul>
-      <!-- Navbar Right Links -->
-      <ul class="right hide-on-med-and-down">
-        <li> <a href="/login" id="loginButton"><i class="material-icons">person</i></a></li>
-        <li><div class="cart-icon" id="cartIcon" style="display:none;"><a href="/cart"><i class="material-icons">shopping_cart</i></a></div></li>
-        <li><div class="profile-icon" id="profileIcon" style="display:none;"><a href="/user"><i class="material-icons">person</i></a></div></li>
-        <li><div class="logout-icon" id="logoutButton" style="display:none;"><a href="#" onclick="logout()"><i class="material-icons">exit_to_app</i></a></div></li>
-      </ul>
+  <nav class="site-nav" aria-label="Navigazione principale">
+    <a class="brand" href="/">
+      <img src="/images/3Dlogo_resize.png" alt="Lure Lab">
+      <span>Lure Lab</span>
+    </a>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/home">Catalogo</a>
+      <a href="/prodotti">Shop</a>
+      <a href="https://wa.me/3406894426" target="_blank">Custom</a>
+    </div>
+    <div class="auth-container">
+      <a href="/login" class="login-button" id="loginButton">Login</a>
+      <a href="/logout" class="logout-button" id="logoutButton" style="display: none;">Logout</a>
+      <a href="/user" class="icon-link" id="profileIcon" style="display: none;" aria-label="Profilo">
+        <img src="/images/icon.jpg" alt="">
+      </a>
+      <a href="/cart" class="icon-link" id="cartIcon" style="display: none;" aria-label="Carrello">
+        <img src="/images/cart.png" alt="">
+      </a>
     </div>
   </nav>
 
-  <!-- main si espande grazie a flex: 1 -->
   <main>
-    <div class="user-details">
-      <!-- Informazioni di Base -->
-      <div class="user-section">
-        <h2>Benvenuto, Mario Rossi!</h2>
-        <p><strong>Email:</strong> mario.rossi@example.com</p>
-        <p><strong>Telefono:</strong> 123-456-7890</p>
-        <a href="/modifica-dati" class="button">Modifica Dati</a>
+    <section class="page-hero">
+      <div>
+        <span class="eyebrow">Area cliente</span>
+        <h1>Il tuo spazio Lure Lab.</h1>
+      </div>
+      <p>Una dashboard essenziale per raccogliere ordini, carrello e richieste custom. Alcune sezioni sono gia predisposte e verranno collegate quando completeremo il backend profilo.</p>
+    </section>
+
+    <section class="profile-layout">
+      <div class="panel">
+        <h2>Panoramica</h2>
+        <p>Qui compariranno dati personali, indirizzi e storico ordini collegati all'utente autenticato.</p>
+
+        <div class="panel-grid">
+          <div class="metric">
+            <span class="meta-label">Account</span>
+            <strong>Attivo</strong>
+          </div>
+          <div class="metric">
+            <span class="meta-label">Ordini</span>
+            <strong>In arrivo</strong>
+          </div>
+          <div class="metric">
+            <span class="meta-label">Custom</span>
+            <strong>WhatsApp</strong>
+          </div>
+          <div class="metric">
+            <span class="meta-label">Catalogo</span>
+            <strong>Demo</strong>
+          </div>
+        </div>
+
+        <div class="action-stack">
+          <a href="/prodotti" class="button button-primary">Sfoglia lo shop</a>
+          <a href="/cart" class="button button-secondary">Vai al carrello</a>
+        </div>
       </div>
 
-      <!-- I tuoi Ordini -->
-      <div class="user-section">
-        <h3>I tuoi Ordini</h3>
-        <table class="orders-table">
-          <thead>
-          <tr>
-            <th>Numero Ordine</th>
-            <th>Data</th>
-            <th>Totale</th>
-            <th>Stato</th>
-            <th>Dettagli</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr>
-            <td>#12345</td>
-            <td>2025-02-10</td>
-            <td>€150.00</td>
-            <td>Spedito</td>
-            <td><a href="/ordine/12345" class="button">Vedi Dettagli</a></td>
-          </tr>
-          <tr>
-            <td>#12346</td>
-            <td>2025-02-12</td>
-            <td>€99.99</td>
-            <td>In elaborazione</td>
-            <td><a href="/ordine/12346" class="button">Vedi Dettagli</a></td>
-          </tr>
-          </tbody>
-        </table>
-      </div>
+      <aside class="panel">
+        <h3>Richieste custom</h3>
+        <p>Colori, pesi, skirt o modelli speciali possono restare come canale diretto finche non aggiungiamo un form dedicato.</p>
+        <div class="action-stack">
+          <a href="https://wa.me/3406894426" target="_blank" class="button button-primary">Scrivi su WhatsApp</a>
+        </div>
+      </aside>
+    </section>
 
-      <!-- Metodi di Pagamento -->
-      <div class="user-section">
-        <h3>Metodi di Pagamento</h3>
-        <table class="payments-table">
-          <thead>
-          <tr>
-            <th>Metodo</th>
-            <th>Dettagli</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr>
-            <td>Visa</td>
-            <td>**** **** **** 1234</td>
-          </tr>
-          <tr>
-            <td>MasterCard</td>
-            <td>**** **** **** 5678</td>
-          </tr>
-          </tbody>
-        </table>
-        <a href="/aggiungi-metodo" class="button">Aggiungi Metodo</a>
-      </div>
-
-      <!-- Indirizzi -->
-      <div class="user-section">
-        <h3>Indirizzi</h3>
-        <p><strong>Spedizione:</strong> Via Roma 1, Milano, Italia</p>
-        <p><strong>Fatturazione:</strong> Via Roma 2, Milano, Italia</p>
-        <a href="/modifica-indirizzo" class="button">Modifica Indirizzi</a>
-      </div>
-
-      <!-- Cambio Password -->
-      <div class="user-section">
-        <h3>Cambia Password</h3>
-        <a href="/cambia-password" class="button">Cambia Password</a>
-      </div>
-    </div>
+    <section class="panel" style="margin-bottom: 82px;">
+      <h2>I tuoi ordini</h2>
+      <table class="orders-table">
+        <thead>
+        <tr>
+          <th>Ordine</th>
+          <th>Data</th>
+          <th>Totale</th>
+          <th>Stato</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td colspan="4">Lo storico ordini non e ancora collegato al profilo.</td>
+        </tr>
+        </tbody>
+      </table>
+    </section>
   </main>
 
+  <footer>
+    &copy; 2026 Lure Lab. Tutti i diritti riservati.
+  </footer>
 
-<footer class="page-footer grey darken-4">
-  <div class="container">
-    <p>&copy; 2025 E-Commerce. Tutti i diritti riservati.</p>
-  </div>
-</footer>
-<!-- Materialize JavaScript -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-<script>
-// Funzione di logout
-    function logout() {
-        fetch('/auth/logout', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                action: 'logout'
-            })
-        })
-        .then(response => {
-            if (response.ok) {
-                // Se il logout ha successo, ricarica la pagina o fai redirect
-                window.location.href = '/home';
-            } else {
-                alert('Errore durante il logout');
-            }
-        })
-        .catch(error => {
-            console.error('Errore nel logout:', error);
-            alert('Errore nel logout');
-        });
-    }
+  <script>
     document.addEventListener("DOMContentLoaded", function() {
       const loginButton = document.getElementById("loginButton");
       const profileIcon = document.getElementById("profileIcon");
@@ -216,12 +118,12 @@
           if (isAuthenticated) {
             localStorage.setItem("isAuthenticated", "true");
             loginButton.style.display = "none";
-            logoutButton.style.display = "block";
-            profileIcon.style.display = "block";
-            cartIcon.style.display = "block";
+            logoutButton.style.display = "inline-flex";
+            profileIcon.style.display = "inline-flex";
+            cartIcon.style.display = "inline-flex";
           } else {
             localStorage.removeItem("isAuthenticated");
-            loginButton.style.display = "block";
+            loginButton.style.display = "inline-flex";
             logoutButton.style.display = "none";
             profileIcon.style.display = "none";
             cartIcon.style.display = "none";

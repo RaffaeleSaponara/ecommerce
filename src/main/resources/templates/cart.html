@@ -1,305 +1,191 @@
 <!DOCTYPE html>
 <html lang="it" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carrello Ecommerce</title>
-    <link rel="stylesheet" href="/css/home.css">
-    <style>
-        /* Aggiunta di stile specifico per il carrello */
-        .carrello-container {
-            width: 80%;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-            max-height: 500px; /* Limita l'altezza del carrello */
-            overflow-y: auto; /* Aggiungi uno scroll verticale se il contenuto supera l'altezza */
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        table th, table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-
-        table th {
-            background-color: #f2f2f2;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .remove-button {
-            background-color: red;
-            color: white;
-            border: none;
-            padding: 3px 6px; /* Ridotto a metà della dimensione precedente */
-            font-size: 12px;
-            cursor: pointer;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-
-        .remove-button:hover {
-            background-color: #cc0000;
-        }
-        .add-button {
-            background-color: green;
-            color: white;
-            border: none;
-            padding: 3px 6px; /* Ridotto a metà della dimensione precedente */
-            font-size: 12px;
-            cursor: pointer;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-
-        .add-button:hover {
-            background-color: #006400;
-        }
-
-        .totale-container {
-            display: flex;
-            justify-content: flex-end;
-            padding-top: 20px;
-            font-size: 18px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .payment-button {
-            background-color: #007bff;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-size: 16px;
-            display: block;
-            margin-top: 20px;
-            width: 100%;
-            text-align: center;
-            transition: background 0.3s;
-        }
-
-        .payment-button:hover {
-            background-color: #0056b3;
-        }
-
-        .no-items {
-            text-align: center;
-            font-size: 18px;
-            color: #888;
-        }
-    </style>
-    <!-- Materialize CSS -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carrello - Lure Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/account.css">
 </head>
 <body>
-    <header>
-        Il tuo Carrello
-    </header>
-    <nav>
-        <div class="nav-wrapper grey darken-4">
-            <!-- Navbar Left Links -->
-            <ul class="left hide-on-med-and-down">
-                <li><a href="/home">Home</a></li>
-                <li><a href="/prodotti">Prodotti</a></li>
-                <li><a href="#">Offerte</a></li>
-                <li><a href="#">Contatti</a></li>
-            </ul>
-            <!-- Navbar Right Links -->
-            <ul class="right hide-on-med-and-down">
-                <li> <a href="/login" id="loginButton"><i class="material-icons">person</i></a></li>
-                <li><div class="cart-icon" id="cartIcon" style="display:none;"><a href="/cart"><i class="material-icons">shopping_cart</i></a></div></li>
-                <li><div class="profile-icon" id="profileIcon" style="display:none;"><a href="/user"><i class="material-icons">person</i></a></div></li>
-                <li><div class="logout-icon" id="logoutButton" style="display:none;"><a href="#" onclick="logout()"><i class="material-icons">exit_to_app</i></a></div></li>
-            </ul>
-        </div>
-    </nav>
-
-    <div id="carrello-container" class="carrello-container">
-        <p>Caricamento del carrello...</p>
+  <nav class="site-nav" aria-label="Navigazione principale">
+    <a class="brand" href="/">
+      <img src="/images/3Dlogo_resize.png" alt="Lure Lab">
+      <span>Lure Lab</span>
+    </a>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/home">Catalogo</a>
+      <a href="/prodotti">Shop</a>
+      <a href="https://wa.me/3406894426" target="_blank">Custom</a>
     </div>
-
-    <div class="totale-container" id="totale-container">
-        <span>Totale: €<span id="totale">0.00</span></span>
+    <div class="auth-container">
+      <a href="/login" class="login-button" id="loginButton">Login</a>
+      <a href="/logout" class="logout-button" id="logoutButton" style="display: none;">Logout</a>
+      <a href="/user" class="icon-link" id="profileIcon" style="display: none;" aria-label="Profilo">
+        <img src="/images/icon.jpg" alt="">
+      </a>
+      <a href="/cart" class="icon-link" id="cartIcon" style="display: none;" aria-label="Carrello">
+        <img src="/images/cart.png" alt="">
+      </a>
     </div>
+  </nav>
 
-    <!-- Posizioniamo il tasto di pagamento sotto il totale del carrello -->
-    <a href="/cart/checkout" class="payment-button" id="paymentButton">Procedi con il pagamento</a>
+  <main>
+    <section class="page-hero">
+      <div>
+        <span class="eyebrow">Carrello</span>
+        <h1>Rivedi le esche prima dell'ordine.</h1>
+      </div>
+      <p>Questo checkout e ancora una bozza funzionale: puoi verificare prodotti, quantita e totale prima di creare l'ordine.</p>
+    </section>
 
-    <footer class="page-footer grey darken-4">
-        <div class="container">
-            <p>&copy; 2025 E-Commerce. Tutti i diritti riservati.</p>
+    <section class="cart-layout">
+      <div id="carrello-container" class="cart-items">
+        <p class="no-items">Caricamento del carrello...</p>
+      </div>
+
+      <aside class="summary-panel" aria-label="Riepilogo ordine">
+        <span class="eyebrow">Riepilogo</span>
+        <div class="summary-row">
+          <span>Articoli</span>
+          <strong id="item-count">0</strong>
         </div>
-    </footer>
-<!-- Materialize JavaScript -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-<script>
-// Funzione di logout
-    function logout() {
-        fetch('/auth/logout', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                action: 'logout'
-            })
-        })
-        .then(response => {
-            if (response.ok) {
-                // Se il logout ha successo, ricarica la pagina o fai redirect
-                window.location.href = '/home';
-            } else {
-                alert('Errore durante il logout');
-            }
-        })
-        .catch(error => {
-            console.error('Errore nel logout:', error);
-            alert('Errore nel logout');
-        });
+        <div class="summary-row">
+          <span>Spedizione</span>
+          <strong>Da definire</strong>
+        </div>
+        <div class="summary-total">
+          <span>Totale</span>
+          <strong>€<span id="totale">0.00</span></strong>
+        </div>
+        <a href="/cart/checkout" class="payment-button" id="paymentButton">Conferma ordine</a>
+      </aside>
+    </section>
+  </main>
+
+  <footer>
+    &copy; 2026 Lure Lab. Tutti i diritti riservati.
+  </footer>
+
+  <script>
+    function rimuoviProdotto(id) {
+      fetch(`/cart/remove/${id}`, {
+        method: "DELETE"
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("Errore nella rimozione del prodotto");
+        }
+        caricaCarrello();
+      })
+      .catch(error => {
+        console.error(error);
+      });
     }
-// Funzione per rimuovere il prodotto dal carrello
-function rimuoviProdotto(id) {
-    fetch(`/cart/remove/${id}`, {  // URL per rimuovere il prodotto
-        method: 'DELETE'
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Errore nella rimozione del prodotto');
-        }
-        // Ricarica il carrello dopo la rimozione
-        caricaCarrello();
-    })
-    .catch(error => {
-        alert(`Errore nella rimozione del prodotto: ${error.message}`);
-    });
-}
 
-// Funzione per aggiungere il prodotto dal carrello
-function aggiungiProdotto(idProdotto) {
-    fetch("/cart/add", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(idProdotto) // Converte l'oggetto prodotto in JSON
-        })
-    .then(response => {
+    function aggiungiProdotto(idProdotto) {
+      fetch("/cart/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(idProdotto)
+      })
+      .then(response => {
         if (!response.ok) {
-            throw new Error('Errore nella rimozione del prodotto');
+          throw new Error("Errore nell'aggiungere il prodotto");
         }
-        // Ricarica il carrello dopo la rimozione
         caricaCarrello();
-    })
-    .catch(error => {
-        alert(`Errore nella rimozione del prodotto: ${error.message}`);
-    });
-}
+      })
+      .catch(error => {
+        console.error(error);
+      });
+    }
 
-// Funzione per ottenere il carrello tramite Fetch API
-function caricaCarrello() {
-    fetch('/cart/view')  // URL del controller Spring MVC
+    function caricaCarrello() {
+      fetch("/cart/view")
         .then(response => {
-            if (!response.ok) {
-                throw new Error('Errore nel recupero del carrello');
-            }
-            return response.json();
+          if (!response.ok) {
+            throw new Error("Errore nel recupero del carrello");
+          }
+          return response.json();
         })
         .then(data => {
-            if (data && data.items && data.items.length > 0) {
-                let carrelloHTML = '';
-                let totale = 0;
+          const carrelloContainer = document.getElementById("carrello-container");
+          const totaleEl = document.getElementById("totale");
+          const itemCountEl = document.getElementById("item-count");
 
-                // Creazione della tabella con le intestazioni
-                carrelloHTML += `
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Prodotto</th>
-                                <th>Quantità</th>
-                                <th>Prezzo</th>
-                                <th>Modifica</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
+          if (data && data.items && data.items.length > 0) {
+            let totale = 0;
+            let itemCount = 0;
 
-                // Generazione delle righe della tabella
-                data.items.forEach(item => {
-                    const prezzoTotale = item.prezzo * item.quantita;
-                    totale += prezzoTotale;
+            const carrelloHTML = data.items.map(item => {
+              const prezzoTotale = item.prezzo * item.quantita;
+              totale += prezzoTotale;
+              itemCount += item.quantita;
 
-                    carrelloHTML += `
-                        <tr data-item-id="${item.id}">
-                            <td>
-                                <img src="${item.image}" alt="${item.nome}" style="max-width: 50px; height: auto;">
-                                <div>
-                                    <strong>${item.nome}</strong><br>
-                                    <em>Descrizione: ${item.descrizione}</em><br>
-                                    <span><strong>Categoria:</strong> ${item.categoria}</span>
-                                </div>
-                            </td>
-                            <td>${item.quantita}</td>
-                            <td>€${prezzoTotale.toFixed(2)}</td>
-                            <td>
-                                <button class="remove-button" onclick="rimuoviProdotto(${item.id})">-</button>
-                                <button class="add-button" onclick="aggiungiProdotto(${item.id})">+</button>
-                            </td>
-                        </tr>
-                    `;
-                });
+              return `
+                <article class="cart-item">
+                  <img src="${item.image}" alt="${item.nome}">
+                  <div>
+                    <span class="category">${item.categoria}</span>
+                    <h3>${item.nome}</h3>
+                    <p>${item.descrizione}</p>
+                    <div class="cart-actions">
+                      <button class="remove-button" onclick="rimuoviProdotto(${item.id})" aria-label="Rimuovi ${item.nome}">-</button>
+                      <span class="quantity">${item.quantita}</span>
+                      <button class="add-button" onclick="aggiungiProdotto(${item.id})" aria-label="Aggiungi ${item.nome}">+</button>
+                    </div>
+                  </div>
+                  <div class="cart-line-price">€${prezzoTotale.toFixed(2)}</div>
+                </article>
+              `;
+            }).join("");
 
-                carrelloHTML += `</tbody></table>`;
-                document.getElementById('carrello-container').innerHTML = carrelloHTML;
-                document.getElementById('totale').textContent = totale.toFixed(2);
-            } else {
-                document.getElementById('carrello-container').innerHTML = '<p class="no-items">Il carrello è vuoto.</p>';
-            }
+            carrelloContainer.innerHTML = carrelloHTML;
+            totaleEl.textContent = totale.toFixed(2);
+            itemCountEl.textContent = itemCount;
+          } else {
+            carrelloContainer.innerHTML = '<p class="no-items">Il carrello e vuoto. Aggiungi qualche esca dallo shop per provare il checkout.</p>';
+            totaleEl.textContent = "0.00";
+            itemCountEl.textContent = "0";
+          }
         })
         .catch(error => {
-            document.getElementById('carrello-container').innerHTML = `<p class="no-items">Errore nel caricamento del carrello: ${error.message}</p>`;
-    });
-}
+          document.getElementById("carrello-container").innerHTML = `<p class="no-items">Errore nel caricamento del carrello: ${error.message}</p>`;
+        });
+    }
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Carica il carrello quando la pagina è pronta
-    caricaCarrello();
+    document.addEventListener("DOMContentLoaded", function() {
+      caricaCarrello();
 
-    // Gestione dell'autenticazione
-    const loginButton = document.getElementById("loginButton");
-    const profileIcon = document.getElementById("profileIcon");
-    const logoutButton = document.getElementById("logoutButton");
-    const cartIcon = document.getElementById("cartIcon");
+      const loginButton = document.getElementById("loginButton");
+      const profileIcon = document.getElementById("profileIcon");
+      const logoutButton = document.getElementById("logoutButton");
+      const cartIcon = document.getElementById("cartIcon");
 
-    fetch("/auth/check")
+      fetch("/auth/check")
         .then(response => response.json())
         .then(isAuthenticated => {
-            if (isAuthenticated) {
-                localStorage.setItem("isAuthenticated", "true");
-                loginButton.style.display = "none";
-                logoutButton.style.display = "block";
-                profileIcon.style.display = "block";
-                cartIcon.style.display = "block";
-            } else {
-                localStorage.removeItem("isAuthenticated");
-                loginButton.style.display = "block";
-                logoutButton.style.display = "none";
-                profileIcon.style.display = "none";
-                cartIcon.style.display = "none";
-            }
+          if (isAuthenticated) {
+            localStorage.setItem("isAuthenticated", "true");
+            loginButton.style.display = "none";
+            logoutButton.style.display = "inline-flex";
+            profileIcon.style.display = "inline-flex";
+            cartIcon.style.display = "inline-flex";
+          } else {
+            localStorage.removeItem("isAuthenticated");
+            loginButton.style.display = "inline-flex";
+            logoutButton.style.display = "none";
+            profileIcon.style.display = "none";
+            cartIcon.style.display = "none";
+          }
         })
         .catch(error => console.error("Errore nel recupero dell'autenticazione:", error));
-});
-</script>
+    });
+  </script>
 </body>
 </html>

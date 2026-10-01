@@ -3,139 +3,534 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Full Screen Slider</title>
+  <title>Lure Lab - Esche artigianali</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #111614;
+      --muted: #5d6761;
+      --surface: #f7f5ef;
+      --panel: #ffffff;
+      --line: rgba(17, 22, 20, 0.12);
+      --accent: #d85f2f;
+      --accent-dark: #a6401d;
+      --green: #24483b;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.22);
+      --soft-shadow: 0 14px 40px rgba(17, 22, 20, 0.1);
+    }
 
-  <!-- Includi il CSS di Materialize -->
-  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    * { box-sizing: border-box; }
 
+    html {
+      scrollbar-gutter: stable;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--surface);
+      font-family: "Inter", Arial, sans-serif;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .site-nav {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: grid;
+      grid-template-columns: minmax(170px, 1fr) auto minmax(190px, 1fr);
+      align-items: center;
+      gap: 22px;
+      min-height: 82px;
+      padding: 0 max(20px, calc((100% - 1180px) / 2));
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.74);
+      backdrop-filter: blur(22px);
+      box-shadow: 0 10px 30px rgba(17, 22, 20, 0.05);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      justify-self: start;
+      font-weight: 800;
+    }
+
+    .brand img {
+      width: 42px;
+      height: 42px;
+      object-fit: contain;
+    }
+
+    .nav-links,
+    .auth-container {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .auth-container {
+      min-width: 190px;
+      justify-self: end;
+      justify-content: flex-end;
+    }
+
+    .nav-links {
+      justify-self: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .nav-links a,
+    .login-button,
+    .logout-button {
+      min-height: 40px;
+      min-width: 78px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 12px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 800;
+      transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
+    }
+
+    .nav-links a:hover,
+    .nav-links a[aria-current="page"] {
+      background: rgba(36, 72, 59, 0.1);
+    }
+
+    .login-button,
+    .logout-button {
+      color: #fff;
+      background: linear-gradient(135deg, var(--green), #162a24);
+      box-shadow: 0 10px 26px rgba(36, 72, 59, 0.22);
+    }
+
+    .icon-link {
+      width: 42px;
+      height: 42px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      transition: transform 160ms ease, box-shadow 160ms ease;
+    }
+
+    .icon-link img {
+      width: 24px;
+      height: 24px;
+      object-fit: cover;
+    }
+
+    .is-hidden {
+      display: none;
+    }
+
+    .hero {
+      min-height: 92vh;
+      display: grid;
+      align-items: end;
+      background:
+        linear-gradient(90deg, rgba(7, 12, 11, 0.76) 0%, rgba(7, 12, 11, 0.42) 42%, rgba(7, 12, 11, 0.08) 100%),
+        url("/images/a7resize.jpg") center / cover no-repeat;
+    }
+
+    .hero-content {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 160px 0 86px;
+      color: #fff;
+    }
+
+    .eyebrow {
+      margin: 0 0 16px;
+      color: rgba(255, 255, 255, 0.78);
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    h1 {
+      max-width: 760px;
+      margin: 0;
+      font-size: clamp(46px, 8vw, 92px);
+      line-height: 0.95;
+      letter-spacing: 0;
+    }
+
+    .hero-copy {
+      max-width: 610px;
+      margin: 24px 0 34px;
+      color: rgba(255, 255, 255, 0.86);
+      font-size: 19px;
+      line-height: 1.65;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 0 20px;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      font-size: 15px;
+      font-weight: 700;
+      transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+    }
+
+    .button-primary {
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      box-shadow: 0 18px 38px rgba(216, 95, 47, 0.28);
+    }
+
+    .button-primary:hover {
+      background: var(--accent-dark);
+    }
+
+    .button-ghost {
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.36);
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(12px);
+    }
+
+    .section {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 84px 0;
+    }
+
+    .section-heading {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 56px;
+      align-items: end;
+      margin-bottom: 34px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: clamp(32px, 5vw, 58px);
+      line-height: 1;
+    }
+
+    .section-heading p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.7;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .feature {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.86);
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.88) inset;
+      transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+    }
+
+    .feature img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      display: block;
+      background: #fff;
+      transition: transform 320ms ease;
+    }
+
+    .feature-body {
+      padding: 22px;
+    }
+
+    .feature-body h3 {
+      margin: 0 0 8px;
+      font-size: 20px;
+    }
+
+    .feature-body p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .craft {
+      background: var(--green);
+      color: #fff;
+      box-shadow: var(--shadow) inset;
+    }
+
+    .craft-inner {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 82px 0;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 58px;
+      align-items: center;
+    }
+
+    .craft p {
+      color: rgba(255, 255, 255, 0.78);
+      font-size: 17px;
+      line-height: 1.75;
+    }
+
+    .craft-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .craft-item {
+      padding: 18px 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.22);
+      font-weight: 700;
+    }
+
+    .nav-links a:hover,
+    .login-button:hover,
+    .logout-button:hover,
+    .icon-link:hover,
+    .button:hover {
+      transform: translateY(-1px);
+    }
+
+    .feature:hover {
+      transform: translateY(-4px);
+      border-color: rgba(216, 95, 47, 0.26);
+      box-shadow: var(--soft-shadow);
+    }
+
+    .feature:hover img {
+      transform: scale(1.04);
+    }
+
+    .site-footer {
+      padding: 32px 0;
+      background: #111614;
+      color: rgba(255, 255, 255, 0.72);
+    }
+
+    .footer-inner {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+      font-size: 14px;
+    }
+
+    @media (max-width: 760px) {
+      .site-nav {
+        grid-template-columns: 1fr;
+        padding-top: 14px;
+        padding-bottom: 14px;
+      }
+
+      .nav-links,
+      .auth-container {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+      }
+
+      .auth-container {
+        min-width: 0;
+        justify-self: start;
+      }
+
+      .brand span {
+        display: none;
+      }
+
+      .hero {
+        min-height: 84vh;
+      }
+
+      .hero-content {
+        padding-top: 130px;
+      }
+
+      .section-heading,
+      .craft-inner,
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .hero {
+        min-height: 760px;
+        align-items: center;
+        background:
+          linear-gradient(90deg, rgba(7, 12, 11, 0.88) 0%, rgba(7, 12, 11, 0.66) 38%, rgba(7, 12, 11, 0.18) 72%, rgba(7, 12, 11, 0.08) 100%),
+          url("/images/a7resize.jpg") right center / min(54vw, 720px) auto no-repeat,
+          #111614;
+      }
+
+      .hero-content {
+        padding: 138px 0 78px;
+      }
+
+      h1 {
+        max-width: 650px;
+        font-size: 76px;
+      }
+
+      .hero-copy {
+        max-width: 560px;
+      }
+
+      .section {
+        padding: 96px 0;
+      }
+
+      .feature-grid {
+        grid-template-columns: 1.1fr 1fr 1fr;
+      }
+
+      .feature:first-child {
+        display: grid;
+        grid-template-rows: auto 1fr;
+      }
+
+      .feature:first-child img {
+        aspect-ratio: 1.18 / 1;
+      }
+    }
+  </style>
 </head>
 <body>
-<div class="navbar-fixed">
-  <nav>
-    <div class="nav-wrapper blue darken-3">
-      <a href="/" class="brand-logo right">
-        <img src="images/3Dlogo_resize.png" alt="Logo" style="max-height: 55px; padding: 10px;">
+  <nav class="site-nav" aria-label="Navigazione principale">
+    <a class="brand" href="/">
+      <img src="/images/3Dlogo_resize.png" alt="Lure Lab">
+      <span>Lure Lab</span>
+    </a>
+    <div class="nav-links">
+      <a href="/" aria-current="page">Home</a>
+      <a href="/home">Catalogo</a>
+      <a href="/prodotti">Shop</a>
+      <a href="https://wa.me/3406894426" target="_blank" rel="noreferrer">Custom</a>
+    </div>
+    <div class="auth-container">
+      <a href="/login" class="login-button" id="loginButton">Login</a>
+      <a href="/logout" class="logout-button is-hidden" id="logoutButton">Logout</a>
+      <a href="/user" class="icon-link is-hidden" id="profileLink" aria-label="Profilo">
+        <img src="/images/icon.jpg" alt="">
       </a>
-      <!-- Aggiungi il bottone per il menu mobile -->
-      <a href="#" data-target="slide-out" class="sidenav-trigger"><i class="material-icons">menu</i></a>
-
-      <!-- Menu per dispositivi desktop -->
-      <ul id="nav-mobile" class="left hide-on-med-and-down">
-        <li><a href="badges.html">Link 1</a></li>
-        <li><a href="collapsible.html">Link 2</a></li>
-      </ul>
+      <a href="/cart" class="icon-link is-hidden" id="cartLink" aria-label="Carrello">
+        <img src="/images/cart.png" alt="">
+      </a>
     </div>
   </nav>
-</div>
 
-<!-- Menu mobile -->
-<ul id="slide-out" class="sidenav">
-  <li>
-    <div class="user-view">
-      <div class="background blue darken-4"></div>
-      <img src="images/3Dlogo.png" style="max-height: 200px; max-width: 280px; object-fit: contain;">
+  <main>
+    <section class="hero">
+      <div class="hero-content">
+        <p class="eyebrow">Esche artigianali da bass fishing</p>
+        <h1>Costruite a mano. Provate in acqua.</h1>
+        <p class="hero-copy">Jig, chatterbait e softbait con finiture curate, assetti bilanciati e colori scelti per spot reali. Una piccola produzione, pensata per pescatori che guardano i dettagli.</p>
+        <div class="actions">
+          <a class="button button-primary" href="/prodotti">Vedi lo shop</a>
+          <a class="button button-ghost" href="https://wa.me/3406894426" target="_blank">Richiedi un colore custom</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-heading">
+        <h2>Modelli essenziali, costruzione curata.</h2>
+        <p>La vetrina parte dai modelli piu richiesti: jig compatti per cover, chatterbait per acqua velata e softbait da abbinare come trailer. Il catalogo puo crescere senza perdere ordine.</p>
+      </div>
+      <div class="feature-grid">
+        <article class="feature">
+          <img src="/images/b1.jpg" alt="Jig viola artigianale">
+          <div class="feature-body">
+            <h3>Jig</h3>
+            <p>Teste verniciate, skirt selezionati e ami robusti per lavorare vicino agli ostacoli.</p>
+          </div>
+        </article>
+        <article class="feature">
+          <img src="/images/b4.jpg" alt="Chatterbait artigianale">
+          <div class="feature-body">
+            <h3>Chatterbait</h3>
+            <p>Vibrazione presente e profilo compatto per coprire acqua quando serve reazione.</p>
+          </div>
+        </article>
+        <article class="feature">
+          <img src="/images/b8.jpg" alt="Softbait artigianale">
+          <div class="feature-body">
+            <h3>Softbait</h3>
+            <p>Trailer e shad da abbinare per volume, movimento e presentazione piu naturale.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="craft">
+      <div class="craft-inner">
+        <div>
+          <p class="eyebrow">Su misura</p>
+          <h2>Colori e pesi scelti per il tuo modo di pescare.</h2>
+          <p>Il sito puo funzionare come vetrina, ma anche come primo shop. Le richieste personalizzate restano semplici: il cliente vede i modelli, poi puo ordinare o scrivere per varianti specifiche.</p>
+        </div>
+        <div class="craft-list">
+          <div class="craft-item">Skirt e palette selezionati modello per modello</div>
+          <div class="craft-item">Foto prodotto reali, non immagini generiche</div>
+          <div class="craft-item">Catalogo pronto per diventare ecommerce completo</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <span>© 2026 Lure Lab</span>
+      <span>Esche artigianali, piccole serie e richieste custom.</span>
     </div>
-  </li>
-  <li><a href="#!"><i class="material-icons">cloud</i>First Link With Icon</a></li>
-  <li><a href="#!">Second Link</a></li>
-  <li><div class="divider"></div></li>
-  <li><a class="subheader">Lures</a></li>
-  <li><a class="waves-effect" href="#!">Third Link With Waves</a></li>
-  <li class="no-padding">
-    <ul class="collapsible collapsible-accordion">
-      <li>
-        <a class="collapsible-header">Hardbaits<i class="material-icons">arrow_drop_down</i></a>
-        <div class="collapsible-body">
-          <ul>
-            <li><a href="/home">Jig</a></li>
-            <li><a href="#!">Chatterbait</a></li>
-            <li><a href="#!">Spinnerbait</a></li>
-            <li><a href="#!">Crank</a></li>
-          </ul>
-        </div>
-      </li>
-    </ul>
-  </li>
-  <li class="no-padding">
-    <ul class="collapsible collapsible-accordion">
-      <li>
-        <a class="collapsible-header">Softbaits<i class="material-icons">arrow_drop_down</i></a>
-        <div class="collapsible-body">
-          <ul>
-            <li><a href="#!">Worms</a></li>
-            <li><a href="#!">Shad</a></li>
-            <li><a href="#!">Craw</a></li>
-            <li><a href="#!">Creatures</a></li>
-          </ul>
-        </div>
-      </li>
-    </ul>
-  </li>
-</ul>
+  </footer>
+  <script>
+    const loginButton = document.getElementById("loginButton");
+    const profileLink = document.getElementById("profileLink");
+    const cartLink = document.getElementById("cartLink");
+    const logoutButton = document.getElementById("logoutButton");
 
-<!-- Slider full-screen -->
-<div class="slider fullscreen">
-  <ul class="slides">
-    <li>
-      <img src="images/a7resize.jpg" alt="Immagine 1"> <!-- Prima immagine -->
-      <div class="caption center-align">
-        <h3>Benvenuto nel nostro sito!</h3>
-        <h5 class="light grey-text text-lighten-3">Questo è un esempio di slider full-screen.</h5>
-      </div>
-    </li>
-    <li>
-      <img src="images/a10.jpg" alt="Immagine 2"> <!-- Seconda immagine -->
-      <div class="caption left-align">
-        <h3>Scopri di più!</h3>
-        <h5 class="light grey-text text-lighten-3">Questo slider è costruito con Materialize CSS.</h5>
-      </div>
-    </li>
-    <li>
-      <img src="images/a4.jpg" alt="Immagine 3"> <!-- Terza immagine -->
-      <div class="caption right-align">
-        <h3>Esplora il nostro progetto</h3>
-        <h5 class="light grey-text text-lighten-3">Materialize rende facile creare interfacce moderne e responsive.</h5>
-      </div>
-    </li>
-    <li>
-      <img src="images/a6.jpg" alt="Immagine 4"> <!-- Terza immagine -->
-      <div class="caption right-align">
-        <h3>Altolà il sudore!</h3>
-        <h5 class="light grey-text text-lighten-3">Evita di puzzare in palestra.</h5>
-      </div>
-    </li>
-  </ul>
-
-  <div class="fixed-action-btn">
-    <a class="btn-floating btn-large blue darken-3">
-      <i class="fas fa-share-alt"></i>
-    </a>
-    <ul>
-      <li><a class="btn-floating blue" href="https://facebook.com" target="_blank"><i class="fab fa-facebook-f"></i></a></li>
-      <li><a class="btn-floating purple" href="https://instagram.com" target="_blank"><i class="fab fa-instagram"></i></a></li>
-      <li><a class="btn-floating green" href="https://wa.me/3406894426" target="_blank"><i class="fab fa-whatsapp"></i></a></li>
-    </ul>
-  </div>
-</div>
-
-<script>
-    // Inizializza lo slider quando la pagina è pronta
-    $(document).ready(function(){
-      $('.slider').slider();
-      // Inizializza il sidenav per il menu mobile
-      $('.sidenav').sidenav();
-      // Inizializza il collapsible per il dropdown
-      $('.collapsible').collapsible();
-       $('.fixed-action-btn').floatingActionButton({
-    direction: 'up',
-    hoverEnabled: false // Click-only
-  });
-    });
-</script>
-
+    fetch("/auth/check")
+      .then((response) => response.json())
+      .then((isAuthenticated) => {
+        loginButton.classList.toggle("is-hidden", isAuthenticated);
+        profileLink.classList.toggle("is-hidden", !isAuthenticated);
+        cartLink.classList.toggle("is-hidden", !isAuthenticated);
+        logoutButton.classList.toggle("is-hidden", !isAuthenticated);
+      })
+      .catch((error) => console.error("Errore nel recupero dell'autenticazione:", error));
+  </script>
 </body>
 </html>

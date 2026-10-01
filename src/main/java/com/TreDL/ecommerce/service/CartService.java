@@ -47,14 +47,21 @@ public class CartService {
 
     public Cart removeProductToCart(Customers customer, Products product) {
         Cart cart = getCart(customer);
-        cart.getProducts().remove(product);
+        if (cart.getProducts() != null) {
+            cart.getProducts().stream()
+                    .filter(item -> item.getId().equals(product.getId()))
+                    .findFirst()
+                    .ifPresent(item -> cart.getProducts().remove(item));
+        }
         return cartRepository.save(cart);
     }
 
     public void clearCart(Long customerId) {
         Optional<Cart> cart =cartRepository.findByCustomerId(customerId);
-        cart.get().getProducts().clear();
-        cartRepository.save(cart.get());
+        if (cart.isPresent() && cart.get().getProducts() != null) {
+            cart.get().getProducts().clear();
+            cartRepository.save(cart.get());
+        }
     }
 
 

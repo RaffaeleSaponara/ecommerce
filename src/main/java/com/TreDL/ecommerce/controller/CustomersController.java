@@ -3,6 +3,7 @@ package com.TreDL.ecommerce.controller;
 import com.TreDL.ecommerce.model.Customers;
 import com.TreDL.ecommerce.service.CustomersService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -13,6 +14,8 @@ public class CustomersController {
 
     @Autowired
     private CustomersService customersService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
 
     @PostMapping("/signup")
@@ -21,12 +24,11 @@ public class CustomersController {
                        @RequestParam("password") String password,
                        @RequestParam("confirmPassword") String confirmPassword) {
 
-        Customers c = customersService.getByEmail(email);
         if(customersService.getByEmail(email).getEmail() == null){
             if (password.equals(confirmPassword)) {
                 Customers customer = new Customers();
                 customer.setEmail(email);
-                customer.setPassword(password);
+                customer.setPassword(passwordEncoder.encode(password));
                 customer.setUsername(username);
                 customer.setRole("USER");
                 customersService.addCustomer(customer);

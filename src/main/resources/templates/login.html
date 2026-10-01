@@ -1,166 +1,115 @@
 <!DOCTYPE html>
 <html lang="it" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <link rel="stylesheet" href="/css/home.css">
-    <style>
-        .login-container {
-            width: 80%;
-            max-width: 500px;
-            margin: 50px auto;
-            padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .login-container h2 {
-            text-align: center;
-            color: #007bff;
-        }
-
-        .login-container label {
-            font-size: 16px;
-            color: #333;
-            margin-bottom: 10px;
-            display: block;
-        }
-
-        .login-container input[type="text"],
-        .login-container input[type="password"] {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 20px;
-            font-size: 16px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-
-        .login-container button {
-            width: 100%;
-            padding: 12px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .login-container button:hover {
-            background-color: #0056b3;
-        }
-
-        .error-message {
-            color: red;
-            font-size: 14px;
-            text-align: center;
-            margin-top: 10px;
-        }
-
-        .auth-links {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .auth-links a {
-            color: #007bff;
-            text-decoration: none;
-            font-size: 14px;
-        }
-
-        .auth-links a:hover {
-            text-decoration: underline;
-        }
-    </style>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Lure Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/account.css">
 </head>
 <body>
-    <header>
-        Benvenuto nel nostro E-Commerce
-    </header>
-    <nav>
-        <div class="nav-wrapper grey darken-4">
-            <!-- Navbar Left Links -->
-            <ul class="left hide-on-med-and-down">
-                <li><a href="/home">Home</a></li>
-                <li><a href="/prodotti">Prodotti</a></li>
-                <li><a href="#">Offerte</a></li>
-                <li><a href="#">Contatti</a></li>
-            </ul>
+  <nav class="site-nav" aria-label="Navigazione principale">
+    <a class="brand" href="/">
+      <img src="/images/3Dlogo_resize.png" alt="Lure Lab">
+      <span>Lure Lab</span>
+    </a>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/home">Catalogo</a>
+      <a href="/prodotti">Shop</a>
+      <a href="https://wa.me/3406894426" target="_blank">Custom</a>
+    </div>
+    <div class="auth-container">
+      <a href="/login" class="login-button" id="loginButton">Login</a>
+      <a href="/logout" class="logout-button" id="logoutButton" style="display: none;">Logout</a>
+      <a href="/user" class="icon-link" id="profileIcon" style="display: none;" aria-label="Profilo">
+        <img src="/images/icon.jpg" alt="">
+      </a>
+      <a href="/cart" class="icon-link" id="cartIcon" style="display: none;" aria-label="Carrello">
+        <img src="/images/cart.png" alt="">
+      </a>
+    </div>
+  </nav>
+
+  <main>
+    <section class="auth-shell">
+      <div class="auth-intro">
+        <span class="eyebrow">Area clienti</span>
+        <h1>Accedi al tuo spazio Lure Lab.</h1>
+        <p>Gestisci carrello, richieste custom e prossimi ordini da una zona riservata semplice, pensata per chi vuole scegliere le esche con calma.</p>
+        <div class="auth-highlights">
+          <div class="highlight">
+            <strong>Ordini</strong>
+            <span>Il flusso ecommerce e pronto per essere esteso.</span>
+          </div>
+          <div class="highlight">
+            <strong>Custom</strong>
+            <span>Colori e pesi possono diventare richieste guidate.</span>
+          </div>
+          <div class="highlight">
+            <strong>Carrello</strong>
+            <span>Aggiungi modelli e completa una bozza d'ordine.</span>
+          </div>
         </div>
-    </nav>
+      </div>
 
-    <div class="login-container">
-        <h2>Accedi</h2>
-        <!-- Form senza il metodo post, gestito da JS -->
-        <form id="loginForm">
-            <label for="username">Email:</label>
-            <input type="text" name="username" id="username" required>
+      <div class="auth-card">
+        <h2>Login</h2>
+        <p>Usa l'email scelta in registrazione.</p>
+        <form method="post" action="/login">
+          <div class="field">
+            <label for="username">Email</label>
+            <input type="text" name="username" id="username" autocomplete="email" required>
+          </div>
 
-            <label for="password">Password:</label>
-            <input type="password" name="password" id="password" required>
+          <div class="field">
+            <label for="password">Password</label>
+            <input type="password" name="password" id="password" autocomplete="current-password" required>
+          </div>
 
-            <button type="submit">Login</button>
+          <button class="submit-button" type="submit">Accedi</button>
         </form>
 
-        <p id="errorMessage" class="error-message" style="display: none;">Credenziali errate!</p>
+        <p th:if="${param.error}" class="error-message">Credenziali non valide. Controlla email e password.</p>
+        <p th:if="${param.logout}" class="status-message">Logout completato.</p>
 
         <div class="auth-links">
-            <a href="/registrazione">Non hai un account? Registrati</a>
+          Non hai ancora un account? <a href="/registrazione">Registrati</a>
         </div>
-    </div>
+      </div>
+    </section>
+  </main>
 
+  <footer>
+    &copy; 2026 Lure Lab. Tutti i diritti riservati.
+  </footer>
 
-    <footer class="page-footer grey darken-4">
-        <div class="container">
-            <p>&copy; 2025 E-Commerce. Tutti i diritti riservati.</p>
-        </div>
-    </footer>
+  <script>
+    const loginButton = document.getElementById("loginButton");
+    const profileIcon = document.getElementById("profileIcon");
+    const logoutButton = document.getElementById("logoutButton");
+    const cartIcon = document.getElementById("cartIcon");
 
-<script>
-    // Gestione dell'autenticazione
-    const loginForm = document.getElementById("loginForm");
-    const errorMessage = document.getElementById("errorMessage");
-
-    loginForm.addEventListener("submit", function(event) {
-        event.preventDefault(); // Impedisce il normale submit del form
-
-        const payload = {
-            username: document.getElementById('username').value,
-            password: document.getElementById('password').value
-        };
-
-        // Invia la richiesta POST con i dati in JSON
-        fetch("/auth/login", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Credenziali errate!');
-            }
-            return response.text(); // il token JWT
-        })
-        .then(token => {
-            localStorage.setItem('authToken', token);
-            window.location.href = '/home';
-        })
-        .catch(error => {
-            errorMessage.textContent = error.message;
-            errorMessage.style.display = 'block';
-        });
-    });
-
-
-</script>
-
+    fetch("/auth/check")
+      .then(response => response.json())
+      .then(isAuthenticated => {
+        if (isAuthenticated) {
+          localStorage.setItem("isAuthenticated", "true");
+          loginButton.style.display = "none";
+          logoutButton.style.display = "inline-flex";
+          profileIcon.style.display = "inline-flex";
+          cartIcon.style.display = "inline-flex";
+        } else {
+          localStorage.removeItem("isAuthenticated");
+          loginButton.style.display = "inline-flex";
+          logoutButton.style.display = "none";
+          profileIcon.style.display = "none";
+          cartIcon.style.display = "none";
+        }
+      })
+      .catch(error => console.error("Errore nel recupero dell'autenticazione:", error));
+  </script>
 </body>
 </html>
