@@ -52,6 +52,8 @@ public class CartController {
     public Orders checkout(Principal principal) {
         Customers customer= customersService.getByEmail(principal.getName());
         Cart cart = cartService.getCart(customer);
-        return ordersService.createOrder(cart);
+        Orders order = ordersService.createOrder(cart);
+        cartService.clearCart(customer.getId());
+        return order;
     }
 }

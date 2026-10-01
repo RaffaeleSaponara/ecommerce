@@ -3,190 +3,856 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-Commerce</title>
-
-    <!-- jQuery e Materialize -->
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-
+    <title>Lure Lab - Catalogo esche</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* Stile per rendere il menu sovrapposto */
-        #collapsibleSoft, #collapsibleHard {
-            position: absolute;
-            top: 64px;
-            left: 0;
-            background-color: white;
-            z-index: 1000;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            display: none;
-            width: 200px;
-            max-height: calc(100vh - 64px);
-            overflow-y: auto;
+        :root {
+            --ink: #111614;
+            --muted: #68716c;
+            --surface: #f7f5ef;
+            --panel: #ffffff;
+            --line: rgba(17, 22, 20, 0.12);
+            --accent: #d85f2f;
+            --accent-dark: #a6401d;
+            --green: #24483b;
+            --shadow: 0 24px 80px rgba(17, 22, 20, 0.12);
+            --soft-shadow: 0 14px 40px rgba(17, 22, 20, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            min-height: 100%;
+            scrollbar-gutter: stable;
+        }
+
+        body {
             margin: 0;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at 12% 7%, rgba(216, 95, 47, 0.12), transparent 260px),
+                linear-gradient(145deg, rgba(36, 72, 59, 0.1), transparent 42%),
+                var(--surface);
+            font-family: "Inter", Arial, sans-serif;
         }
 
-        #collapsibleSoft li, #collapsibleHard li {
-            border-bottom: 1px solid #ddd;
-        }
-
-        #collapsibleSoft a, #collapsibleHard a {
-            display: block;
-            padding: 10px 15px;
-            color: #333;
+        a {
+            color: inherit;
             text-decoration: none;
         }
 
-        #collapsibleSoft a:hover, #collapsibleHard a:hover {
-            background-color: #f5f5f5;
+        img {
+            display: block;
+            max-width: 100%;
         }
 
-        /* Stile per il carousel ingrandito */
-        .carousel {
-            height: 300px; /* Puoi aumentare o ridurre a piacere */
+        .site-nav {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            display: grid;
+            grid-template-columns: minmax(170px, 1fr) auto minmax(190px, 1fr);
+            align-items: center;
+            gap: 22px;
+            min-height: 82px;
+            padding: 0 max(20px, calc((100% - 1180px) / 2));
+            border-bottom: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.74);
+            backdrop-filter: blur(22px);
+            box-shadow: 0 10px 30px rgba(17, 22, 20, 0.05);
         }
-        .carousel .carousel-item {
-            height: 100%;
-        }
-        .carousel .carousel-item img {
 
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            justify-self: start;
+            font-weight: 800;
+        }
+
+        .brand img {
+            width: 42px;
+            height: 42px;
+            object-fit: contain;
+        }
+
+        .nav-links,
+        .auth-container {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .auth-container {
+            min-width: 190px;
+            justify-self: end;
+            justify-content: flex-end;
+        }
+
+        .nav-links {
+            justify-self: center;
+            justify-content: center;
+        }
+
+        .nav-links a,
+        .button,
+        .icon-link {
+            min-height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 800;
+            transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
+        }
+
+        .nav-links a {
+            min-width: 78px;
+            padding: 0 12px;
+        }
+
+        .nav-links a:hover,
+        .nav-links a[aria-current="page"] {
+            background: rgba(36, 72, 59, 0.1);
+        }
+
+        .button {
+            min-width: 78px;
+            padding: 0 16px;
+            color: #fff;
+            background: linear-gradient(135deg, var(--green), #162a24);
+            box-shadow: 0 10px 26px rgba(36, 72, 59, 0.22);
+        }
+
+        .button-accent {
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            box-shadow: 0 14px 30px rgba(216, 95, 47, 0.22);
+        }
+
+        .button:hover {
+            background: var(--accent-dark);
+        }
+
+        .icon-link {
+            width: 42px;
+            border: 1px solid var(--line);
+            background: #fff;
+        }
+
+        .icon-link img {
+            width: 24px;
+            height: 24px;
+            object-fit: cover;
+        }
+
+        .is-hidden {
+            display: none;
+        }
+
+        main {
+            width: min(1180px, calc(100% - 32px));
+            margin: 0 auto;
+        }
+
+        .catalog-hero {
+            min-height: calc(100vh - 82px);
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            gap: 28px;
+            align-items: end;
+            padding: 56px 0 36px;
+        }
+
+        .hero-copy {
+            max-width: 720px;
+        }
+
+        .eyebrow,
+        .section-label,
+        .spec-label {
+            color: var(--accent-dark);
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        h1,
+        h2,
+        h3,
+        p {
+            margin-top: 0;
+        }
+
+        h1 {
+            margin-bottom: 14px;
+            font-size: clamp(40px, 7vw, 66px);
+            line-height: 0.98;
+            letter-spacing: 0;
+        }
+
+        .hero-copy p {
+            max-width: 650px;
+            color: var(--muted);
+            font-size: 18px;
+            line-height: 1.58;
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 22px;
+        }
+
+        .hero-media {
+            position: relative;
+            overflow: hidden;
+            min-height: 420px;
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: var(--shadow);
+        }
+
+        .hero-media img {
             width: 100%;
             height: 100%;
-            object-fit: contain; /* Mostra tutta l'immagine senza tagliarla */
+            min-height: 420px;
+            object-fit: cover;
+        }
+
+        .hero-note {
+            position: absolute;
+            right: 16px;
+            bottom: 16px;
+            max-width: 270px;
+            padding: 14px 16px;
+            border-radius: 8px;
+            color: #fff;
+            background: rgba(17, 22, 20, 0.78);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 16px 34px rgba(0, 0, 0, 0.2);
+        }
+
+        .hero-note strong {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        .hero-note span {
+            color: rgba(255, 255, 255, 0.76);
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .catalog-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            min-height: 88px;
+            padding: 18px 0;
+            border-top: 1px solid var(--line);
+            border-bottom: 1px solid var(--line);
+        }
+
+        .catalog-toolbar h2 {
+            margin: 4px 0 0;
+            font-size: clamp(28px, 5vw, 48px);
+            line-height: 1;
+        }
+
+        .filter-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .filter-button {
+            min-height: 40px;
+            padding: 0 14px;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            color: var(--ink);
+            background: #fff;
+            cursor: pointer;
+            font: inherit;
+            font-size: 14px;
+            font-weight: 800;
+            transition: transform 160ms ease, background 160ms ease, color 160ms ease;
+        }
+
+        .filter-button[aria-pressed="true"] {
+            color: #fff;
+            border-color: var(--green);
+            background: var(--green);
+        }
+
+        .feature-gallery {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            gap: 18px;
+            padding: 34px 0 42px;
+        }
+
+        .featured-lure {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            overflow: hidden;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.84);
+            box-shadow: var(--soft-shadow);
+            backdrop-filter: blur(16px);
+            transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+        }
+
+        .featured-lure[hidden] {
+            display: none;
+        }
+
+        .lure-media {
+            min-height: 320px;
+            background: #fff;
+            overflow: hidden;
+        }
+
+        .lure-media img {
+            width: 100%;
+            height: 100%;
+            min-height: 320px;
+            object-fit: contain;
+            padding: 18px;
+            transition: transform 320ms ease;
+        }
+
+        .lure-copy {
+            display: flex;
+            flex-direction: column;
+            padding: 26px;
+        }
+
+        .lure-copy h3 {
+            margin-bottom: 12px;
+            font-size: 28px;
+            line-height: 1.05;
+        }
+
+        .lure-copy p {
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        .spec-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: auto;
+            padding-top: 20px;
+        }
+
+        .spec {
+            min-height: 86px;
+            padding: 14px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: rgba(250, 249, 245, 0.82);
+        }
+
+        .spec strong {
+            display: block;
+            margin-top: 6px;
+            font-size: 16px;
+        }
+
+        .range-section {
+            padding: 34px 0 72px;
+        }
+
+        .range-head {
+            display: grid;
+            gap: 14px;
+            margin-bottom: 22px;
+        }
+
+        .range-head h2 {
+            margin-bottom: 0;
+            font-size: clamp(34px, 6vw, 62px);
+            line-height: 0.98;
+        }
+
+        .range-head p {
+            max-width: 680px;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        .range-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .range-card {
+            overflow: hidden;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset;
+            transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+        }
+
+        .range-card img {
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            object-fit: cover;
+            background: #fff;
+            transition: transform 320ms ease;
+        }
+
+        .range-card div {
+            padding: 16px;
+        }
+
+        .range-card h3 {
+            margin-bottom: 8px;
+            font-size: 18px;
+        }
+
+        .range-card p {
+            margin-bottom: 0;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .build-strip {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            gap: 18px;
+            align-items: center;
+            margin-bottom: 76px;
+            padding: 28px;
+            border-radius: 8px;
+            color: #fff;
+            background: var(--ink);
+            box-shadow: var(--shadow);
+        }
+
+        .nav-links a:hover,
+        .button:hover,
+        .icon-link:hover,
+        .filter-button:hover {
+            transform: translateY(-1px);
+        }
+
+        .featured-lure:hover,
+        .range-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(216, 95, 47, 0.26);
+            box-shadow: var(--shadow);
+        }
+
+        .featured-lure:hover .lure-media img,
+        .range-card:hover img {
+            transform: scale(1.035);
+        }
+
+        .build-strip h2 {
+            margin-bottom: 8px;
+            font-size: clamp(28px, 5vw, 46px);
+            line-height: 1;
+        }
+
+        .build-strip p {
+            margin-bottom: 0;
+            color: rgba(255, 255, 255, 0.72);
+            line-height: 1.7;
+        }
+
+        footer {
+            padding: 28px 16px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.72);
+            background: #111614;
+            font-size: 14px;
+        }
+
+        @media (max-width: 860px) {
+            .site-nav {
+                grid-template-columns: 1fr;
+                gap: 10px;
+                padding-top: 14px;
+                padding-bottom: 14px;
+            }
+
+            .nav-links,
+            .auth-container {
+                justify-content: flex-start;
+                flex-wrap: wrap;
+            }
+
+            .auth-container {
+                min-width: 0;
+                justify-self: start;
+            }
+
+            .catalog-toolbar {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .filter-row {
+                justify-content: flex-start;
+            }
+
+            .range-grid,
+            .spec-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-note {
+                left: 14px;
+                right: 14px;
+                max-width: none;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .site-nav {
+                min-height: 82px;
+            }
+
+            .catalog-hero {
+                min-height: 640px;
+                grid-template-columns: minmax(500px, 0.96fr) minmax(500px, 1.04fr);
+                gap: 52px;
+                padding: 42px 0 42px;
+            }
+
+            .hero-copy {
+                align-self: center;
+            }
+
+            .hero-media,
+            .hero-media img {
+                min-height: 500px;
+            }
+
+            .catalog-toolbar {
+                position: sticky;
+                top: 82px;
+                z-index: 10;
+                background: rgba(247, 245, 239, 0.94);
+                backdrop-filter: blur(16px);
+            }
+
+            .feature-gallery {
+                gap: 22px;
+                padding-top: 42px;
+            }
+
+            .featured-lure {
+                grid-template-columns: minmax(520px, 1.15fr) minmax(380px, 0.85fr);
+            }
+
+            .featured-lure:nth-child(even) .lure-media {
+                order: 2;
+            }
+
+            .lure-media,
+            .lure-media img {
+                min-height: 520px;
+            }
+
+            .lure-media img {
+                padding: 32px;
+            }
+
+            .lure-copy {
+                padding: 42px;
+            }
+
+            .lure-copy h3 {
+                font-size: 42px;
+            }
+
+            .range-head {
+                grid-template-columns: 0.8fr 1fr;
+                align-items: end;
+            }
+
+            .range-head p {
+                justify-self: end;
+                margin-bottom: 6px;
+            }
+
+            .range-grid {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+
+            .build-strip {
+                grid-template-columns: 1fr auto;
+                padding: 36px 42px;
+            }
         }
     </style>
 </head>
 <body>
-<div class="navbar-fixed">
-    <nav>
-        <div class="nav-wrapper blue darken-3">
-            <a href="/" class="brand-logo right">
-                <img src="images/3Dlogo.png" alt="Logo" style="max-height: 64px; object-fit: contain;">
-            </a>
-            <!-- Aggiungi il bottone per il menu mobile -->
-            <a href="#" data-target="slide-out" class="sidenav-trigger"><i class="material-icons">menu</i></a>
-
-            <!-- Menu per dispositivi desktop -->
-            <ul id="nav-mobile" class="left hide-on-med-and-down">
-                <li><a href="badges.html">Link 1</a></li>
-                <li><a href="collapsible.html">Link 2</a></li>
-            </ul>
-        </div>
-    </nav>
-</div>
-
-<!-- Menu mobile -->
-<ul id="slide-out" class="sidenav">
-    <li>
-        <div class="user-view">
-            <div class="background blue darken-4"></div>
-            <img src="images/3Dlogo.png" style="max-height: 200px; max-width: 280px; object-fit: contain;">
-        </div>
-    </li>
-    <li><a href="#!"><i class="material-icons">cloud</i>First Link With Icon</a></li>
-    <li><a href="#!">Second Link</a></li>
-    <li><div class="divider"></div></li>
-    <li><a class="subheader">Lures</a></li>
-    <li><a class="waves-effect" href="#!">Third Link With Waves</a></li>
-    <li class="no-padding">
-        <ul class="collapsible collapsible-accordion">
-            <li>
-                <a class="collapsible-header">Hardbaits<i class="material-icons">arrow_drop_down</i></a>
-                <div class="collapsible-body">
-                    <ul>
-                        <li><a href="/home">Jig</a></li>
-                        <li><a href="#!">Chatterbait</a></li>
-                        <li><a href="#!">Spinnerbait</a></li>
-                        <li><a href="#!">Crank</a></li>
-                    </ul>
-                </div>
-            </li>
-        </ul>
-    </li>
-    <li class="no-padding">
-        <ul class="collapsible collapsible-accordion">
-            <li>
-                <a class="collapsible-header">Softbaits<i class="material-icons">arrow_drop_down</i></a>
-                <div class="collapsible-body">
-                    <ul>
-                        <li><a href="#!">Worms</a></li>
-                        <li><a href="#!">Shad</a></li>
-                        <li><a href="#!">Craw</a></li>
-                        <li><a href="#!">Creatures</a></li>
-                    </ul>
-                </div>
-            </li>
-        </ul>
-    </li>
-</ul>
-
-<div class="parallax-container">
-    <div class="parallax"><img src="images/a12.jpg"></div>
-</div>
-<div class="section white">
-    <div class="row container">
-        <h2 class="header center-align">Jig</h2>
-        <p class="grey-text text-darken-3 lighten-3 center-align">
-            Il jig è composto da una testa piombata (spesso colorata o con una finitura che imita una preda)
-            e da una gonna in silicone o gomma che crea movimento in acqua. Spesso al jig si aggiunge un trailer,
-            cioè una softbait tipo craw (gambero) o shad, per renderlo ancora più realistico
-        </p>
-        <div class="carousel">
-            <a class="carousel-item" href="#one!"><img src="images/b1.jpg"></a>
-            <a class="carousel-item" href="#two!"><img src="images/b2.jpg"></a>
-            <a class="carousel-item" href="#three!"><img src="images/b3.jpg"></a>
-            <a class="carousel-item" href="#four!"><img src="images/b4.jpg"></a>
-            <a class="carousel-item" href="#five!"><img src="images/b5.jpg"></a>
-            <a class="carousel-item" href="#one!"><img src="images/b6.jpg"></a>
-            <a class="carousel-item" href="#two!"><img src="images/b7.jpg"></a>
-            <a class="carousel-item" href="#three!"><img src="images/b8.jpg"></a>
-            <a class="carousel-item" href="#four!"><img src="images/b9.jpg"></a>
-            <a class="carousel-item" href="#five!"><img src="images/b10.jpg"></a>
-        </div>
+<nav class="site-nav">
+    <a class="brand" href="/">
+        <img src="/images/3Dlogo_resize.png" alt="Lure Lab">
+        <span>Lure Lab</span>
+    </a>
+    <div class="nav-links" aria-label="Navigazione principale">
+        <a href="/">Home</a>
+        <a href="/home" aria-current="page">Catalogo</a>
+        <a href="/prodotti">Shop</a>
+        <a href="https://wa.me/3406894426" target="_blank" rel="noreferrer">Custom</a>
     </div>
-</div>
-<div class="parallax-container">
-    <div class="parallax"><img src="images/a1.jpg"></div>
-</div>
+    <div class="auth-container">
+        <a class="button" href="/login" id="loginButton">Login</a>
+        <a class="button is-hidden" href="/logout" id="logoutButton">Logout</a>
+        <a class="icon-link is-hidden" href="/user" id="profileIcon" aria-label="Profilo">
+            <img src="/images/icon.jpg" alt="">
+        </a>
+        <a class="icon-link is-hidden" href="/cart" id="cartIcon" aria-label="Carrello">
+            <img src="/images/cart.png" alt="">
+        </a>
+    </div>
+</nav>
 
-<footer class="page-footer blue darken-3">
-    <div class="container">
-        <div class="row">
-            <div class="col l6 s12">
-                <h5 class="white-text">Footer Content</h5>
-                <p class="grey-text text-lighten-4">You can use rows and columns here to organize your footer content.</p>
-            </div>
-            <div class="col l4 offset-l2 s12">
-                <h5 class="white-text">Links</h5>
-                <ul>
-                    <li><a class="grey-text text-lighten-3" href="#!">Link 1</a></li>
-                    <li><a class="grey-text text-lighten-3" href="#!">Link 2</a></li>
-                    <li><a class="grey-text text-lighten-3" href="#!">Link 3</a></li>
-                    <li><a class="grey-text text-lighten-3" href="#!">Link 4</a></li>
-                </ul>
+<main>
+    <section class="catalog-hero">
+        <div class="hero-copy">
+            <span class="eyebrow">Catalogo artigianale</span>
+            <h1>Esche costruite per lavorare davvero in acqua.</h1>
+            <p>
+                Jig, chatterbait e profili soft selezionati per pesi, colori e movimento. Una vetrina ordinata
+                delle lavorazioni disponibili, pensata per scegliere l'esca giusta prima di passare allo shop
+                o chiedere una configurazione su misura.
+            </p>
+            <div class="hero-actions">
+                <a class="button button-accent" href="/prodotti">Vai allo shop</a>
+                <a class="button" href="https://wa.me/3406894426" target="_blank" rel="noreferrer">Richiedi custom</a>
             </div>
         </div>
-    </div>
-    <div class="footer-copyright">
-        <div class="container">
-            © 2014 Copyright Text
-            <a class="grey-text text-lighten-4 right" href="#!">More Links</a>
+        <div class="hero-media">
+            <img src="/images/a12.jpg" alt="Esche artigianali Lure Lab pronte per la pesca">
+            <div class="hero-note">
+                <strong>Assemblaggio manuale</strong>
+                <span>Skirt, testine, trailer e palette vengono scelti in base allo spot e alla stagione.</span>
+            </div>
         </div>
-    </div>
+    </section>
+
+    <section class="catalog-toolbar" aria-label="Filtri catalogo">
+        <div>
+            <span class="section-label">Selezione</span>
+            <h2>Famiglie di esche</h2>
+        </div>
+        <div class="filter-row">
+            <button class="filter-button" type="button" data-filter="all" aria-pressed="true">Tutte</button>
+            <button class="filter-button" type="button" data-filter="jig" aria-pressed="false">Jig</button>
+            <button class="filter-button" type="button" data-filter="moving" aria-pressed="false">Moving bait</button>
+            <button class="filter-button" type="button" data-filter="soft" aria-pressed="false">Soft bait</button>
+        </div>
+    </section>
+
+    <section class="feature-gallery" aria-label="Esche in evidenza">
+        <article class="featured-lure" data-family="jig">
+            <div class="lure-media">
+                <img src="/images/b1.jpg" alt="Jig natural craw">
+            </div>
+            <div class="lure-copy">
+                <span class="section-label">Jig</span>
+                <h3>Natural Craw</h3>
+                <p>
+                    Profilo compatto, skirt naturale e testa pensata per entrare bene tra cover leggere,
+                    sassi e rami sommersi. Una scelta pulita quando serve presentare l'esca con precisione.
+                </p>
+                <div class="spec-grid">
+                    <div class="spec">
+                        <span class="spec-label">Assetto</span>
+                        <strong>Bottom contact</strong>
+                    </div>
+                    <div class="spec">
+                        <span class="spec-label">Spot</span>
+                        <strong>Cover e fondale</strong>
+                    </div>
+                    <div class="spec">
+                        <span class="spec-label">Colori</span>
+                        <strong>Green pumpkin</strong>
+                    </div>
+                    <div class="spec">
+                        <span class="spec-label">Custom</span>
+                        <strong>Peso e trailer</strong>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="featured-lure" data-family="moving">
+            <div class="lure-media">
+                <img src="/images/b4.jpg" alt="Chatterbait dark flash">
+            </div>
+            <div class="lure-copy">
+                <span class="section-label">Moving bait</span>
+                <h3>Dark Flash</h3>
+                <p>
+                    Vibrazione evidente, profilo scuro e lampi controllati per acqua velata, giornate coperte
+                    e recuperi costanti vicino a erba o strutture.
+                </p>
+                <div class="spec-grid">
+                    <div class="spec">
+                        <span class="spec-label">Azione</span>
+                        <strong>Vibrazione forte</strong>
+                    </div>
+                    <div class="spec">
+                        <span class="spec-label">Acqua</span>
+                        <strong>Velata o bassa luce</strong>
+                    </div>
+                    <div class="spec">
+                        <span class="spec-label">Recupero</span>
+                        <strong>Lineare e stop</strong>
+                    </div>
+                    <div class="spec">
+                        <span class="spec-label">Custom</span>
+                        <strong>Palette e skirt</strong>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="featured-lure" data-family="soft">
+            <div class="lure-media">
+                <img src="/images/b8.jpg" alt="Soft shad pearl">
+            </div>
+            <div class="lure-copy">
+                <span class="section-label">Soft bait</span>
+                <h3>Pearl Shad</h3>
+                <p>
+                    Corpo morbido e finitura chiara per imitare foraggio minuto. Funziona bene come trailer,
+                    su testina leggera o quando serve una presentazione meno invasiva.
+                </p>
+                <div class="spec-grid">
+                    <div class="spec">
+                        <span class="spec-label">Uso</span>
+                        <strong>Trailer o finesse</strong>
+                    </div>
+                    <div class="spec">
+                        <span class="spec-label">Profilo</span>
+                        <strong>Pesce foraggio</strong>
+                    </div>
+                    <div class="spec">
+                        <span class="spec-label">Acqua</span>
+                        <strong>Chiara o pressata</strong>
+                    </div>
+                    <div class="spec">
+                        <span class="spec-label">Custom</span>
+                        <strong>Colore e misura</strong>
+                    </div>
+                </div>
+            </div>
+        </article>
+    </section>
+
+    <section class="range-section">
+        <div class="range-head">
+            <div>
+                <span class="section-label">Dettagli disponibili</span>
+                <h2>Colorazioni e finiture</h2>
+            </div>
+            <p>
+                Il catalogo serve anche come base per richieste personalizzate: si parte da una famiglia di esche,
+                poi si lavora su peso, colore, skirt, trailer e condizioni di pesca.
+            </p>
+        </div>
+        <div class="range-grid">
+            <article class="range-card">
+                <img src="/images/b2.jpg" alt="Jig verde naturale">
+                <div>
+                    <h3>Natural tones</h3>
+                    <p>Colori discreti per acqua chiara, pesce sospettoso e presentazioni lente.</p>
+                </div>
+            </article>
+            <article class="range-card">
+                <img src="/images/b5.jpg" alt="Esca con dettagli scuri">
+                <div>
+                    <h3>Dark contrast</h3>
+                    <p>Profili leggibili in acqua velata, ombra, cover e giornate con poca luce.</p>
+                </div>
+            </article>
+            <article class="range-card">
+                <img src="/images/b7.jpg" alt="Esca artigianale con skirt siliconico">
+                <div>
+                    <h3>Skirt mix</h3>
+                    <p>Abbinamenti siliconici per volume, movimento e ritmo durante recuperi diversi.</p>
+                </div>
+            </article>
+            <article class="range-card">
+                <img src="/images/b10.jpg" alt="Esca custom pronta">
+                <div>
+                    <h3>Custom build</h3>
+                    <p>Configurazioni su richiesta in base a spot, profondita e stagione.</p>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <section class="build-strip">
+        <div>
+            <h2>Hai gia uno spot in mente?</h2>
+            <p>Scrivi che tipo di acqua peschi, profondita e foraggio: si parte da li per costruire l'esca.</p>
+        </div>
+        <a class="button button-accent" href="https://wa.me/3406894426" target="_blank" rel="noreferrer">Parla su WhatsApp</a>
+    </section>
+</main>
+
+<footer>
+    © 2026 Lure Lab - Catalogo esche artigianali
 </footer>
 
 <script>
-$(document).ready(function(){
-    $('.parallax').parallax();
-    $('.carousel').carousel();
-      // Inizializza il sidenav per il menu mobile
-      $('.sidenav').sidenav();
-      // Inizializza il collapsible per il dropdown
-      $('.collapsible').collapsible();
-});
+    const loginButton = document.getElementById("loginButton");
+    const logoutButton = document.getElementById("logoutButton");
+    const profileIcon = document.getElementById("profileIcon");
+    const cartIcon = document.getElementById("cartIcon");
 
+    fetch("/auth/check")
+        .then((response) => response.json())
+        .then((isAuthenticated) => {
+            loginButton.classList.toggle("is-hidden", isAuthenticated);
+            logoutButton.classList.toggle("is-hidden", !isAuthenticated);
+            profileIcon.classList.toggle("is-hidden", !isAuthenticated);
+            cartIcon.classList.toggle("is-hidden", !isAuthenticated);
+        })
+        .catch((error) => console.error("Errore nel recupero dell'autenticazione:", error));
 
+    const filterButtons = document.querySelectorAll(".filter-button");
+    const lureCards = document.querySelectorAll(".featured-lure");
+
+    filterButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+            const activeFilter = button.dataset.filter;
+
+            filterButtons.forEach((item) => {
+                item.setAttribute("aria-pressed", String(item === button));
+            });
+
+            lureCards.forEach((card) => {
+                card.hidden = activeFilter !== "all" && card.dataset.family !== activeFilter;
+            });
+        });
+    });
 </script>
 </body>
 </html>

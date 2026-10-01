@@ -20,6 +20,6 @@ public class ProductsService {
     }
 
     public Products getById(Long id) {
-        return productRepository.findById(id).isPresent() ? productRepository.findById(id).get() : new Products();
+        return productRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Product not found: " + id));
     }
 }

@@ -18,6 +18,9 @@ public class OrdersService {
     @Autowired
     private OrdersRepository ordersRepository;
     public Orders createOrder(Cart cart) {
+        if (cart.getProducts() == null || cart.getProducts().isEmpty()) {
+            throw new IllegalStateException("Cart is empty");
+        }
 
         double total=0;
 

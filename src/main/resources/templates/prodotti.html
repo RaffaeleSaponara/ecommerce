@@ -3,129 +3,158 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Prodotti - E-Commerce</title>
+  <title>Shop - Lure Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" th:href="@{/css/prodotti.css}">
 </head>
 <body>
-<div class="container">
-  <header>
-    Benvenuto nella sezione Prodotti
-  </header>
-  <nav>
-    <div>
-      <a href="/home">Home</a>
-      <a href="/prodotti">Prodotti</a>
-      <a href="#">Offerte</a>
-      <a href="#">Contatti</a>
+  <nav class="site-nav" aria-label="Navigazione principale">
+    <a class="brand" href="/">
+      <img src="/images/3Dlogo_resize.png" alt="Lure Lab">
+      <span>Lure Lab</span>
+    </a>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/home">Catalogo</a>
+      <a href="/prodotti" aria-current="page">Shop</a>
+      <a href="https://wa.me/3406894426" target="_blank">Custom</a>
     </div>
     <div class="auth-container">
       <a href="/login" class="login-button" id="loginButton">Login</a>
       <a href="/logout" class="logout-button" id="logoutButton" style="display: none;">Logout</a>
-      <div class="profile-icon" id="profileIcon" style="display: none;">
-        <a href="/user"><img src="/images/icon.jpg" alt="Profilo"></a>
-      </div>
-      <div class="cart-icon" id="cartIcon" style="display: none;">
-        <a href="/cart"><img src="/images/cart.png" alt="Cart"></a>
-      </div>
+      <a href="/user" class="icon-link" id="profileIcon" style="display: none;" aria-label="Profilo">
+        <img src="/images/icon.jpg" alt="">
+      </a>
+      <a href="/cart" class="icon-link" id="cartIcon" style="display: none;" aria-label="Carrello">
+        <img src="/images/cart.png" alt="">
+      </a>
     </div>
   </nav>
-    <div class="products">
 
-    </div>
-  </div>
-</div>
-<footer>
-  &copy; 2025 E-Commerce. Tutti i diritti riservati.
-</footer>
-<script>
+  <main>
+    <section class="shop-hero">
+      <div>
+        <p class="eyebrow">Shop</p>
+        <h1>Esche pronte e basi custom.</h1>
+      </div>
+      <p>Una selezione iniziale per provare il flusso ecommerce: prodotti reali, immagini pulite e carrello funzionante. Prezzi e disponibilita si possono rifinire quando hai il catalogo definitivo.</p>
+    </section>
+
+    <section class="shop-toolbar" aria-label="Informazioni catalogo">
+      <div>
+        <span class="toolbar-label">Catalogo attivo</span>
+        <strong>Hardbaits e softbaits</strong>
+      </div>
+      <a class="contact-link" href="https://wa.me/3406894426" target="_blank">Chiedi una variante</a>
+    </section>
+
+    <section class="products" aria-live="polite"></section>
+  </main>
+
+  <footer>
+    &copy; 2026 Lure Lab. Tutti i diritti riservati.
+  </footer>
+
+  <script>
     document.addEventListener("DOMContentLoaded", function() {
-        const loginButton = document.getElementById("loginButton");
-        const profileIcon = document.getElementById("profileIcon");
-        const logoutButton = document.getElementById("logoutButton");
+      const loginButton = document.getElementById("loginButton");
+      const profileIcon = document.getElementById("profileIcon");
+      const logoutButton = document.getElementById("logoutButton");
+      const cartIcon = document.getElementById("cartIcon");
 
-        fetch("/auth/check")
-            .then(response => response.json())
-            .then(isAuthenticated => {
-                if (isAuthenticated) {
-                    localStorage.setItem("isAuthenticated", "true");
-                    loginButton.style.display = "none";
-                    logoutButton.style.display = "block";
-                    profileIcon.style.display = "block";
-                    cartIcon.style.display = "block";
-                } else {
-                    localStorage.removeItem("isAuthenticated");
-                    loginButton.style.display = "block";
-                    logoutButton.style.display = "none";
-                    profileIcon.style.display = "none";
-                    cartIcon.style.display = "none";
-                }
-            })
-            .catch(error => console.error("Errore nel recupero dell'autenticazione:", error));
+      fetch("/auth/check")
+        .then(response => response.json())
+        .then(isAuthenticated => {
+          if (isAuthenticated) {
+            localStorage.setItem("isAuthenticated", "true");
+            loginButton.style.display = "none";
+            logoutButton.style.display = "inline-flex";
+            profileIcon.style.display = "inline-flex";
+            cartIcon.style.display = "inline-flex";
+          } else {
+            localStorage.removeItem("isAuthenticated");
+            loginButton.style.display = "inline-flex";
+            logoutButton.style.display = "none";
+            profileIcon.style.display = "none";
+            cartIcon.style.display = "none";
+          }
+        })
+        .catch(error => console.error("Errore nel recupero dell'autenticazione:", error));
     });
-</script>
-<script>
+  </script>
+  <script>
     class Prodotto {
-        constructor(id, nome, descrizione, prezzo, image) {
-            this.id = id;
-            this.nome = nome;
-            this.descrizione = descrizione;
-            this.prezzo = prezzo;
-            this.image = image;
-        }
+      constructor(id, nome, descrizione, prezzo, categoria, image) {
+        this.id = id;
+        this.nome = nome;
+        this.descrizione = descrizione;
+        this.prezzo = prezzo;
+        this.categoria = categoria;
+        this.image = image;
+      }
     }
 
     document.addEventListener("DOMContentLoaded", function() {
-    fetch("/prodotti/all")
-        .then(response => response.json()) // Converte la risposta in JSON
+      fetch("/prodotti/all")
+        .then(response => response.json())
         .then(prodottiData => {
-            const prodottiContainer = document.querySelector(".products");
-            prodottiContainer.innerHTML = ""; // Svuota il contenitore
+          const prodottiContainer = document.querySelector(".products");
+          prodottiContainer.innerHTML = "";
 
-            // Converte ogni oggetto JSON in una istanza di Prodotto
-            const prodotti = prodottiData.map(p => new Prodotto(p.id, p.nome, p.descrizione, p.prezzo, p.image));
+          const prodotti = prodottiData.map(p => new Prodotto(p.id, p.nome, p.descrizione, p.prezzo, p.categoria, p.image));
 
-            prodotti.forEach(prodotto => {
-                const prodottoDiv = document.createElement("div");
-                prodottoDiv.classList.add("product");
+          prodotti.forEach(prodotto => {
+            const prodottoDiv = document.createElement("article");
+            prodottoDiv.classList.add("product");
 
-                prodottoDiv.innerHTML = `
-                    <img src="${prodotto.image}" alt="${prodotto.nome}">
-                    <h3>${prodotto.nome}</h3>
-                    <p>${prodotto.descrizione}</p>
-                    <p class="price">€${prodotto.prezzo}</p>
-                    <button class="add-to-cart" data-id="${prodotto.id}">Aggiungi al carrello</button>
-                `;
-                // Aggiungi l'evento di clic per aggiungere al carrello
-                const button = prodottoDiv.querySelector(".add-to-cart");
-                button.addEventListener("click", function() {
-                    aggiungiAlCarrello(prodotto.id);
-                });
-                prodottiContainer.appendChild(prodottoDiv);
+            prodottoDiv.innerHTML = `
+              <div class="product-media">
+                <img src="${prodotto.image}" alt="${prodotto.nome}">
+              </div>
+              <div class="product-body">
+                <span class="category">${prodotto.categoria}</span>
+                <h2>${prodotto.nome}</h2>
+                <p>${prodotto.descrizione}</p>
+                <div class="product-footer">
+                  <strong class="price">€${Number(prodotto.prezzo).toFixed(2)}</strong>
+                  <button class="add-to-cart" data-id="${prodotto.id}">Aggiungi</button>
+                </div>
+              </div>
+            `;
+
+            const button = prodottoDiv.querySelector(".add-to-cart");
+            button.addEventListener("click", function() {
+              aggiungiAlCarrello(prodotto.id, button);
             });
+            prodottiContainer.appendChild(prodottoDiv);
+          });
         })
         .catch(error => console.error("Errore nel recupero dei prodotti:", error));
-});
+    });
 
-    // Funzione per aggiungere il prodotto al carrello
-    function aggiungiAlCarrello(prodotto) {
-        fetch("/cart/add", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(prodotto) // Converte l'oggetto prodotto in JSON
-        })
-        .then(response => {
-            if (response.ok) {
-                alert("Prodotto aggiunto al carrello!");
-            } else {
-                alert("Errore nell'aggiungere il prodotto al carrello.");
-            }
-        })
-        .catch(error => console.error("Errore nella chiamata al backend:", error));
+    function aggiungiAlCarrello(prodotto, button) {
+      fetch("/cart/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(prodotto)
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("Errore nell'aggiungere il prodotto al carrello.");
+        }
+        button.textContent = "Aggiunto";
+        setTimeout(() => button.textContent = "Aggiungi", 1400);
+      })
+      .catch(error => {
+        console.error("Errore nella chiamata al backend:", error);
+        button.textContent = "Login richiesto";
+        setTimeout(() => button.textContent = "Aggiungi", 1600);
+      });
     }
-</script>
-
-
+  </script>
 </body>
 </html>
