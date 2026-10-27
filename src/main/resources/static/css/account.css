@@ -671,3 +671,18 @@ footer {
     position: static;
   }
 }
+
+/* The checkout checkbox must not inherit the dimensions of text fields. */
+#checkoutForm input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  margin: 0 8px 0 0;
+  vertical-align: middle;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+#checkoutForm input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}

@@ -85,52 +85,47 @@
     });
   </script>
   <script>
-    class Prodotto {
-      constructor(id, nome, descrizione, prezzo, categoria, image) {
-        this.id = id;
-        this.nome = nome;
-        this.descrizione = descrizione;
-        this.prezzo = prezzo;
-        this.categoria = categoria;
-        this.image = image;
-      }
+    function catalogElement(tag, className, text) {
+      const element = document.createElement(tag);
+      element.className = className;
+      if (text !== undefined) element.textContent = text;
+      return element;
     }
-
+    function renderCatalog(products) {
+      const container = document.querySelector(".products");
+      container.replaceChildren();
+      products.forEach(product => {
+        const article = catalogElement("article", "product");
+        const media = catalogElement("div", "product-media");
+        const image = catalogElement("img", "");
+        image.src = /^\/images\/[a-zA-Z0-9_/-]+\.(?:png|jpe?g|webp|gif|avif)$/i.test(String(product.image))
+          ? product.image : "/images/b1.jpg";
+        image.alt = product.nome;
+        media.appendChild(image);
+        article.appendChild(media);
+        const body = catalogElement("div", "product-body");
+        body.appendChild(catalogElement("span", "category", product.categoria));
+        body.appendChild(catalogElement("h2", "", product.nome));
+        body.appendChild(catalogElement("p", "", product.descrizione));
+        const footer = catalogElement("div", "product-footer");
+        footer.appendChild(catalogElement("strong", "price", "\u20ac" + Number(product.prezzo).toFixed(2)));
+        const button = catalogElement("button", "add-to-cart", "Aggiungi");
+        button.type = "button";
+        button.dataset.id = String(product.id);
+        button.addEventListener("click", () => aggiungiAlCarrello(product.id, button));
+        footer.appendChild(button);
+        body.appendChild(footer);
+        article.appendChild(body);
+        container.appendChild(article);
+      });
+    }
     document.addEventListener("DOMContentLoaded", function() {
       fetch("/prodotti/all")
-        .then(response => response.json())
-        .then(prodottiData => {
-          const prodottiContainer = document.querySelector(".products");
-          prodottiContainer.innerHTML = "";
-
-          const prodotti = prodottiData.map(p => new Prodotto(p.id, p.nome, p.descrizione, p.prezzo, p.categoria, p.image));
-
-          prodotti.forEach(prodotto => {
-            const prodottoDiv = document.createElement("article");
-            prodottoDiv.classList.add("product");
-
-            prodottoDiv.innerHTML = `
-              <div class="product-media">
-                <img src="${prodotto.image}" alt="${prodotto.nome}">
-              </div>
-              <div class="product-body">
-                <span class="category">${prodotto.categoria}</span>
-                <h2>${prodotto.nome}</h2>
-                <p>${prodotto.descrizione}</p>
-                <div class="product-footer">
-                  <strong class="price">€${Number(prodotto.prezzo).toFixed(2)}</strong>
-                  <button class="add-to-cart" data-id="${prodotto.id}">Aggiungi</button>
-                </div>
-              </div>
-            `;
-
-            const button = prodottoDiv.querySelector(".add-to-cart");
-            button.addEventListener("click", function() {
-              aggiungiAlCarrello(prodotto.id, button);
-            });
-            prodottiContainer.appendChild(prodottoDiv);
-          });
+        .then(response => {
+          if (!response.ok) throw new Error("Errore nel recupero dei prodotti");
+          return response.json();
         })
+        .then(renderCatalog)
         .catch(error => console.error("Errore nel recupero dei prodotti:", error));
     });
 

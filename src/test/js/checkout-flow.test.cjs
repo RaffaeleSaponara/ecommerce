@@ -8,7 +8,11 @@ const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
 const quote = { quoteToken: 'signed.exact-token', expiresAt: 1803643500, currency: 'EUR', total: 0.4,
   items: [{ productName: '<script>untrusted name</script>', quantity: 2, unitPrice: 0.2, subtotal: 0.4 }] };
 
-function page({ storage = new Map(), checkoutResponse = async () => ({ ok: true, text: async () => '{"id":42,"total":0.40}' }) } = {}) {
+function page({ storage = new Map(),
+  quoteResponse = async () => ({ ok: true, text: async () => JSON.stringify(quote) }),
+  cartMutationResponse = async () => ({ ok: true }),
+  cartViewResponse = async () => ({ ok: true, text: async () => '{"items":[]}' }),
+  checkoutResponse = async () => ({ ok: true, text: async () => '{"id":42,"total":0.40}' }) } = {}) {
   const elements = new Map();
   const listeners = new Map();
   function element() {
@@ -31,8 +35,11 @@ function page({ storage = new Map(), checkoutResponse = async () => ({ ok: true,
       querySelector: selector => ({ content: selector.includes('_csrf_header') ? 'X-CSRF-TOKEN' : 'csrf-token' }),
       addEventListener: (name, callback) => listeners.set(name, callback) },
     fetch: async (url, options = {}) => {
-      if (url === '/cart/checkout') { calls.push({ url, ...options }); return checkoutResponse(); }
-      if (url === '/cart/quote') { calls.push({ url, ...options }); return { ok: true, text: async () => JSON.stringify(quote) }; }
+      calls.push({ url, ...options });
+      if (url === '/cart/checkout') return checkoutResponse();
+      if (url === '/cart/quote') return quoteResponse();
+      if (url === '/cart/add' || url.startsWith('/cart/remove/')) return cartMutationResponse();
+      if (url === '/cart/view') return cartViewResponse();
       return { ok: true, json: async () => true, text: async () => '{"items":[]}' };
     }
   });
@@ -40,6 +47,8 @@ function page({ storage = new Map(), checkoutResponse = async () => ({ ok: true,
   return { context, elements, get, calls, storage,
     start: async () => { listeners.get('DOMContentLoaded')(); await new Promise(setImmediate); },
     quote: () => vm.runInContext('requestQuote()', context),
+    add: () => vm.runInContext('aggiungiProdotto(1)', context),
+    remove: () => vm.runInContext('rimuoviProdotto(1)', context),
     confirm: () => { get('confirmPrices').checked = true; return vm.runInContext('submitCheckout({ preventDefault() {} })', context); },
     submit: () => vm.runInContext('submitCheckout({ preventDefault() {} })', context) };
 }
@@ -138,4 +147,52 @@ test('catalog markup and image URLs never become HTML or inline handlers', () =>
   assert.equal(remove.attributes.onclick, undefined);
   assert.equal(typeof remove.listeners.click, 'function');
   assert.equal(p.get('totale').textContent, '99999999999999999.99');
+});
+
+function deferred() {
+  let resolve, reject;
+  const promise = new Promise((yes, no) => { resolve = yes; reject = no; });
+  return { promise, resolve, reject };
+}
+for (const operation of ['add', 'remove']) {
+  test(`blocks quotes and checkout throughout ${operation} and cart refresh`, async () => {
+    const mutation = deferred(), view = deferred();
+    const p = page({ cartMutationResponse: () => mutation.promise, cartViewResponse: () => view.promise });
+    await p.quote();
+    const changing = p[operation]();
+    assert.equal(p.get('quoteButton').disabled, true);
+    assert.equal(p.get('confirmPrices').disabled, true);
+    await p.quote(); await p.confirm();
+    assert.equal(p.calls.filter(c => c.url === '/cart/quote').length, 1);
+    assert.equal(p.calls.filter(c => c.url === '/cart/checkout').length, 0);
+    mutation.resolve({ ok: true }); await new Promise(setImmediate);
+    await p.quote();
+    assert.equal(p.get('quoteButton').disabled, true);
+    assert.equal(p.calls.filter(c => c.url === '/cart/quote').length, 1);
+    view.resolve({ ok: true, text: async () => '{"items":[]}' }); await changing;
+    assert.equal(p.get('quoteButton').disabled, false);
+    await p.quote();
+    assert.equal(p.calls.filter(c => c.url === '/cart/quote').length, 2);
+    const sent = p.calls.find(c => c.url === '/cart/add' || c.url.startsWith('/cart/remove/'));
+    assert.equal(sent.headers['X-CSRF-TOKEN'], 'csrf-token');
+  });
+}
+test('blocks cart mutations and duplicate quote requests while a quote is in flight', async () => {
+  const response = deferred(); const p = page({ quoteResponse: () => response.promise });
+  const quoting = p.quote(); await p.add(); await p.remove(); await p.quote();
+  assert.equal(p.calls.length, 1);
+  assert.equal(p.get('quoteButton').disabled, true);
+  response.resolve({ ok: true, text: async () => JSON.stringify(quote) }); await quoting;
+  assert.equal(p.get('quoteButton').disabled, false);
+  await p.add();
+  assert.equal(p.get('confirmPrices').disabled, true);
+  assert.equal(p.get('price-confirmation').hidden, true);
+});
+test('failed mutation releases the quote guard but never restores stale confirmation', async () => {
+  const p = page({ cartMutationResponse: async () => { throw new Error('network failure'); } });
+  await p.quote(); await p.remove();
+  assert.equal(p.get('quoteButton').disabled, false);
+  assert.equal(p.get('confirmPrices').disabled, true);
+  assert.match(p.get('checkout-status').textContent, /network failure/);
+  await p.quote(); assert.equal(p.calls.filter(c => c.url === '/cart/quote').length, 2);
 });

@@ -80,43 +80,30 @@
   </footer>
 
   <script>
-    function rimuoviProdotto(id) {
+    async function changeCart(url, options) {
       if (!allowCartChange()) return;
+      cartMutationBusy = true;
       invalidateQuote();
-      fetch(`/cart/remove/${id}`, {
-        method: "DELETE",
-        headers: { [document.querySelector('meta[name="_csrf_header" ]').content]: document.querySelector('meta[name="_csrf" ]').content }
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error("Errore nella rimozione del prodotto");
-        }
-        caricaCarrello();
-      })
-      .catch(error => {
-        console.error(error);
-      });
+      document.getElementById("quoteButton").disabled = true;
+      try {
+        const response = await fetch(url, options);
+        if (!response.ok) throw new Error("Errore nella modifica del carrello");
+        // Keep quote creation blocked through the refreshed cart rendering.
+        await caricaCarrello();
+      } catch (error) { statusText(error.message); }
+      finally {
+        cartMutationBusy = false;
+        document.getElementById("quoteButton").disabled = !!pendingCheckout || quoteBusy;
+      }
     }
-
+    function rimuoviProdotto(id) {
+      return changeCart(`/cart/remove/${id}`, { method: "DELETE", headers: csrfHeaders() });
+    }
     function aggiungiProdotto(idProdotto) {
-      if (!allowCartChange()) return;
-      invalidateQuote();
-      fetch("/cart/add", {
+      return changeCart("/cart/add", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          [document.querySelector('meta[name="_csrf_header" ]').content]: document.querySelector('meta[name="_csrf" ]').content
-        },
+        headers: { ...csrfHeaders(), "Content-Type": "application/json" },
         body: JSON.stringify(idProdotto)
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error("Errore nell'aggiungere il prodotto");
-        }
-        caricaCarrello();
-      })
-      .catch(error => {
-        console.error(error);
       });
     }
 
@@ -197,6 +184,8 @@
     let currentQuote = null;
     let pendingCheckout = null;
     let checkoutBusy = false;
+    let cartMutationBusy = false;
+    let quoteBusy = false;
     // Preserve decimal lexemes from numeric JSON before JavaScript can round them.
     function parseExactJson(text) {
       let encoded = "";
@@ -229,6 +218,10 @@
       return { [document.querySelector('meta[name="_csrf_header"]').content]: document.querySelector('meta[name="_csrf"]').content };
     }
     function allowCartChange() {
+      if (cartMutationBusy || quoteBusy) {
+        statusText("Attendi il completamento dell’operazione sul carrello.");
+        return false;
+      }
       if (pendingCheckout || checkoutBusy) {
         statusText("Riprova prima l'ordine in attesa di risposta.");
         return false;
@@ -260,6 +253,7 @@
     }
     async function requestQuote() {
       if (!allowCartChange()) return;
+      quoteBusy = true;
       invalidateQuote();
       const button = document.getElementById("quoteButton");
       button.disabled = true;
@@ -269,11 +263,11 @@
         displayQuote(parseExactJson(await response.text()));
         statusText("Controlla il preventivo e conferma i prezzi.");
       } catch (error) { statusText(error.message); }
-      finally { button.disabled = false; }
+      finally { quoteBusy = false; button.disabled = !!pendingCheckout || cartMutationBusy; }
     }
     async function submitCheckout(event) {
       event.preventDefault();
-      if (checkoutBusy || !currentQuote || !document.getElementById("confirmPrices").checked) return;
+      if (checkoutBusy || cartMutationBusy || quoteBusy || !currentQuote || !document.getElementById("confirmPrices").checked) return;
       checkoutBusy = true;
       document.getElementById("paymentButton").disabled = true;
       document.getElementById("quoteButton").disabled = true;

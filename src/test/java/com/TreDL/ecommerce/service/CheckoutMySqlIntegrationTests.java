@@ -1,6 +1,9 @@
 package com.TreDL.ecommerce.service;
 
 import com.TreDL.ecommerce.dto.OrderDTO;
+import com.TreDL.ecommerce.dto.QuoteDTO;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import com.TreDL.ecommerce.model.Cart;
 import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.Test;
@@ -171,6 +174,54 @@ class CheckoutMySqlIntegrationTests extends CheckoutIntegrationContract {
             assertThatThrownBy(() -> statement.execute("USE not_this_test")).isInstanceOf(SQLException.class);
         }
         intact();
+    }
+
+    @ParameterizedTest
+    @CsvSource({"add,true", "remove,true", "add,false", "remove,false"})
+    void quoteAndCartMutationSerializeOnCustomerWithDistinctConnections(String operation, boolean quoteFirst) throws Exception {
+        CountDownLatch held = new CountDownLatch(1), waiting = new CountDownLatch(1), release = new CountDownLatch(1);
+        AtomicLong leaderConnection = new AtomicLong(), followerConnection = new AtomicLong();
+        ExecutorService workers = Executors.newFixedThreadPool(2);
+        try {
+            Future<?> leader = workers.submit(() -> tx.execute(status -> {
+                leaderConnection.set(jdbc.queryForObject("SELECT CONNECTION_ID()", Long.class));
+                Object result = quoteFirst ? checkout.quote(alice.getEmail()) : mutateCart(operation);
+                held.countDown(); awaitRelease(release); return result;
+            }));
+            assertThat(held.await(10, TimeUnit.SECONDS)).isTrue();
+            Future<?> follower = workers.submit(() -> tx.execute(status -> {
+                followerConnection.set(jdbc.queryForObject("SELECT CONNECTION_ID()", Long.class));
+                waiting.countDown();
+                return quoteFirst ? mutateCart(operation) : checkout.quote(alice.getEmail());
+            }));
+            assertThat(waiting.await(10, TimeUnit.SECONDS)).isTrue();
+            assertThat(leaderConnection.get()).isPositive().isNotEqualTo(followerConnection.get());
+            assertThat(followerConnection.get()).isPositive();
+            assertThatThrownBy(() -> follower.get(300, TimeUnit.MILLISECONDS)).isInstanceOf(TimeoutException.class);
+            release.countDown();
+            Object firstResult = leader.get(10, TimeUnit.SECONDS), secondResult = follower.get(10, TimeUnit.SECONDS);
+            QuoteDTO quote = (QuoteDTO) (quoteFirst ? firstResult : secondResult);
+            int finalQuantity = operation.equals("add") ? 3 : 1;
+            int quotedQuantity = quoteFirst ? 2 : finalQuantity;
+            assertThat(quote.items()).extracting(line -> line.quantity()).containsExactly(quotedQuantity, 1);
+            assertThat(quote.total()).isEqualTo(new BigDecimal("0.10").multiply(BigDecimal.valueOf(quotedQuantity)).add(new BigDecimal("0.20")));
+            assertThat(signer.verify(quote.quoteToken(), alice.getId()).items()).isEqualTo(quote.items());
+            assertThat(cartIds()).hasSize(finalQuantity + 1);
+            assertThat(orders.count()).isZero();
+            // A quote serialized BEFORE a later mutation is valid for its snapshot,
+            // but must never authorize checkout against the changed cart.
+            if (quoteFirst) rejected(() -> checkout.checkout(alice.getEmail(), "quote-before-mutation", confirm(quote)), 409);
+            assertThat(cartIds()).hasSize(finalQuantity + 1);
+            assertThat(orders.count()).isZero();
+        } finally {
+            release.countDown(); workers.shutdownNow();
+            assertThat(workers.awaitTermination(10, TimeUnit.SECONDS)).isTrue();
+        }
+    }
+
+    private Object mutateCart(String operation) {
+        return operation.equals("add") ? cartService.addProductToCart(alice, first)
+                : cartService.removeProductToCart(alice, first);
     }
 
     private static void awaitRelease(CountDownLatch latch) {
