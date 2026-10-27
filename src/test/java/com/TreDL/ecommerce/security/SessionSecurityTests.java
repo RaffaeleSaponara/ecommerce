@@ -105,8 +105,10 @@ class SessionSecurityTests {
     @Test
     void cartReadDoesNotCreatePersistentState() {
         var repository = mock(com.TreDL.ecommerce.repository.CartRepository.class);
+        var customerRepository = mock(CustomersRepository.class);
         CartService service = new CartService();
         org.springframework.test.util.ReflectionTestUtils.setField(service, "cartRepository", repository);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "customersRepository", customerRepository);
         when(repository.findByCustomer(customer)).thenReturn(Optional.empty());
         Cart empty = service.getCartForView(customer);
         assertThat(empty.getId()).isNull();
@@ -114,6 +116,22 @@ class SessionSecurityTests {
         assertThat(com.TreDL.ecommerce.dto.CartDTO.convertToDTO(empty).getItems()).isEmpty();
         verify(repository).findByCustomer(customer);
         verifyNoMoreInteractions(repository);
+        verifyNoInteractions(customerRepository);
+    }
+
+    @Test
+    void emptyCartViewPreservesHttpContractWithoutInvokingMutations() throws Exception {
+        when(cartService.getCartForView(customer)).thenReturn(new Cart(null, customer, List.of()));
+
+        mvc.perform(get("/cart/view").with(user(customer.getEmail())))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$", aMapWithSize(3)))
+                .andExpect(jsonPath("$.items", hasSize(0)))
+                .andExpect(content().json("{\"id\":null,\"id_customer\":null,\"items\":[]}"));
+        verify(cartService).getCartForView(customer);
+        verifyNoMoreInteractions(cartService);
+        verifyNoInteractions(ordersService);
     }
 
     @Test
