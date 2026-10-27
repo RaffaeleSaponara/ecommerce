@@ -1,5 +1,6 @@
 package com.TreDL.ecommerce.service;
 
+import com.TreDL.ecommerce.JwtTestSupport;
 import com.TreDL.ecommerce.model.Cart;
 import com.TreDL.ecommerce.model.Customers;
 import com.TreDL.ecommerce.model.Products;
@@ -13,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @ActiveProfiles("test")
-class CartServiceTests {
+class CartServiceTests extends JwtTestSupport {
     @Autowired
     private CartService cartService;
     @Autowired

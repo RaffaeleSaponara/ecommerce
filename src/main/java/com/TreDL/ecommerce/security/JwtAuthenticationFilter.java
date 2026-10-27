@@ -1,5 +1,6 @@
 package com.TreDL.ecommerce.security;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -34,7 +35,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 if ("jwt".equals(cookie.getName())) {
                     String token = cookie.getValue();
                     if (token != null) {
-                        String username = jwtUtil.extractUsername(token);
+                        String username;
+                        try {
+                            username = jwtUtil.extractUsername(token);
+                        } catch (JwtException | IllegalArgumentException ex) {
+                            // Expired, invalid or signed with a previous key: continue unauthenticated.
+                            continue;
+                        }
 
                         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                             UserDetails userDetails = userDetailsService.loadUserByUsername(username);

@@ -4,10 +4,12 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
+import java.util.Base64;
 import java.util.Date;
 import java.util.function.Function;
 
@@ -16,9 +18,20 @@ public class JwtUtil {
 
     private final Key key;
 
-    public JwtUtil() {
-        // Chiave sicura generata correttamente (256 bit per HS256)
-        this.key = Keys.hmacShaKeyFor("questaEUnaChiaveMoltoLungaESecretaDiAlmeno256Bit".getBytes());
+    public JwtUtil(@Value("${app.jwt.secret:}") String secretBase64) {
+        if (secretBase64 == null || secretBase64.isBlank()) {
+            throw new IllegalArgumentException("JWT_SECRET_BASE64 must be configured");
+        }
+        byte[] secret;
+        try {
+            secret = Base64.getDecoder().decode(secretBase64);
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalArgumentException("JWT_SECRET_BASE64 must be valid Base64");
+        }
+        if (secret.length < 32) {
+            throw new IllegalArgumentException("JWT_SECRET_BASE64 must encode at least 32 bytes");
+        }
+        this.key = Keys.hmacShaKeyFor(secret);
     }
 
     public String generateToken(UserDetails userDetails) {

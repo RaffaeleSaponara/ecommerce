@@ -6,7 +6,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
 @ActiveProfiles("test")
-class EcommerceApplicationTests {
+class EcommerceApplicationTests extends JwtTestSupport {
 
 	@Test
 	void contextLoads() {
