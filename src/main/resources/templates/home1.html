@@ -6,31 +6,35 @@
   <title>Lure Lab - Esche artigianali</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --ink: #111614;
-      --muted: #5d6761;
-      --surface: #f7f5ef;
-      --panel: #ffffff;
-      --line: rgba(17, 22, 20, 0.12);
-      --accent: #d85f2f;
-      --accent-dark: #a6401d;
+      --ink: #101411;
+      --deep: #142820;
       --green: #24483b;
-      --shadow: 0 24px 80px rgba(0, 0, 0, 0.22);
-      --soft-shadow: 0 14px 40px rgba(17, 22, 20, 0.1);
+      --clay: #d85f2f;
+      --surface: #f7f3ea;
+      --line: rgba(16, 20, 17, 0.13);
+      --muted: #65706a;
+      --shadow: 0 28px 70px rgba(16, 20, 17, 0.14);
+      --heavy-shadow: 0 34px 90px rgba(16, 20, 17, 0.26);
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     html {
       scrollbar-gutter: stable;
+      scroll-behavior: smooth;
     }
 
     body {
       margin: 0;
       color: var(--ink);
-      background: var(--surface);
+      background:
+        linear-gradient(135deg, rgba(217, 232, 228, 0.55), transparent 32%),
+        linear-gradient(180deg, #fbf8f0 0%, var(--surface) 52%, #eef1ec 100%);
       font-family: "Inter", Arial, sans-serif;
     }
 
@@ -39,10 +43,15 @@
       text-decoration: none;
     }
 
+    img {
+      display: block;
+      max-width: 100%;
+    }
+
     .site-nav {
       position: sticky;
       top: 0;
-      z-index: 10;
+      z-index: 30;
       display: grid;
       grid-template-columns: minmax(170px, 1fr) auto minmax(190px, 1fr);
       align-items: center;
@@ -50,9 +59,9 @@
       min-height: 82px;
       padding: 0 max(20px, calc((100% - 1180px) / 2));
       border-bottom: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.74);
+      background: rgba(255, 253, 248, 0.78);
       backdrop-filter: blur(22px);
-      box-shadow: 0 10px 30px rgba(17, 22, 20, 0.05);
+      box-shadow: 0 12px 34px rgba(16, 20, 17, 0.06);
     }
 
     .brand {
@@ -60,7 +69,7 @@
       align-items: center;
       gap: 12px;
       justify-self: start;
-      font-weight: 800;
+      font-weight: 900;
     }
 
     .brand img {
@@ -76,17 +85,17 @@
       gap: 6px;
     }
 
-    .auth-container {
-      min-width: 190px;
-      justify-self: end;
-      justify-content: flex-end;
-    }
-
     .nav-links {
       justify-self: center;
       justify-content: center;
       font-size: 14px;
       font-weight: 800;
+    }
+
+    .auth-container {
+      min-width: 190px;
+      justify-self: end;
+      justify-content: flex-end;
     }
 
     .nav-links a,
@@ -138,204 +147,474 @@
       display: none;
     }
 
-    .hero {
-      min-height: 92vh;
+    .hero-top {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 3;
       display: grid;
-      align-items: end;
-      background:
-        linear-gradient(90deg, rgba(7, 12, 11, 0.76) 0%, rgba(7, 12, 11, 0.42) 42%, rgba(7, 12, 11, 0.08) 100%),
-        url("/images/a7resize.jpg") center / cover no-repeat;
-    }
-
-    .hero-content {
-      width: min(1180px, calc(100% - 32px));
-      margin: 0 auto;
-      padding: 160px 0 86px;
+      grid-template-columns: minmax(160px, 1fr) auto;
+      align-items: center;
+      gap: 24px;
+      padding: 30px clamp(28px, 4vw, 72px);
       color: #fff;
     }
 
-    .eyebrow {
-      margin: 0 0 16px;
-      color: rgba(255, 255, 255, 0.78);
-      font-size: 13px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-
-    h1 {
-      max-width: 760px;
-      margin: 0;
-      font-size: clamp(46px, 8vw, 92px);
-      line-height: 0.95;
-      letter-spacing: 0;
-    }
-
-    .hero-copy {
-      max-width: 610px;
-      margin: 24px 0 34px;
-      color: rgba(255, 255, 255, 0.86);
-      font-size: 19px;
-      line-height: 1.65;
-    }
-
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
+    .hero-brand {
+      display: inline-flex;
+      align-items: center;
       gap: 12px;
+      justify-self: start;
+      font-size: 15px;
+      font-weight: 900;
+      text-shadow: 0 8px 24px rgba(0, 0, 0, 0.34);
     }
 
-    .button {
+    .hero-brand img {
+      width: 38px;
+      height: 38px;
+      object-fit: contain;
+      filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.28));
+    }
+
+    .hero-menu {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 24px;
+      font-size: 14px;
+      font-weight: 900;
+      text-shadow: 0 8px 24px rgba(0, 0, 0, 0.46);
+    }
+
+    .hero-nav-link {
+      position: relative;
+      color: rgba(255, 255, 255, 0.9);
+      transition: color 160ms ease, transform 160ms ease;
+    }
+
+    .hero-nav-link::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -8px;
+      height: 2px;
+      transform: scaleX(0);
+      transform-origin: left;
+      background: #fff;
+      transition: transform 160ms ease;
+    }
+
+    .hero-nav-link:hover,
+    .hero-nav-link[aria-current="page"] {
+      color: #fff;
+      transform: translateY(-1px);
+    }
+
+    .hero-nav-link:hover::after,
+    .hero-nav-link[aria-current="page"]::after {
+      transform: scaleX(1);
+    }
+
+    .hero-auth {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-left: 8px;
+    }
+
+    .hero-login-button,
+    .hero-logout-button,
+    .hero-account-link {
+      min-height: 38px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-height: 48px;
-      padding: 0 20px;
+      padding: 0 15px;
+      border: 1px solid rgba(255, 255, 255, 0.24);
       border-radius: 6px;
+      color: #fff;
+      background: rgba(12, 28, 22, 0.72);
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.22);
+      backdrop-filter: blur(12px);
+      transition: transform 160ms ease, background 160ms ease, border-color 160ms ease;
+    }
+
+    .hero-account-link {
+      color: rgba(255, 255, 255, 0.92);
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .hero-login-button:hover,
+    .hero-logout-button:hover,
+    .hero-account-link:hover {
+      transform: translateY(-1px);
+    }
+
+    .hero-login-button:hover,
+    .hero-logout-button:hover,
+    .hero-account-link:hover {
+      border-color: rgba(255, 255, 255, 0.44);
+      background: rgba(12, 28, 22, 0.9);
+    }
+
+    .hero-auth .is-hidden {
+      display: none;
+    }
+
+    .shell {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .hero {
+      position: relative;
+      isolation: isolate;
+      width: 100%;
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: minmax(0, 680px);
+      align-items: center;
+      padding: 118px max(20px, calc((100% - 1180px) / 2)) 54px;
+    }
+
+    .hero-video {
+      position: absolute;
+      inset: 0;
+      z-index: -2;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #101411 url("/images/a12.jpg") center / cover no-repeat;
+      box-shadow: var(--heavy-shadow);
+    }
+
+    .hero-video video {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    .hero-video::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, rgba(16, 20, 17, 0.72) 0%, rgba(16, 20, 17, 0.42) 44%, rgba(16, 20, 17, 0.16) 100%),
+        linear-gradient(180deg, rgba(16, 20, 17, 0.1), rgba(16, 20, 17, 0.42));
+    }
+
+    .eyebrow {
+      margin: 0 0 14px;
+      color: var(--clay);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      max-width: 660px;
+      margin-bottom: 22px;
+      font-size: clamp(48px, 7.2vw, 92px);
+      line-height: 0.9;
+      letter-spacing: 0;
+    }
+
+    .hero-copy p {
+      max-width: 590px;
+      color: rgba(255, 255, 255, 0.76);
+      font-size: 18px;
+      line-height: 1.72;
+    }
+
+    .hero-copy {
+      color: #fff;
+      max-width: 680px;
+    }
+
+    .hero-actions,
+    .lab-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 30px;
+    }
+
+    .button {
+      min-height: 50px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 20px;
       border: 1px solid transparent;
+      border-radius: 6px;
       font-size: 15px;
-      font-weight: 700;
-      transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+      font-weight: 800;
+      transition: transform 160ms ease, background 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
     }
 
     .button-primary {
       color: #fff;
-      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-      box-shadow: 0 18px 38px rgba(216, 95, 47, 0.28);
+      background: linear-gradient(135deg, var(--clay), #a6401d);
+      box-shadow: 0 18px 38px rgba(216, 95, 47, 0.25);
     }
 
-    .button-primary:hover {
-      background: var(--accent-dark);
+    .button-secondary {
+      color: var(--ink);
+      border-color: rgba(16, 20, 17, 0.16);
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(10px);
     }
 
-    .button-ghost {
+    .flow {
+      padding: 26px 0 88px;
+    }
+
+    .flow-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .flow-card {
+      min-height: 182px;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 253, 248, 0.78);
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.86) inset;
+    }
+
+    .flow-card span {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      margin-bottom: 28px;
+      border-radius: 50%;
       color: #fff;
-      border-color: rgba(255, 255, 255, 0.36);
-      background: rgba(255, 255, 255, 0.08);
+      background: var(--green);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .flow-card h3 {
+      margin-bottom: 9px;
+      font-size: 18px;
+    }
+
+    .flow-card p {
+      margin-bottom: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.56;
+    }
+
+    .experience {
+      color: #fff;
+      background:
+        linear-gradient(135deg, rgba(16, 20, 17, 0.92), rgba(20, 40, 32, 0.94)),
+        url("/images/a7resize.jpg") center / cover no-repeat;
+    }
+
+    .experience-inner {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 92px 0;
+      display: grid;
+      grid-template-columns: minmax(0, 0.82fr) minmax(460px, 1.18fr);
+      gap: 54px;
+      align-items: center;
+    }
+
+    .experience h2,
+    .lab h2,
+    .series h2 {
+      margin-bottom: 18px;
+      font-size: clamp(36px, 5.8vw, 68px);
+      line-height: 0.95;
+      letter-spacing: 0;
+    }
+
+    .experience p,
+    .lab p {
+      color: rgba(255, 255, 255, 0.74);
+      font-size: 17px;
+      line-height: 1.72;
+    }
+
+    .experience-board {
+      display: grid;
+      grid-template-columns: 0.95fr 1.05fr;
+      gap: 14px;
+      min-height: 520px;
+    }
+
+    .motion-panel,
+    .scan-panel,
+    .water-panel {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      box-shadow: 0 20px 54px rgba(0, 0, 0, 0.22);
+    }
+
+    .motion-panel {
+      min-height: 520px;
+    }
+
+    .motion-panel img,
+    .scan-panel img,
+    .water-panel img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.92;
+    }
+
+    .scan-panel,
+    .water-panel {
+      min-height: 253px;
+    }
+
+    .panel-caption {
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      bottom: 16px;
+      padding: 14px 16px;
+      border-radius: 8px;
+      background: rgba(16, 20, 17, 0.72);
       backdrop-filter: blur(12px);
     }
 
-    .section {
-      width: min(1180px, calc(100% - 32px));
-      margin: 0 auto;
-      padding: 84px 0;
-    }
-
-    .section-heading {
-      display: grid;
-      grid-template-columns: 0.9fr 1.1fr;
-      gap: 56px;
-      align-items: end;
-      margin-bottom: 34px;
-    }
-
-    h2 {
-      margin: 0;
-      font-size: clamp(32px, 5vw, 58px);
-      line-height: 1;
-    }
-
-    .section-heading p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 17px;
-      line-height: 1.7;
-    }
-
-    .feature-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 18px;
-    }
-
-    .feature {
-      overflow: hidden;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.86);
-      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.88) inset;
-      transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
-    }
-
-    .feature img {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      object-fit: cover;
+    .panel-caption strong {
       display: block;
-      background: #fff;
-      transition: transform 320ms ease;
+      margin-bottom: 5px;
+      font-size: 14px;
     }
 
-    .feature-body {
-      padding: 22px;
+    .panel-caption span {
+      color: rgba(255, 255, 255, 0.72);
+      font-size: 12px;
+      line-height: 1.45;
     }
 
-    .feature-body h3 {
-      margin: 0 0 8px;
-      font-size: 20px;
+    .series {
+      padding: 96px 0;
     }
 
-    .feature-body p {
-      margin: 0;
+    .series-head {
+      display: grid;
+      grid-template-columns: 0.86fr 1.14fr;
+      gap: 50px;
+      align-items: end;
+      margin-bottom: 30px;
+    }
+
+    .series-head p,
+    .series-card p {
       color: var(--muted);
       line-height: 1.6;
     }
 
-    .craft {
-      background: var(--green);
-      color: #fff;
-      box-shadow: var(--shadow) inset;
-    }
-
-    .craft-inner {
-      width: min(1180px, calc(100% - 32px));
-      margin: 0 auto;
-      padding: 82px 0;
+    .series-grid {
       display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap: 58px;
-      align-items: center;
-    }
-
-    .craft p {
-      color: rgba(255, 255, 255, 0.78);
-      font-size: 17px;
-      line-height: 1.75;
-    }
-
-    .craft-list {
-      display: grid;
+      grid-template-columns: 1.1fr 0.95fr 0.95fr;
       gap: 14px;
     }
 
-    .craft-item {
+    .series-card {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fffdf8;
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset;
+      transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+    }
+
+    .series-card img {
+      width: 100%;
+      aspect-ratio: 1.05 / 1;
+      object-fit: cover;
+      background: #fff;
+      transition: transform 320ms ease;
+    }
+
+    .series-card:first-child img {
+      aspect-ratio: 1.28 / 1;
+    }
+
+    .series-card div {
+      padding: 22px;
+    }
+
+    .series-card h3 {
+      margin-bottom: 8px;
+      font-size: 21px;
+    }
+
+    .series-card p {
+      margin-bottom: 0;
+      font-size: 14px;
+    }
+
+    .lab {
+      margin-bottom: 92px;
+      color: #fff;
+      background:
+        linear-gradient(135deg, rgba(36, 72, 59, 0.96), rgba(16, 20, 17, 0.96));
+    }
+
+    .lab-inner {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 78px 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(360px, 0.78fr);
+      gap: 48px;
+      align-items: center;
+    }
+
+    .lab-note {
+      display: grid;
+      gap: 12px;
+    }
+
+    .lab-item {
       padding: 18px 0;
       border-top: 1px solid rgba(255, 255, 255, 0.22);
-      font-weight: 700;
     }
 
-    .nav-links a:hover,
-    .login-button:hover,
-    .logout-button:hover,
-    .icon-link:hover,
-    .button:hover {
-      transform: translateY(-1px);
+    .lab-item strong {
+      display: block;
+      margin-bottom: 5px;
     }
 
-    .feature:hover {
-      transform: translateY(-4px);
-      border-color: rgba(216, 95, 47, 0.26);
-      box-shadow: var(--soft-shadow);
-    }
-
-    .feature:hover img {
-      transform: scale(1.04);
+    .lab-item span {
+      color: rgba(255, 255, 255, 0.72);
+      font-size: 14px;
+      line-height: 1.5;
     }
 
     .site-footer {
       padding: 32px 0;
-      background: #111614;
       color: rgba(255, 255, 255, 0.72);
+      background: #101411;
     }
 
     .footer-inner {
@@ -348,17 +627,44 @@
       font-size: 14px;
     }
 
-    @media (max-width: 760px) {
-      .site-nav {
+    .nav-links a:hover,
+    .login-button:hover,
+    .logout-button:hover,
+    .icon-link:hover,
+    .button:hover {
+      transform: translateY(-1px);
+    }
+
+    .series-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(216, 95, 47, 0.28);
+      box-shadow: var(--shadow);
+    }
+
+    .series-card:hover img {
+      transform: scale(1.035);
+    }
+
+    @media (max-width: 980px) {
+      .site-nav,
+      .hero,
+      .experience-inner,
+      .series-head,
+      .series-grid,
+      .lab-inner {
         grid-template-columns: 1fr;
+      }
+
+      .site-nav {
+        gap: 10px;
         padding-top: 14px;
         padding-bottom: 14px;
       }
 
       .nav-links,
       .auth-container {
-        flex-wrap: wrap;
         justify-content: flex-start;
+        flex-wrap: wrap;
       }
 
       .auth-container {
@@ -366,145 +672,266 @@
         justify-self: start;
       }
 
+      .hero-top {
+        grid-template-columns: 1fr;
+        gap: 14px;
+        padding-top: 22px;
+      }
+
+      .hero-menu {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        gap: 14px 20px;
+      }
+
+      .hero-auth {
+        margin-left: 0;
+      }
+
+      .hero {
+        min-height: 100vh;
+        min-height: 100svh;
+        gap: 34px;
+        padding-top: 128px;
+        padding-bottom: 36px;
+      }
+
+      .hero-video::after {
+        background:
+          linear-gradient(180deg, rgba(16, 20, 17, 0.78) 0%, rgba(16, 20, 17, 0.46) 46%, rgba(16, 20, 17, 0.72) 100%);
+      }
+
+      .experience-board {
+        grid-template-columns: 1fr;
+        min-height: 0;
+      }
+
+      .motion-panel,
+      .scan-panel,
+      .water-panel {
+        min-height: 320px;
+      }
+
+      .flow-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
       .brand span {
         display: none;
       }
 
-      .hero {
-        min-height: 84vh;
+      .hero-brand span {
+        display: none;
       }
 
-      .hero-content {
-        padding-top: 130px;
+      .hero-menu {
+        font-size: 13px;
       }
 
-      .section-heading,
-      .craft-inner,
-      .feature-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (min-width: 1024px) {
-      .hero {
-        min-height: 760px;
-        align-items: center;
-        background:
-          linear-gradient(90deg, rgba(7, 12, 11, 0.88) 0%, rgba(7, 12, 11, 0.66) 38%, rgba(7, 12, 11, 0.18) 72%, rgba(7, 12, 11, 0.08) 100%),
-          url("/images/a7resize.jpg") right center / min(54vw, 720px) auto no-repeat,
-          #111614;
-      }
-
-      .hero-content {
-        padding: 138px 0 78px;
+      .hero-login-button,
+      .hero-logout-button,
+      .hero-account-link {
+        min-height: 36px;
+        padding: 0 12px;
       }
 
       h1 {
-        max-width: 650px;
-        font-size: 76px;
+        font-size: clamp(44px, 15vw, 62px);
       }
 
-      .hero-copy {
-        max-width: 560px;
+      .hero-copy p,
+      .experience p,
+      .lab p {
+        font-size: 16px;
       }
 
-      .section {
-        padding: 96px 0;
+      .flow-grid {
+        grid-template-columns: 1fr;
       }
 
-      .feature-grid {
-        grid-template-columns: 1.1fr 1fr 1fr;
-      }
-
-      .feature:first-child {
-        display: grid;
-        grid-template-rows: auto 1fr;
-      }
-
-      .feature:first-child img {
-        aspect-ratio: 1.18 / 1;
+      .experience-inner,
+      .series,
+      .lab-inner {
+        padding-top: 68px;
+        padding-bottom: 68px;
       }
     }
   </style>
 </head>
 <body>
-  <nav class="site-nav" aria-label="Navigazione principale">
-    <a class="brand" href="/">
-      <img src="/images/3Dlogo_resize.png" alt="Lure Lab">
-      <span>Lure Lab</span>
-    </a>
-    <div class="nav-links">
-      <a href="/" aria-current="page">Home</a>
-      <a href="/home">Catalogo</a>
-      <a href="/prodotti">Shop</a>
-      <a href="https://wa.me/3406894426" target="_blank" rel="noreferrer">Custom</a>
-    </div>
-    <div class="auth-container">
-      <a href="/login" class="login-button" id="loginButton">Login</a>
-      <a href="/logout" class="logout-button is-hidden" id="logoutButton">Logout</a>
-      <a href="/user" class="icon-link is-hidden" id="profileLink" aria-label="Profilo">
-        <img src="/images/icon.jpg" alt="">
-      </a>
-      <a href="/cart" class="icon-link is-hidden" id="cartLink" aria-label="Carrello">
-        <img src="/images/cart.png" alt="">
-      </a>
-    </div>
-  </nav>
-
   <main>
     <section class="hero">
-      <div class="hero-content">
-        <p class="eyebrow">Esche artigianali da bass fishing</p>
-        <h1>Costruite a mano. Provate in acqua.</h1>
-        <p class="hero-copy">Jig, chatterbait e softbait con finiture curate, assetti bilanciati e colori scelti per spot reali. Una piccola produzione, pensata per pescatori che guardano i dettagli.</p>
-        <div class="actions">
-          <a class="button button-primary" href="/prodotti">Vedi lo shop</a>
-          <a class="button button-ghost" href="https://wa.me/3406894426" target="_blank">Richiedi un colore custom</a>
+      <div class="hero-video" aria-hidden="true">
+        <video autoplay muted loop playsinline poster="/images/a12.jpg">
+          <source src="/videos/lure-lab-hero.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="hero-top" aria-label="Navigazione principale">
+        <a class="hero-brand" href="/">
+          <img src="/images/3Dlogo_resize.png" alt="Lure Lab">
+          <span>Lure Lab</span>
+        </a>
+        <div class="hero-menu">
+          <a class="hero-nav-link" href="/" aria-current="page">Home</a>
+          <a class="hero-nav-link" href="/home">Catalogo</a>
+          <a class="hero-nav-link" href="/prodotti">Shop</a>
+          <a class="hero-nav-link" href="https://wa.me/3406894426" target="_blank" rel="noreferrer">Custom</a>
+          <div class="hero-auth">
+            <a class="hero-login-button" href="/login" id="loginButton">Login</a>
+            <a class="hero-account-link is-hidden" href="/user" id="profileLink">Profilo</a>
+            <a class="hero-account-link is-hidden" href="/cart" id="cartLink">Carrello</a>
+            <a class="hero-logout-button is-hidden" href="/logout" id="logoutButton">Logout</a>
+          </div>
         </div>
       </div>
+      <div class="hero-copy">
+        <p class="eyebrow">Handmade bass lures</p>
+        <h1>Non uno shop qualunque. Un laboratorio da esplorare.</h1>
+        <p>
+          Lure Lab puo diventare una vetrina immersiva: foto reali, video brevi, modelli 3D e richieste custom
+          guidate. Il cliente non sfoglia soltanto prodotti, capisce perche quella esca esiste.
+        </p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="/prodotti">Entra nello shop</a>
+          <a class="button button-secondary" href="#experience">Guarda l'esperienza</a>
+        </div>
+      </div>
+
     </section>
 
-    <section class="section">
-      <div class="section-heading">
-        <h2>Modelli essenziali, costruzione curata.</h2>
-        <p>La vetrina parte dai modelli piu richiesti: jig compatti per cover, chatterbait per acqua velata e softbait da abbinare come trailer. Il catalogo puo crescere senza perdere ordine.</p>
-      </div>
-      <div class="feature-grid">
-        <article class="feature">
-          <img src="/images/b1.jpg" alt="Jig viola artigianale">
-          <div class="feature-body">
-            <h3>Jig</h3>
-            <p>Teste verniciate, skirt selezionati e ami robusti per lavorare vicino agli ostacoli.</p>
-          </div>
+    <section class="shell flow" aria-label="Percorso cliente">
+      <div class="flow-grid">
+        <article class="flow-card">
+          <span>1</span>
+          <h3>Spot</h3>
+          <p>Il percorso parte da acqua, profondita, luce e tipo di copertura.</p>
         </article>
-        <article class="feature">
-          <img src="/images/b4.jpg" alt="Chatterbait artigianale">
-          <div class="feature-body">
-            <h3>Chatterbait</h3>
-            <p>Vibrazione presente e profilo compatto per coprire acqua quando serve reazione.</p>
-          </div>
+        <article class="flow-card">
+          <span>2</span>
+          <h3>Famiglia</h3>
+          <p>Jig, moving bait o soft bait vengono mostrati per uso reale, non per categoria generica.</p>
         </article>
-        <article class="feature">
-          <img src="/images/b8.jpg" alt="Softbait artigianale">
-          <div class="feature-body">
-            <h3>Softbait</h3>
-            <p>Trailer e shad da abbinare per volume, movimento e presentazione piu naturale.</p>
-          </div>
+        <article class="flow-card">
+          <span>3</span>
+          <h3>Dettaglio</h3>
+          <p>Foto, clip e scansioni possono mostrare profilo, volume, colore e movimento.</p>
+        </article>
+        <article class="flow-card">
+          <span>4</span>
+          <h3>Ordine</h3>
+          <p>Il cliente compra subito o chiede una variante personalizzata su WhatsApp.</p>
         </article>
       </div>
     </section>
 
-    <section class="craft">
-      <div class="craft-inner">
+    <section class="experience" id="experience">
+      <div class="experience-inner">
         <div>
-          <p class="eyebrow">Su misura</p>
-          <h2>Colori e pesi scelti per il tuo modo di pescare.</h2>
-          <p>Il sito puo funzionare come vetrina, ma anche come primo shop. Le richieste personalizzate restano semplici: il cliente vede i modelli, poi puo ordinare o scrivere per varianti specifiche.</p>
+          <p class="eyebrow">Video e scansioni</p>
+          <h2>Una scheda prodotto puo sembrare una prova in acqua.</h2>
+          <p>
+            Quando avrai video creati ad hoc o modelli ottenuti da scanner, possiamo inserirli come livelli:
+            clip rapida, vista ravvicinata, rotazione 3D e configurazione custom. Intanto la struttura e gia pronta.
+          </p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="/home">Esplora catalogo</a>
+            <a class="button button-secondary" href="https://wa.me/3406894426" target="_blank" rel="noreferrer">Richiedi custom</a>
+          </div>
         </div>
-        <div class="craft-list">
-          <div class="craft-item">Skirt e palette selezionati modello per modello</div>
-          <div class="craft-item">Foto prodotto reali, non immagini generiche</div>
-          <div class="craft-item">Catalogo pronto per diventare ecommerce completo</div>
+
+        <div class="experience-board">
+          <article class="motion-panel">
+            <img src="/images/a7resize.jpg" alt="Esca Lure Lab in primo piano">
+            <div class="panel-caption">
+              <strong>Motion clip</strong>
+              <span>Qui potremo mettere video AI o riprese reali da 6-10 secondi.</span>
+            </div>
+          </article>
+          <div>
+            <article class="scan-panel">
+              <img src="/images/b4.jpg" alt="Dettaglio chatterbait">
+              <div class="panel-caption">
+                <strong>Scan detail</strong>
+                <span>Area pensata per rotazione 3D e dettagli materiali.</span>
+              </div>
+            </article>
+            <article class="water-panel">
+              <img src="/images/b8.jpg" alt="Softbait chiara">
+              <div class="panel-caption">
+                <strong>Use case</strong>
+                <span>Acqua chiara, cover, recupero e stagione diventano parte della scelta.</span>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="shell series">
+      <div class="series-head">
+        <div>
+          <p class="eyebrow">Linee prodotto</p>
+          <h2>Tre ingressi, una sola identita.</h2>
+        </div>
+        <p>
+          Manteniamo lo shop semplice, ma raccontiamo le esche come una piccola collezione tecnica:
+          ogni famiglia ha scenario, comportamento e possibilita di personalizzazione.
+        </p>
+      </div>
+      <div class="series-grid">
+        <article class="series-card">
+          <img src="/images/b2.jpg" alt="Jig naturale">
+          <div>
+            <h3>Bottom contact</h3>
+            <p>Jig compatti per cover, sassi e presentazioni precise vicino al fondale.</p>
+          </div>
+        </article>
+        <article class="series-card">
+          <img src="/images/b5.jpg" alt="Moving bait scura">
+          <div>
+            <h3>Reaction bite</h3>
+            <p>Chatterbait e profili con vibrazione per battere acqua e generare reazione.</p>
+          </div>
+        </article>
+        <article class="series-card">
+          <img src="/images/b10.jpg" alt="Esca custom">
+          <div>
+            <h3>Custom build</h3>
+            <p>Colori, pesi e abbinamenti creati in base allo spot del cliente.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="lab">
+      <div class="lab-inner">
+        <div>
+          <p class="eyebrow">Prossimo step</p>
+          <h2>Dalla vetrina al configuratore.</h2>
+          <p>
+            La direzione giusta e costruire uno shop che sembri fatto da chi conosce davvero le esche:
+            meno pagina standard, piu scelta guidata. Questa home e il primo mattone visivo.
+          </p>
+          <div class="lab-actions">
+            <a class="button button-primary" href="/prodotti">Vai ai prodotti</a>
+            <a class="button button-secondary" href="/home">Apri catalogo</a>
+          </div>
+        </div>
+        <div class="lab-note">
+          <div class="lab-item">
+            <strong>Video hero</strong>
+            <span>Sostituibile con clip AI o riprese del prodotto in acqua.</span>
+          </div>
+          <div class="lab-item">
+            <strong>Viewer 3D</strong>
+            <span>Pronto per integrare file GLB/GLTF quando avrai scansioni pulite.</span>
+          </div>
+          <div class="lab-item">
+            <strong>Custom flow</strong>
+            <span>Possiamo trasformarlo in un questionario guidato prima dell'ordine.</span>
+          </div>
         </div>
       </div>
     </section>
@@ -516,6 +943,7 @@
       <span>Esche artigianali, piccole serie e richieste custom.</span>
     </div>
   </footer>
+
   <script>
     const loginButton = document.getElementById("loginButton");
     const profileLink = document.getElementById("profileLink");

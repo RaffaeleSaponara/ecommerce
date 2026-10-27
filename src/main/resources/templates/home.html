@@ -52,19 +52,20 @@
         }
 
         .site-nav {
-            position: sticky;
+            position: absolute;
             top: 0;
+            left: 0;
+            right: 0;
             z-index: 20;
             display: grid;
-            grid-template-columns: minmax(170px, 1fr) auto minmax(190px, 1fr);
+            grid-template-columns: auto minmax(0, 1fr);
             align-items: center;
             gap: 22px;
             min-height: 82px;
-            padding: 0 max(20px, calc((100% - 1180px) / 2));
-            border-bottom: 1px solid var(--line);
-            background: rgba(255, 255, 255, 0.74);
-            backdrop-filter: blur(22px);
-            box-shadow: 0 10px 30px rgba(17, 22, 20, 0.05);
+            padding: 0 clamp(28px, 4vw, 72px);
+            border-bottom: 0;
+            background: transparent;
+            box-shadow: none;
         }
 
         .brand {
@@ -88,15 +89,20 @@
             gap: 6px;
         }
 
-        .auth-container {
-            min-width: 190px;
+        .nav-actions {
+            display: flex;
+            align-items: center;
             justify-self: end;
+            justify-content: flex-end;
+            gap: 18px;
+        }
+
+        .auth-container {
             justify-content: flex-end;
         }
 
         .nav-links {
-            justify-self: center;
-            justify-content: center;
+            justify-content: flex-end;
         }
 
         .nav-links a,
@@ -113,13 +119,35 @@
         }
 
         .nav-links a {
+            position: relative;
             min-width: 78px;
             padding: 0 12px;
+            color: var(--ink);
+        }
+
+        .nav-links a::after {
+            content: "";
+            position: absolute;
+            left: 12px;
+            right: 12px;
+            bottom: 3px;
+            height: 2px;
+            transform: scaleX(0);
+            transform-origin: left;
+            background: currentColor;
+            transition: transform 160ms ease;
         }
 
         .nav-links a:hover,
         .nav-links a[aria-current="page"] {
-            background: rgba(36, 72, 59, 0.1);
+            color: var(--green);
+            background: transparent;
+            transform: translateY(-1px);
+        }
+
+        .nav-links a:hover::after,
+        .nav-links a[aria-current="page"]::after {
+            transform: scaleX(1);
         }
 
         .button {
@@ -140,15 +168,11 @@
         }
 
         .icon-link {
-            width: 42px;
+            min-width: 78px;
+            padding: 0 12px;
+            color: var(--green);
             border: 1px solid var(--line);
-            background: #fff;
-        }
-
-        .icon-link img {
-            width: 24px;
-            height: 24px;
-            object-fit: cover;
+            background: rgba(255, 255, 255, 0.9);
         }
 
         .is-hidden {
@@ -161,12 +185,12 @@
         }
 
         .catalog-hero {
-            min-height: calc(100vh - 82px);
+            min-height: 100vh;
             display: grid;
             grid-template-columns: minmax(0, 1fr);
             gap: 28px;
             align-items: end;
-            padding: 56px 0 36px;
+            padding: 128px 0 36px;
         }
 
         .hero-copy {
@@ -447,7 +471,6 @@
             box-shadow: var(--shadow);
         }
 
-        .nav-links a:hover,
         .button:hover,
         .icon-link:hover,
         .filter-button:hover {
@@ -488,21 +511,75 @@
 
         @media (max-width: 860px) {
             .site-nav {
-                grid-template-columns: 1fr;
-                gap: 10px;
-                padding-top: 14px;
-                padding-bottom: 14px;
+                grid-template-columns: auto;
+                align-items: start;
+                gap: 12px;
+                padding-left: 18px;
+                padding-right: 18px;
+                padding-top: 22px;
+                padding-bottom: 0;
             }
 
+            .brand {
+                gap: 10px;
+                font-size: 14px;
+            }
+
+            .brand img {
+                width: 36px;
+                height: 36px;
+            }
+
+            .nav-actions,
             .nav-links,
             .auth-container {
                 justify-content: flex-start;
                 flex-wrap: wrap;
             }
 
-            .auth-container {
-                min-width: 0;
+            .nav-actions {
+                width: 100%;
+                flex-direction: column;
+                align-items: flex-start;
                 justify-self: start;
+                gap: 10px;
+            }
+
+            .nav-links {
+                display: grid;
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                width: 100%;
+                gap: 4px;
+            }
+
+            .nav-links a {
+                min-width: 0;
+                min-height: 34px;
+                padding: 0 6px;
+                font-size: 13px;
+            }
+
+            .auth-container {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, auto));
+                gap: 6px;
+                min-width: 0;
+            }
+
+            .catalog-hero {
+                padding-top: 154px;
+            }
+
+            .button,
+            .icon-link {
+                min-height: 36px;
+                min-width: 0;
+                padding: 0 12px;
+                font-size: 13px;
+            }
+
+            h1 {
+                font-size: clamp(38px, 12vw, 48px);
             }
 
             .catalog-toolbar {
@@ -535,7 +612,7 @@
                 min-height: 640px;
                 grid-template-columns: minmax(500px, 0.96fr) minmax(500px, 1.04fr);
                 gap: 52px;
-                padding: 42px 0 42px;
+                padding: 128px 0 42px;
             }
 
             .hero-copy {
@@ -612,21 +689,19 @@
         <img src="/images/3Dlogo_resize.png" alt="Lure Lab">
         <span>Lure Lab</span>
     </a>
-    <div class="nav-links" aria-label="Navigazione principale">
-        <a href="/">Home</a>
-        <a href="/home" aria-current="page">Catalogo</a>
-        <a href="/prodotti">Shop</a>
-        <a href="https://wa.me/3406894426" target="_blank" rel="noreferrer">Custom</a>
-    </div>
-    <div class="auth-container">
-        <a class="button" href="/login" id="loginButton">Login</a>
-        <a class="button is-hidden" href="/logout" id="logoutButton">Logout</a>
-        <a class="icon-link is-hidden" href="/user" id="profileIcon" aria-label="Profilo">
-            <img src="/images/icon.jpg" alt="">
-        </a>
-        <a class="icon-link is-hidden" href="/cart" id="cartIcon" aria-label="Carrello">
-            <img src="/images/cart.png" alt="">
-        </a>
+    <div class="nav-actions">
+        <div class="nav-links" aria-label="Navigazione principale">
+            <a href="/">Home</a>
+            <a href="/home" aria-current="page">Catalogo</a>
+            <a href="/prodotti">Shop</a>
+            <a href="https://wa.me/3406894426" target="_blank" rel="noreferrer">Custom</a>
+        </div>
+        <div class="auth-container">
+            <a class="button" href="/login" id="loginButton">Login</a>
+            <a class="icon-link is-hidden" href="/user" id="profileIcon">Profilo</a>
+            <a class="icon-link is-hidden" href="/cart" id="cartIcon">Carrello</a>
+            <a class="button is-hidden" href="/logout" id="logoutButton">Logout</a>
+        </div>
     </div>
 </nav>
 
