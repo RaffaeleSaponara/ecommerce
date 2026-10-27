@@ -24,18 +24,22 @@ public class CartService {
 
     @Transactional(readOnly = true)
     public Cart getCartForView(Customers customer) {
-        return cartRepository.findByCustomer(customer)
+        Cart cart = cartRepository.findByCustomer(customer)
                 .orElseGet(() -> new Cart(null, customer, List.of()));
+        // Materialize the view inside the read-only transaction, without locking.
+        if (cart.getProducts() != null) {
+            cart.getProducts().size();
+        }
+        return cart;
     }
 
     public Cart getCart(Customers customer) {
-        if(cartRepository.findByCustomer(customer).isPresent()){
-            return cartRepository.findByCustomer(customer).get();
-        }else{
+        Customers lockedCustomer = lockCustomer(customer.getId());
+        return cartRepository.findByCustomer(lockedCustomer).orElseGet(() -> {
             Cart cart = new Cart();
-            cart.setCustomer(customer);
+            cart.setCustomer(lockedCustomer);
             return cartRepository.save(cart);
-        }
+        });
     }
 
 
@@ -63,6 +67,7 @@ public class CartService {
     }
 
     public void clearCart(Long customerId) {
+        lockCustomer(customerId);
         Optional<Cart> cart =cartRepository.findByCustomerId(customerId);
         if (cart.isPresent() && cart.get().getProducts() != null) {
             cart.get().getProducts().clear();
@@ -70,5 +75,11 @@ public class CartService {
         }
     }
 
+    private Customers lockCustomer(Long customerId) {
+        // Every cart mutation must first lock the same stable row, including creation.
+        // The enclosing service transaction retains this lock through commit/rollback.
+        return customersRepository.findByIdForUpdate(customerId)
+                .orElseThrow(() -> new IllegalArgumentException("Customer not found: " + customerId));
+    }
 
 }
