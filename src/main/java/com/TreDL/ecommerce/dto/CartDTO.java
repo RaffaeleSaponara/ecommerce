@@ -42,6 +42,10 @@ public class CartDTO {
     }
 
     public void setItems(List<Products> items) {
+        if (items == null) {
+            this.items = List.of();
+            return;
+        }
         List<ProductDTO> productsDTO = new ArrayList<>();
         Map<Long, Integer> map = new HashMap<>();
 
