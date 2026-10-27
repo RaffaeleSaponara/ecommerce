@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="it" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
+  <meta name="_csrf" th:content="${_csrf.token}">
+  <meta name="_csrf_header" th:content="${_csrf.headerName}">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Carrello - Lure Lab</title>
@@ -26,7 +28,7 @@
         <a href="/login" class="login-button" id="loginButton">Login</a>
         <a href="/user" class="icon-link" id="profileIcon" style="display: none;">Profilo</a>
         <a href="/cart" class="icon-link" id="cartIcon" style="display: none;">Carrello</a>
-        <a href="/logout" class="logout-button" id="logoutButton" style="display: none;">Logout</a>
+        <form method="post" th:action="@{/logout}" style="display: contents;"><button type="submit" class="logout-button" id="logoutButton" style="display: none;">Logout</button></form>
       </div>
     </div>
   </nav>
@@ -59,7 +61,7 @@
           <span>Totale</span>
           <strong>€<span id="totale">0.00</span></strong>
         </div>
-        <a href="/cart/checkout" class="payment-button" id="paymentButton">Conferma ordine</a>
+        <form method="post" th:action="@{/cart/checkout}"><button type="submit" class="payment-button" id="paymentButton">Conferma ordine</button></form>
       </aside>
     </section>
   </main>
@@ -71,7 +73,8 @@
   <script>
     function rimuoviProdotto(id) {
       fetch(`/cart/remove/${id}`, {
-        method: "DELETE"
+        method: "DELETE",
+        headers: { [document.querySelector('meta[name="_csrf_header" ]').content]: document.querySelector('meta[name="_csrf" ]').content }
       })
       .then(response => {
         if (!response.ok) {
@@ -88,7 +91,8 @@
       fetch("/cart/add", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          [document.querySelector('meta[name="_csrf_header" ]').content]: document.querySelector('meta[name="_csrf" ]').content
         },
         body: JSON.stringify(idProdotto)
       })
