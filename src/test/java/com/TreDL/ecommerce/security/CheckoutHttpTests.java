@@ -73,6 +73,7 @@ class CheckoutHttpTests {
         MockHttpSession session = login();
         when(customersService.getByEmail(customer.getEmail())).thenReturn(customer);
         when(cartRepository.findByCustomer(customer)).thenReturn(Optional.of(cart));
+        when(customersRepository.findByIdForUpdate(customer.getId())).thenReturn(Optional.of(customer));
         when(cartRepository.findByCustomerId(customer.getId())).thenReturn(Optional.of(cart));
         Orders order = new Orders(9L, LocalDateTime.of(2026, 10, 27, 12, 0), 25.0,
                 "In elaborazione", new ArrayList<>(cart.getProducts()), customer);
@@ -105,9 +106,11 @@ class CheckoutHttpTests {
         // quantita is currently the ProductDTO default; no future order-item semantics are assumed.
         assertThat(cart.getProducts()).isEmpty();
         assertThat(order.getProducts()).containsExactly(product, product);
-        var calls = inOrder(ordersService, cartRepository);
-        calls.verify(cartRepository, times(2)).findByCustomer(customer);
+        var calls = inOrder(customersRepository, ordersService, cartRepository);
+        calls.verify(customersRepository).findByIdForUpdate(customer.getId());
+        calls.verify(cartRepository).findByCustomer(customer);
         calls.verify(ordersService).createOrder(cart);
+        calls.verify(customersRepository).findByIdForUpdate(customer.getId());
         calls.verify(cartRepository).findByCustomerId(customer.getId());
         calls.verify(cartRepository).save(cart);
         verify(customersService).getByEmail(customer.getEmail());
