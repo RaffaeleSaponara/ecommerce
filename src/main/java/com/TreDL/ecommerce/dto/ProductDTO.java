@@ -1,7 +1,8 @@
 package com.TreDL.ecommerce.dto;
 
 import com.TreDL.ecommerce.model.Products;
-import lombok.Data;
+import java.math.BigDecimal;
+import com.TreDL.ecommerce.model.Money;
 
 
 public class ProductDTO {
@@ -9,7 +10,7 @@ public class ProductDTO {
     private Long id;
     private String nome;
     private String descrizione;
-    private double prezzo;
+    private BigDecimal prezzo;
     private String categoria;
     private String image;
     private int quantita;
@@ -42,12 +43,12 @@ public class ProductDTO {
         this.descrizione = descrizione;
     }
 
-    public double getPrezzo() {
+    public BigDecimal getPrezzo() {
         return prezzo;
     }
 
-    public void setPrezzo(double prezzo) {
-        this.prezzo = prezzo;
+    public void setPrezzo(BigDecimal prezzo) {
+        this.prezzo = Money.validate(prezzo);
     }
 
     public String getCategoria() {

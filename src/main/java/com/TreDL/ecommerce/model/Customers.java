@@ -17,18 +17,18 @@ public class Customers {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "customer")
     @ToString.Exclude
     private List<Orders> orders;
-    @OneToOne(mappedBy = "customer", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "customer", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private Cart cart;
-    @Column(name = "username")
+    @Column(name = "username", nullable = false, unique = true)
     private String username;
-    @Column(name = "password")
+    @Column(name = "password", nullable = false)
     private String password;
     @Column(name = "email")
     private String email;
-    @Column(name = "role")
+    @Column(name = "role", nullable = false)
     private String role;
 
 

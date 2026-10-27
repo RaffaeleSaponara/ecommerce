@@ -11,7 +11,7 @@ import com.TreDL.ecommerce.repository.CustomersRepository;
 import com.TreDL.ecommerce.service.CartService;
 import com.TreDL.ecommerce.service.CustomUserDetailsService;
 import com.TreDL.ecommerce.service.CustomersService;
-import com.TreDL.ecommerce.service.OrdersService;
+import com.TreDL.ecommerce.service.CheckoutService;
 import com.TreDL.ecommerce.service.ProductsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,6 +28,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
+import com.TreDL.ecommerce.dto.*;
+import com.TreDL.ecommerce.model.OrderItem;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -51,7 +54,7 @@ class CheckoutHttpTests {
     @MockitoBean CartRepository cartRepository;
     @MockitoBean CustomersService customersService;
     @MockitoBean ProductsService productsService;
-    @MockitoBean OrdersService ordersService;
+    @MockitoBean CheckoutService checkoutService;
 
     private Customers customer;
     private Products product;
@@ -61,7 +64,10 @@ class CheckoutHttpTests {
     void fixtures() {
         customer = new Customers(41L, null, null, "Checkout customer",
                 passwords.encode("checkout-password"), "checkout@example.com", "USER");
-        product = new Products(7L, 12.5, "Jig", "Description", "Hardbaits", "/images/b1.jpg", null, null);
+        product = new Products();
+        org.springframework.test.util.ReflectionTestUtils.setField(product, "id", 7L);
+        product.setPrezzo(new BigDecimal("12.50")); product.setNome("Jig");
+        product.setDescrizione("Description"); product.setCategoria("Hardbaits"); product.setImage("/images/b1.jpg");
         cart = new Cart(3L, customer, new ArrayList<>(List.of(product, product)));
         // Cycles and credentials must never escape through the order DTO.
         customer.setCart(cart);
@@ -69,53 +75,39 @@ class CheckoutHttpTests {
     }
 
     @Test
-    void postWithLoginSessionAndCsrfReturnsCurrentOrderJsonAndClearsCart() throws Exception {
+    void postWithLoginSessionAndCsrfDelegatesToAtomicCheckoutAndReturnsOnlyDto() throws Exception {
         MockHttpSession session = login();
-        when(customersService.getByEmail(customer.getEmail())).thenReturn(customer);
-        when(cartRepository.findByCustomer(customer)).thenReturn(Optional.of(cart));
-        when(customersRepository.findByIdForUpdate(customer.getId())).thenReturn(Optional.of(customer));
-        when(cartRepository.findByCustomerId(customer.getId())).thenReturn(Optional.of(cart));
-        Orders order = new Orders(9L, LocalDateTime.of(2026, 10, 27, 12, 0), 25.0,
-                "In elaborazione", new ArrayList<>(cart.getProducts()), customer);
+        Orders order = new Orders();
+        order.setCustomer(customer); order.setDate(LocalDateTime.of(2026, 10, 27, 12, 0));
+        order.setTotal(new BigDecimal("25.00")); order.setShipment("In elaborazione");
+        order.addItem(new OrderItem(order, 1, product, 2));
         customer.setOrders(List.of(order));
-        product.setOrders(List.of(order));
-        when(ordersService.createOrder(cart)).thenReturn(order);
+        when(checkoutService.checkout(eq(customer.getEmail()), eq("client-key"), any()))
+                .thenReturn(OrderDTO.convertToDTO(order));
 
-        String body = mvc.perform(post("/cart/checkout").session(session).with(csrf()))
+        String body = mvc.perform(post("/cart/checkout").session(session).with(csrf())
+                        .header("Idempotency-Key", "client-key").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"quoteToken\":\"signed-quote\",\"confirmPrices\":true}"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$", aMapWithSize(4)))
+                .andExpect(jsonPath("$", aMapWithSize(6)))
                 .andExpect(jsonPath("$.date").value("2026-10-27T12:00:00"))
-                .andExpect(jsonPath("$.total").value(25.0))
+                .andExpect(jsonPath("$.total").isNumber()).andExpect(jsonPath("$.total").value(25.0))
+                .andExpect(jsonPath("$.currency").value("EUR"))
                 .andExpect(jsonPath("$.shipment").value("In elaborazione"))
-                .andExpect(jsonPath("$.products", hasSize(2)))
-                .andExpect(jsonPath("$.products[0]", aMapWithSize(7)))
-                .andExpect(jsonPath("$.products[1]", aMapWithSize(7)))
-                .andExpect(content().json("""
-                        {"date":"2026-10-27T12:00:00","total":25.0,"shipment":"In elaborazione",
-                         "products":[
-                           {"id":7,"nome":"Jig","descrizione":"Description","prezzo":12.5,
-                            "categoria":"Hardbaits","image":"/images/b1.jpg","quantita":0},
-                           {"id":7,"nome":"Jig","descrizione":"Description","prezzo":12.5,
-                            "categoria":"Hardbaits","image":"/images/b1.jpg","quantita":0}]}
-                        """))
+                .andExpect(jsonPath("$.items", hasSize(1)))
+                .andExpect(jsonPath("$.items[0]", aMapWithSize(5)))
+                .andExpect(jsonPath("$.items[0].quantity").value(2))
+                .andExpect(jsonPath("$.items[0].unitPrice").isNumber())
+                .andExpect(jsonPath("$.items[0].subtotal").value(25.0))
                 .andReturn().getResponse().getContentAsString();
-
         assertThat(body).doesNotContain("password", "checkout-password", customer.getPassword(),
-                "customer", "orders", "carts", "hibernateLazyInitializer", "handler");
-        // quantita is currently the ProductDTO default; no future order-item semantics are assumed.
-        assertThat(cart.getProducts()).isEmpty();
-        assertThat(order.getProducts()).containsExactly(product, product);
-        var calls = inOrder(customersRepository, ordersService, cartRepository);
-        calls.verify(customersRepository).findByIdForUpdate(customer.getId());
-        calls.verify(cartRepository).findByCustomer(customer);
-        calls.verify(ordersService).createOrder(cart);
-        calls.verify(customersRepository).findByIdForUpdate(customer.getId());
-        calls.verify(cartRepository).findByCustomerId(customer.getId());
-        calls.verify(cartRepository).save(cart);
-        verify(customersService).getByEmail(customer.getEmail());
-        verifyNoMoreInteractions(ordersService, cartRepository, customersService);
-        verifyNoInteractions(productsService);
+                "customer", "orders", "carts", "hibernateLazyInitializer", "handler", "requestHash", "idempotencyKey");
+        verify(checkoutService).checkout(customer.getEmail(), "client-key", new CheckoutRequest("signed-quote", true));
+        verifyNoMoreInteractions(checkoutService);
+        verifyNoInteractions(customersService, cartRepository, productsService);
+        // The controller performs no separate mutation outside the service transaction.
+        assertThat(cart.getProducts()).containsExactly(product, product);
     }
 
     @ParameterizedTest
@@ -126,7 +118,7 @@ class CheckoutHttpTests {
                 .andExpect(status().isMethodNotAllowed())
                 .andExpect(header().string("Allow", "POST"));
         assertThat(cart.getProducts()).containsExactly(product, product);
-        verifyNoInteractions(customersService, cartRepository, ordersService, productsService);
+        verifyNoInteractions(customersService, cartRepository, checkoutService, productsService);
     }
 
     @ParameterizedTest
@@ -137,13 +129,13 @@ class CheckoutHttpTests {
         if (invalid) request.with(csrf().useInvalidToken());
         mvc.perform(request).andExpect(status().isForbidden());
         assertThat(cart.getProducts()).containsExactly(product, product);
-        verifyNoInteractions(customersService, cartRepository, ordersService, productsService);
+        verifyNoInteractions(customersService, cartRepository, checkoutService, productsService);
     }
 
     @Test
     void anonymousPostWithValidCsrfRequiresAuthentication() throws Exception {
         mvc.perform(post("/cart/checkout").with(csrf())).andExpect(status().isUnauthorized());
-        verifyNoInteractions(customersService, cartRepository, ordersService, productsService);
+        verifyNoInteractions(customersService, cartRepository, checkoutService, productsService);
     }
 
     @Test
@@ -155,7 +147,7 @@ class CheckoutHttpTests {
                 .andExpect(redirectedUrl("/login?error"));
         mvc.perform(post("/cart/checkout").session(session).with(csrf()))
                 .andExpect(status().isUnauthorized());
-        verifyNoInteractions(customersService, cartRepository, ordersService, productsService);
+        verifyNoInteractions(customersService, cartRepository, checkoutService, productsService);
     }
 
     @ParameterizedTest
@@ -170,7 +162,7 @@ class CheckoutHttpTests {
         assertThat(cart.getProducts()).containsExactly(product, product);
         verify(cartRepository).findByCustomer(customer);
         verifyNoMoreInteractions(cartRepository);
-        verifyNoInteractions(ordersService, productsService);
+        verifyNoInteractions(checkoutService, productsService);
     }
 
     @ParameterizedTest
@@ -185,7 +177,7 @@ class CheckoutHttpTests {
         assertThat(customer.getCart()).isNull();
         verify(cartRepository).findByCustomer(customer);
         verifyNoMoreInteractions(cartRepository);
-        verifyNoInteractions(ordersService, productsService);
+        verifyNoInteractions(checkoutService, productsService);
     }
 
     private MockHttpSession login() throws Exception {

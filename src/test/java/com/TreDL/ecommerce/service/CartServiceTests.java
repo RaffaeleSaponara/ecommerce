@@ -37,6 +37,7 @@ class CartServiceTests {
     @Autowired private CustomersRepository customers;
     @Autowired private ProductsRepository products;
     @Autowired private PlatformTransactionManager transactionManager;
+    @Autowired private org.springframework.jdbc.core.JdbcTemplate fixtureJdbc;
 
     private TransactionTemplate transactions;
     private Customers customer;
@@ -54,9 +55,11 @@ class CartServiceTests {
     @AfterEach
     void cleanCommittedFixtures() {
         transactions.executeWithoutResult(status -> {
-            carts.deleteAll();
-            customers.deleteAll();
-            products.deleteAll();
+            // Explicit fixture cleanup: no dependency on destructive customer cascades.
+            // This class runs only against its isolated H2 in-memory test datasource.
+            for (String table : List.of("cart_products", "cart", "customers", "products")) {
+                fixtureJdbc.update("DELETE FROM " + table);
+            }
         });
     }
 
@@ -203,7 +206,7 @@ class CartServiceTests {
         result.setNome(name);
         result.setDescrizione("Test product");
         result.setCategoria("Hardbaits");
-        result.setPrezzo(10.0);
+        result.setPrezzo(new java.math.BigDecimal("10.00"));
         result.setImage("/images/test.jpg");
         return products.saveAndFlush(result);
     }

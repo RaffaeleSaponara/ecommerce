@@ -4,10 +4,13 @@ import com.TreDL.ecommerce.model.Products;
 import com.TreDL.ecommerce.repository.ProductsRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 import java.util.List;
+import java.math.BigDecimal;
 
 @Component
+@ConditionalOnProperty(name = "app.data-initializer.enabled", havingValue = "true", matchIfMissing = true)
 public class DataInitializer implements CommandLineRunner {
     private final ProductsRepository productsRepository;
 
@@ -25,28 +28,28 @@ public class DataInitializer implements CommandLineRunner {
                 "Jig Natural Craw",
                 "Jig artigianale con skirt siliconico e finitura naturale, pensato per bass in cover e fondali misti.",
                 "Hardbaits",
-                12.90,
+                new BigDecimal("12.90"),
                 "/images/b1.jpg"
         );
         Products chatterDark = createProduct(
                 "Chatterbait Dark Flash",
                 "Chatterbait compatta con vibrazione marcata e palette scura per acqua velata.",
                 "Hardbaits",
-                14.50,
+                new BigDecimal("14.50"),
                 "/images/b4.jpg"
         );
         Products softShad = createProduct(
                 "Soft Shad Pearl",
                 "Softbait shad con profilo realistico e coda ad alta mobilita per recuperi lenti.",
                 "Softbaits",
-                7.90,
+                new BigDecimal("7.90"),
                 "/images/b8.jpg"
         );
 
         productsRepository.saveAll(List.of(jigNatural, chatterDark, softShad));
     }
 
-    private Products createProduct(String nome, String descrizione, String categoria, double prezzo, String image) {
+    private Products createProduct(String nome, String descrizione, String categoria, BigDecimal prezzo, String image) {
         Products product = new Products();
         product.setNome(nome);
         product.setDescrizione(descrizione);

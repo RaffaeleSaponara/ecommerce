@@ -4,17 +4,17 @@ import com.TreDL.ecommerce.dto.CartDTO;
 import com.TreDL.ecommerce.dto.OrderDTO;
 import com.TreDL.ecommerce.model.Cart;
 import com.TreDL.ecommerce.model.Customers;
-import com.TreDL.ecommerce.model.Orders;
 import com.TreDL.ecommerce.model.Products;
 import com.TreDL.ecommerce.service.CartService;
 import com.TreDL.ecommerce.service.CustomersService;
-import com.TreDL.ecommerce.service.OrdersService;
+import com.TreDL.ecommerce.service.CheckoutService;
+import com.TreDL.ecommerce.dto.CheckoutRequest;
+import com.TreDL.ecommerce.dto.QuoteDTO;
 import com.TreDL.ecommerce.service.ProductsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/cart")
@@ -27,7 +27,7 @@ public class CartController {
     @Autowired
     private CustomersService customersService;
     @Autowired
-    private OrdersService ordersService;
+    private CheckoutService checkoutService;
 
     @GetMapping("/view")
     public CartDTO getCart(Principal principal) {
@@ -49,12 +49,14 @@ public class CartController {
         cartService.removeProductToCart(customer, product);
     }
 
-    @PostMapping("/checkout")
-    public OrderDTO checkout(Principal principal) {
-        Customers customer= customersService.getByEmail(principal.getName());
-        Cart cart = cartService.getCart(customer);
-        Orders order = ordersService.createOrder(cart);
-        cartService.clearCart(customer.getId());
-        return OrderDTO.convertToDTO(order);
+    @PostMapping("/quote")
+    public QuoteDTO quote(Principal principal) {
+        return checkoutService.quote(principal.getName());
+    }
+
+    @PostMapping(value = "/checkout", consumes = "application/json")
+    public OrderDTO checkout(@RequestHeader("Idempotency-Key") String key,
+                             @RequestBody CheckoutRequest request, Principal principal) {
+        return checkoutService.checkout(principal.getName(), key, request);
     }
 }

@@ -21,6 +21,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
+import com.TreDL.ecommerce.dto.*;
+import com.TreDL.ecommerce.model.OrderItem;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,7 +46,7 @@ class SessionSecurityTests {
     @MockitoBean CustomersService customersService;
     @MockitoBean CartService cartService;
     @MockitoBean ProductsService productsService;
-    @MockitoBean OrdersService ordersService;
+    @MockitoBean CheckoutService checkoutService;
 
     private Customers customer;
     private Products product;
@@ -55,7 +58,10 @@ class SessionSecurityTests {
         customer.setEmail("alice@example.com");
         customer.setPassword(passwords.encode("test-password"));
         customer.setRole("USER");
-        product = new Products(7L, 12.5, "Jig", "Description", "Hardbaits", "/images/b1.jpg", null, null);
+        product = new Products();
+        org.springframework.test.util.ReflectionTestUtils.setField(product, "id", 7L);
+        product.setPrezzo(new BigDecimal("12.50")); product.setNome("Jig");
+        product.setDescrizione("Description"); product.setCategoria("Hardbaits"); product.setImage("/images/b1.jpg");
         cart = new Cart(3L, customer, List.of(product));
         // Cyclic graph deliberately includes a password hash and private relationships.
         customer.setCart(cart);
@@ -131,7 +137,7 @@ class SessionSecurityTests {
                 .andExpect(content().json("{\"id\":null,\"id_customer\":null,\"items\":[]}"));
         verify(cartService).getCartForView(customer);
         verifyNoMoreInteractions(cartService);
-        verifyNoInteractions(ordersService);
+        verifyNoInteractions(checkoutService);
     }
 
     @Test
@@ -148,7 +154,7 @@ class SessionSecurityTests {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"/login", "/signup", "/logout", "/cart/add", "/cart/remove/7", "/cart/checkout"})
+    @ValueSource(strings = {"/login", "/signup", "/logout", "/cart/add", "/cart/remove/7", "/cart/checkout", "/cart/quote"})
     void mutationsRejectMissingAndInvalidCsrf(String path) throws Exception {
         for (boolean invalid : new boolean[]{false, true}) {
             MockHttpServletRequestBuilder request = (path.contains("remove") ? delete(path) : post(path))
@@ -156,7 +162,7 @@ class SessionSecurityTests {
             if (invalid) request.with(csrf().useInvalidToken());
             mvc.perform(request).andExpect(status().isForbidden());
         }
-        verifyNoInteractions(cartService, ordersService, customersService);
+        verifyNoInteractions(cartService, checkoutService, customersService);
     }
 
     @Test
@@ -165,7 +171,7 @@ class SessionSecurityTests {
                 .andExpect(status().isUnauthorized());
         mvc.perform(post("/cart/checkout").with(csrf())).andExpect(status().isUnauthorized());
         mvc.perform(delete("/cart/remove/7").with(csrf())).andExpect(status().isUnauthorized());
-        verifyNoInteractions(cartService, ordersService);
+        verifyNoInteractions(cartService, checkoutService);
     }
 
     @Test
@@ -191,24 +197,28 @@ class SessionSecurityTests {
                 .andExpect(status().isMethodNotAllowed());
         mvc.perform(head("/cart/checkout").with(user(customer.getEmail())))
                 .andExpect(status().isMethodNotAllowed());
-        verifyNoInteractions(ordersService, cartService);
+        verifyNoInteractions(checkoutService, cartService);
     }
 
     @Test
     void checkoutPostReturnsDtoWithoutCustomerOrJpaGraph() throws Exception {
-        Orders order = new Orders(1L, LocalDateTime.of(2026, 1, 1, 12, 0), 12.5,
-                "In elaborazione", List.of(product), customer);
+        Orders order = new Orders();
+        order.setCustomer(customer); order.setDate(LocalDateTime.of(2026, 1, 1, 12, 0));
+        order.setTotal(new BigDecimal("12.50")); order.setShipment("In elaborazione");
+        order.addItem(new OrderItem(order, 1, product, 1));
         customer.setOrders(List.of(order));
-        product.setOrders(List.of(order));
-        when(ordersService.createOrder(cart)).thenReturn(order);
-        String body = mvc.perform(post("/cart/checkout").with(user(customer.getEmail())).with(csrf()))
-                .andExpect(status().isOk()).andExpect(jsonPath("$.total").value(12.5))
-                .andExpect(jsonPath("$", aMapWithSize(4)))
-                .andExpect(jsonPath("$.products[0]", aMapWithSize(7)))
+        when(checkoutService.checkout(eq(customer.getEmail()), eq("key"), any())).thenReturn(OrderDTO.convertToDTO(order));
+        String body = mvc.perform(post("/cart/checkout").with(user(customer.getEmail())).with(csrf())
+                        .header("Idempotency-Key", "key").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"quoteToken\":\"signed-quote\",\"confirmPrices\":true}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.total").isNumber())
+                .andExpect(jsonPath("$.total").value(12.5))
+                .andExpect(jsonPath("$", aMapWithSize(6)))
+                .andExpect(jsonPath("$.items[0]", aMapWithSize(5)))
                 .andReturn().getResponse().getContentAsString();
-        assertThat(body).doesNotContain("password", customer.getPassword(), "customer", "orders", "carts");
-        verify(ordersService).createOrder(cart);
-        verify(cartService).clearCart(customer.getId());
+        assertThat(body).doesNotContain("password", customer.getPassword(), "customer", "orders", "carts", "requestHash", "idempotencyKey");
+        verify(checkoutService).checkout(customer.getEmail(), "key", new CheckoutRequest("signed-quote", true));
+        verifyNoInteractions(cartService);
     }
 
     @Test

@@ -47,6 +47,7 @@ class CartConcurrencyTests {
     @Autowired private CustomersRepository customers;
     @Autowired private ProductsRepository products;
     @Autowired private PlatformTransactionManager transactionManager;
+    @Autowired private org.springframework.jdbc.core.JdbcTemplate fixtureJdbc;
     @Autowired private EntityManager entityManager;
     @Autowired private EntityManagerFactory entityManagerFactory;
 
@@ -66,7 +67,7 @@ class CartConcurrencyTests {
             otherCustomer = newCustomer("independent");
             Products item = new Products();
             item.setNome("Concurrent product");
-            item.setPrezzo(10.0);
+            item.setPrezzo(new java.math.BigDecimal("10.00"));
             product = products.saveAndFlush(item);
         });
     }
@@ -76,9 +77,11 @@ class CartConcurrencyTests {
         workers.shutdownNow();
         assertThat(workers.awaitTermination(10, TimeUnit.SECONDS)).isTrue();
         transactions.executeWithoutResult(status -> {
-            carts.deleteAll();
-            customers.deleteAll();
-            products.deleteAll();
+            // Explicit fixture cleanup: no dependency on destructive customer cascades.
+            // This class runs only against its isolated H2 in-memory test datasource.
+            for (String table : List.of("cart_products", "cart", "customers", "products")) {
+                fixtureJdbc.update("DELETE FROM " + table);
+            }
         });
     }
 

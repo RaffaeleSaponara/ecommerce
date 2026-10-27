@@ -41,6 +41,7 @@ public class CartDTO {
         return items;
     }
 
+    /** Aggregate occurrences for display; ProductDTO retains exact BigDecimal prices. */
     public void setItems(List<Products> items) {
         if (items == null) {
             this.items = List.of();

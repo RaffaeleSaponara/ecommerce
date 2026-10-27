@@ -1,15 +1,12 @@
 package com.TreDL.ecommerce.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Cleanup;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.math.BigDecimal;
 
 @Entity
-@AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "products")
 public class Products {
@@ -19,9 +16,9 @@ public class Products {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "prezzo")
-    private Double prezzo;
-    @Column(name = "nome")
+    @Column(name = "prezzo", nullable = false, precision = 19, scale = 2)
+    private BigDecimal prezzo;
+    @Column(name = "nome", nullable = false)
     private String nome;
     @Column(name = "descrizione")
     private String descrizione;
@@ -31,23 +28,23 @@ public class Products {
     private String image;
 
     @ManyToMany(mappedBy = "products")
-    private List<Orders> orders;
-
-    @ManyToMany(mappedBy = "products")
     private List<Cart> carts;
 
+
+    @PrePersist @PreUpdate
+    private void validatePrice() { prezzo = Money.validate(prezzo); }
 
     public Long getId() {
         return id;
     }
 
 
-    public Double getPrezzo() {
+    public BigDecimal getPrezzo() {
         return prezzo;
     }
 
-    public void setPrezzo(Double prezzo) {
-        this.prezzo = prezzo;
+    public void setPrezzo(BigDecimal prezzo) {
+        this.prezzo = Money.validate(prezzo);
     }
 
     public String getNome() {
@@ -72,14 +69,6 @@ public class Products {
 
     public void setCategoria(String categoria) {
         this.categoria = categoria;
-    }
-
-    public List<Orders> getOrders() {
-        return orders;
-    }
-
-    public void setOrders(List<Orders> orders) {
-        this.orders = orders;
     }
 
     public List<Cart> getCarts() {

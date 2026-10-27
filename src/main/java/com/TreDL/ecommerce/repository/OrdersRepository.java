@@ -7,5 +7,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface OrdersRepository extends JpaRepository<Orders, Long> {
+    java.util.Optional<Orders> findByCustomerIdAndIdempotencyKey(Long customerId, byte[] idempotencyKey);
 
 }
