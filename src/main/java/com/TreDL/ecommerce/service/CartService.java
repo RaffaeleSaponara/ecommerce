@@ -22,6 +22,12 @@ public class CartService {
     @Autowired
     private CustomersRepository customersRepository;
 
+    @Transactional(readOnly = true)
+    public Cart getCartForView(Customers customer) {
+        return cartRepository.findByCustomer(customer)
+                .orElseGet(() -> new Cart(null, customer, List.of()));
+    }
+
     public Cart getCart(Customers customer) {
         if(cartRepository.findByCustomer(customer).isPresent()){
             return cartRepository.findByCustomer(customer).get();

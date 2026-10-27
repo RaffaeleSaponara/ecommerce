@@ -782,7 +782,7 @@
             <a class="hero-login-button" href="/login" id="loginButton">Login</a>
             <a class="hero-account-link is-hidden" href="/user" id="profileLink">Profilo</a>
             <a class="hero-account-link is-hidden" href="/cart" id="cartLink">Carrello</a>
-            <a class="hero-logout-button is-hidden" href="/logout" id="logoutButton">Logout</a>
+            <form method="post" th:action="@{/logout}" style="display: contents;"><button type="submit" class="hero-logout-button is-hidden" id="logoutButton">Logout</button></form>
           </div>
         </div>
       </div>

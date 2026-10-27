@@ -1,6 +1,7 @@
 package com.TreDL.ecommerce.controller;
 
 import com.TreDL.ecommerce.dto.CartDTO;
+import com.TreDL.ecommerce.dto.OrderDTO;
 import com.TreDL.ecommerce.model.Cart;
 import com.TreDL.ecommerce.model.Customers;
 import com.TreDL.ecommerce.model.Orders;
@@ -31,14 +32,14 @@ public class CartController {
     @GetMapping("/view")
     public CartDTO getCart(Principal principal) {
         Customers customer= customersService.getByEmail(principal.getName());
-        return CartDTO.convertToDTO(cartService.getCart(customer));
+        return CartDTO.convertToDTO(cartService.getCartForView(customer));
     }
 
     @PostMapping("/add")
-    public Cart addProduct(@RequestBody Long productId, Principal principal) {
+    public CartDTO addProduct(@RequestBody Long productId, Principal principal) {
         Customers customer= customersService.getByEmail(principal.getName());
         Products product = productsService.getById(productId);
-        return cartService.addProductToCart(customer, product);
+        return CartDTO.convertToDTO(cartService.addProductToCart(customer, product));
     }
 
     @DeleteMapping("/remove/{productId}")
@@ -48,12 +49,12 @@ public class CartController {
         cartService.removeProductToCart(customer, product);
     }
 
-    @GetMapping("/checkout")
-    public Orders checkout(Principal principal) {
+    @PostMapping("/checkout")
+    public OrderDTO checkout(Principal principal) {
         Customers customer= customersService.getByEmail(principal.getName());
         Cart cart = cartService.getCart(customer);
         Orders order = ordersService.createOrder(cart);
         cartService.clearCart(customer.getId());
-        return order;
+        return OrderDTO.convertToDTO(order);
     }
 }
