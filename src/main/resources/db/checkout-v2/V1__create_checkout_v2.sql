@@ -60,14 +60,17 @@ CREATE TABLE orders (
 CREATE TABLE order_items (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     id_order BIGINT NOT NULL,
+    line_number INTEGER NOT NULL,
     id_product BIGINT,
     product_name VARCHAR(255) NOT NULL,
     unit_price DECIMAL(19,2) NOT NULL,
     quantity INT NOT NULL,
+    CONSTRAINT uq_order_items_order_line UNIQUE (id_order, line_number),
     CONSTRAINT fk_order_items_order FOREIGN KEY (id_order) REFERENCES orders(id),
     CONSTRAINT fk_order_items_product FOREIGN KEY (id_product) REFERENCES products(id) ON DELETE SET NULL,
     CONSTRAINT ck_order_items_price CHECK (unit_price >= 0),
-    CONSTRAINT ck_order_items_quantity CHECK (quantity > 0)
+    CONSTRAINT ck_order_items_quantity CHECK (quantity > 0),
+    CONSTRAINT ck_order_items_line_number CHECK (line_number > 0)
 );
 CREATE INDEX ix_order_items_order ON order_items(id_order);
 CREATE INDEX ix_order_items_product ON order_items(id_product);

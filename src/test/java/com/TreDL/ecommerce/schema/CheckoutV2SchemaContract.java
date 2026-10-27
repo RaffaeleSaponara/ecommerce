@@ -101,7 +101,73 @@ abstract class CheckoutV2SchemaContract {
             assertThat(result.getString("product_name")).isEqualTo("Original");
             assertThat(result.getBigDecimal("unit_price")).isEqualByComparingTo("0.10");
             assertThat(result.getInt("quantity")).isEqualTo(3);
+            assertThat(result.getInt("line_number")).isEqualTo(1);
         }
+    }
+
+    @Test
+    void committedLineNumbersDefineHistoricalOrderRegardlessOfInsertionOrder() throws Exception {
+        order(1, 1, "line-order", new BigDecimal("0.60"));
+        item(1, 3, 1, "Third", "0.30", 1);
+        item(1, 1, 1, "First", "0.10", 1);
+        item(1, 2, 1, "Second", "0.20", 1);
+        db.commit();
+        try (var reader = DriverManager.getConnection(jdbcUrl, username(), password());
+             var statement = reader.prepareStatement(
+                     "SELECT line_number, product_name FROM order_items WHERE id_order = ? ORDER BY line_number")) {
+            statement.setLong(1, 1);
+            try (var result = statement.executeQuery()) {
+                String[] names = {"First", "Second", "Third"};
+                for (int index = 0; index < names.length; index++) {
+                    assertThat(result.next()).isTrue();
+                    assertThat(result.getInt("line_number")).isEqualTo(index + 1);
+                    assertThat(result.getString("product_name")).isEqualTo(names[index]);
+                }
+                assertThat(result.next()).isFalse();
+            }
+        }
+    }
+
+    @Test
+    void duplicateLineNumbersInTheSameOrderAreRejectedOnInsertAndUpdate() throws Exception {
+        order(1, 1, "duplicate-line", new BigDecimal("0.20"));
+        item(1, 1, 1, "First", "0.10", 1);
+        assertThatThrownBy(() -> item(1, 1, 1, "Duplicate", "0.10", 1))
+                .isInstanceOf(SQLException.class);
+        item(1, 2, 1, "Second", "0.10", 1);
+        assertThatThrownBy(() -> sql("UPDATE order_items SET line_number = 1 WHERE id_order = 1 AND line_number = 2"))
+                .isInstanceOf(SQLException.class);
+        assertThat(scalarDecimal("SELECT COUNT(*) FROM order_items WHERE id_order = 1"))
+                .isEqualByComparingTo("2");
+        assertThat(scalarDecimal("SELECT COUNT(*) FROM order_items WHERE id_order = 1 AND line_number = 2"))
+                .isEqualByComparingTo("1");
+    }
+
+    @Test
+    void lineNumbersCanBeReusedAcrossOrdersOfTheSameCustomer() throws Exception {
+        order(1, 1, "first-order", new BigDecimal("0.10"));
+        order(2, 1, "second-order", new BigDecimal("0.10"));
+        item(1, 1, 1, "First order", "0.10", 1);
+        item(2, 1, 1, "Second order", "0.10", 1);
+        assertThat(scalarDecimal("SELECT COUNT(*) FROM order_items WHERE line_number = 1"))
+                .isEqualByComparingTo("2");
+    }
+
+    @Test
+    void lineNumbersMustBePresentAndPositiveOnInsertAndUpdate() throws Exception {
+        order(1, 1, "invalid-line", new BigDecimal("0.10"));
+        for (Integer invalid : new Integer[] {null, 0, -1}) {
+            assertThatThrownBy(() -> item(1, invalid, 1, "Invalid", "0.10", 1))
+                    .isInstanceOf(SQLException.class);
+        }
+        assertThat(scalarDecimal("SELECT COUNT(*) FROM order_items")).isEqualByComparingTo("0");
+        item(1, 1, 1, "Valid", "0.10", 1);
+        for (String invalid : new String[] {"NULL", "0", "-1"}) {
+            assertThatThrownBy(() -> sql("UPDATE order_items SET line_number = " + invalid + " WHERE id_order = 1"))
+                    .isInstanceOf(SQLException.class);
+        }
+        assertThat(scalarDecimal("SELECT line_number FROM order_items WHERE id_order = 1"))
+                .isEqualByComparingTo("1");
     }
 
     @Test
@@ -209,12 +275,17 @@ abstract class CheckoutV2SchemaContract {
     }
 
     private void item(long order, long product, String name, String price, int quantity) throws SQLException {
-        try (var statement = db.prepareStatement("INSERT INTO order_items(id_order, id_product, product_name, unit_price, quantity) VALUES (?, ?, ?, ?, ?)")) {
+        item(order, 1, product, name, price, quantity);
+    }
+
+    private void item(long order, Integer lineNumber, long product, String name, String price, int quantity) throws SQLException {
+        try (var statement = db.prepareStatement("INSERT INTO order_items(id_order, id_product, product_name, unit_price, quantity, line_number) VALUES (?, ?, ?, ?, ?, ?)")) {
             statement.setLong(1, order);
             statement.setLong(2, product);
             statement.setString(3, name);
             statement.setBigDecimal(4, new BigDecimal(price));
             statement.setInt(5, quantity);
+            statement.setObject(6, lineNumber, java.sql.Types.INTEGER);
             statement.executeUpdate();
         }
     }

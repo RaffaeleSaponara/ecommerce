@@ -25,7 +25,7 @@ crea tutte le tabelle applicative da un database vuoto:
 | `cart` | Un carrello per cliente |
 | `cart_products` | Lista a occorrenze: coppie duplicate ammesse, senza quantità né vincolo univoco sulla coppia |
 | `orders` | Cliente, data, totale `DECIMAL(19,2)`, valuta EUR, spedizione, chiave di idempotenza e impronta della richiesta |
-| `order_items` | Righe OrderItem: quantità positiva, nome e prezzo unitario storici `DECIMAL(19,2)`, riferimento opzionale al prodotto |
+| `order_items` | Righe OrderItem: `line_number INTEGER NOT NULL` positivo e univoco per ordine, quantità positiva, nome e prezzo unitario storici `DECIMAL(19,2)`, riferimento opzionale al prodotto |
 
 Ogni importo è obbligatorio e non negativo. Intervallo positivo massimo:
 `99999999999999999.99`. Nessun DOUBLE/FLOAT o `order_details` nella V1.
@@ -33,6 +33,18 @@ Ogni importo è obbligatorio e non negativo. Intervallo positivo massimo:
 nome e prezzo storici rimangono nell'ordine. I riferimenti da carrelli ancora
 popolati impediscono invece la cancellazione del prodotto.
 Gli ordini non vengono cancellati implicitamente tramite cascade.
+
+`order_items.line_number` è obbligatorio, con CHECK `line_number > 0`
+(`ck_order_items_line_number`) e UNIQUE `(id_order, line_number)`
+(`uq_order_items_order_line`). La numerazione può ripartire da 1 per ogni
+ordine; il database non impone contiguità né assegnazione automatica.
+Il codice applicativo futuro dovrà assegnare i numeri e leggere lo storico
+con `ORDER BY line_number` all'interno dell'ordine: né l'ID tecnico né
+l'ordine di inserimento garantiscono l'ordinamento delle righe.
+I CHECK sono verificati su H2 e richiedono un MySQL che li applichi;
+il target dei test è MySQL 8.4.3. La V1 viene corretta direttamente perché
+non è stata applicata a database persistenti; non viene introdotta V2.
+`idempotency_key` e `request_hash` restano invariati e NOT NULL.
 
 L'unicità `(id_customer, idempotency_key)` è persistita nel database.
 La chiave è `VARBINARY(128)` per confrontare i byte esatti, senza dipendere
@@ -110,6 +122,12 @@ modifiche, precisione/scala e aritmetica BigDecimal, numero JSON, overflow,
 snapshot dopo modifica/eliminazione del prodotto, chiavi per cliente e
 case-sensitive, lettura da altra connessione dopo commit, vincoli, occorrenze
 duplicate del carrello, rollback e riuso della chiave dopo rollback.
+Il contratto condiviso verifica inoltre persistenza dei numeri di riga dopo
+commit da una nuova connessione, ordinamento storico esplicito dopo inserimenti
+fuori sequenza, rifiuto di duplicati nello stesso ordine (INSERT/UPDATE), riuso
+fra ordini diversi dello stesso cliente e rifiuto di NULL/zero/negativi.
+Le fixture degli altri test includono il numero di riga e continuano a verificare
+prezzi, quantità, FK, snapshot e obbligatorietà delle chiavi di idempotenza.
 H2 in modalità MySQL non sostituisce una prova sul motore MySQL.
 
 ### Risultati del 27 ottobre 2026
@@ -131,6 +149,34 @@ Log locali ignorati da Git: `target/schema-test.log` (prima prova mirata),
 `target/checkout-v2-full-verified.log` (suite finale). Report JUnit:
 `target/surefire-reports/`. Un successivo clean Maven elimina questi artefatti;
 non si tratta di Flyway clean.
+
+### Verifica della correzione line_number — 27 ottobre 2026
+
+Correzione eseguita nel solo worktree dell'Agente Migrazioni, con HEAD detached
+`a92c83f16c3a95dd2a3014004371249165e4b395`. Nessuna V2 aggiunta.
+Le classi H2 e MySQL ereditano gli stessi quattro nuovi test dal contratto JDBC;
+il totale dei casi schema passa da 9 a 13 per motore.
+
+- Comando completo: `.\mvnw.cmd -B test`.
+- Esito finale: **114 casi, 101 passati, 0 fallimenti, 0 errori, 13 saltati**,
+  `BUILD SUCCESS` (24.309 secondi).
+- H2 2.3.232: **13 passati**, inclusi numero di riga persistito dopo commit,
+  ordinamento esplicito, unicità per ordine e vincoli su NULL/zero/negativi.
+- MySQL: **13 saltati**; il motore Docker Desktop Linux non è disponibile
+  (pipe `dockerDesktopLinuxEngine` assente). Il contratto è aggiornato, ma
+  la compatibilità sul motore MySQL reale resta da verificare con Docker attivo.
+- La prima prova nel sandbox aveva 2 errori nei test HTTP preesistenti per
+  loopback negato; la ripetizione con loopback consentito passa anche quei test.
+- Log: `target/line-number-full-test.log` (prima prova) e
+  `target/line-number-full-verified.log` (esito finale); report in
+  `target/surefire-reports/`. Sono artefatti locali ignorati da Git.
+- Nessun database persistente utilizzato; nessun Flyway clean, modifica a
+  entity/DTO/checkout, commit, merge, rebase o push. `DATA_MIGRATION_PLAN.md`
+  preservato integralmente, verificato tramite SHA-256 prima/dopo il riallineamento.
+
+Rimane l'incompatibilità applicativa già descritta: l'applicazione corrente
+non deve essere avviata contro V1 prima dell'adeguamento delle entity e del
+checkout, che dovranno assegnare e usare esplicitamente `line_number`.
 
 ## Passaggio al nuovo schema: operazioni future, non eseguite
 
