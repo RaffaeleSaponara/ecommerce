@@ -123,6 +123,41 @@ abstract class CheckoutIntegrationContract {
         assertThat(replay.items().get(0).unitPrice()).isEqualTo(new BigDecimal("0.10"));
     }
 
+    @Test void profileShowsBothConfirmedOrdersNewestFirstAndOnlyForAuthenticatedCustomer() throws Exception {
+        OrderDTO firstOrder = checkout.checkout(alice.getEmail(), "history-first", confirm(checkout.quote(alice.getEmail())));
+        cartService.addProductToCart(alice, first);
+        OrderDTO secondOrder = checkout.checkout(alice.getEmail(), "history-second", confirm(checkout.quote(alice.getEmail())));
+        cartService.addProductToCart(bob, second);
+        OrderDTO bobOrder = checkout.checkout(bob.getEmail(), "history-bob", confirm(checkout.quote(bob.getEmail())));
+        // Equal timestamps exercise the deterministic ID tie-breaker and UTC-to-Rome formatting.
+        jdbc.update("UPDATE orders SET date = ?", LocalDateTime.of(2026, 10, 28, 12, 0));
+
+        var response = mvc.perform(get("/user").with(user(alice.getEmail()))
+                        .param("email", bob.getEmail()).param("customerId", bob.getId().toString()))
+                .andExpect(status().isOk()).andExpect(view().name("user"))
+                .andReturn();
+        @SuppressWarnings("unchecked")
+        var history = (List<OrderHistoryService.Summary>) response.getModelAndView().getModel().get("orders");
+        assertThat(history).extracting(OrderHistoryService.Summary::id)
+                .containsExactly(secondOrder.id(), firstOrder.id()).doesNotContain(bobOrder.id());
+        assertThat(history).extracting(OrderHistoryService.Summary::total)
+                .containsExactly(new BigDecimal("0.10"), new BigDecimal("0.40"));
+        String html = response.getResponse().getContentAsString();
+        assertThat(html).contains("#" + firstOrder.id(), "#" + secondOrder.id(),
+                "28/10/2026 13:00", "0,40 EUR", "In elaborazione")
+                .doesNotContain("Lo storico ordini non", "Non hai ancora effettuato ordini.");
+        assertThat(orders.count()).isEqualTo(3);
+    }
+
+    @Test void profileShowsEmptyHistoryAndRequiresLogin() throws Exception {
+        mvc.perform(get("/user").with(user(bob.getEmail())))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Non hai ancora effettuato ordini.")));
+        mvc.perform(get("/user").accept(MediaType.TEXT_HTML)).andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("**/login"));
+        assertThat(orders.count()).isZero();
+    }
+
     @Test void replaySurvivesExpiryAndLeavesNewCartUntouched() {
         QuoteDTO quote = checkout.quote(alice.getEmail());
         OrderDTO original = checkout.checkout(alice.getEmail(), "retry", confirm(quote));

@@ -37,13 +37,13 @@
         <span class="eyebrow">Area cliente</span>
         <h1>Il tuo spazio Lure Lab.</h1>
       </div>
-      <p>Una dashboard essenziale per raccogliere ordini, carrello e richieste custom. Alcune sezioni sono gia predisposte e verranno collegate quando completeremo il backend profilo.</p>
+      <p>Controlla i tuoi ordini, accedi al carrello e contattaci per le richieste custom.</p>
     </section>
 
     <section class="profile-layout">
       <div class="panel">
         <h2>Panoramica</h2>
-        <p>Qui compariranno dati personali, indirizzi e storico ordini collegati all'utente autenticato.</p>
+        <p>Consulta lo storico degli ordini effettuati con il tuo account.</p>
 
         <div class="panel-grid">
           <div class="metric">
@@ -52,7 +52,7 @@
           </div>
           <div class="metric">
             <span class="meta-label">Ordini</span>
-            <strong>In arrivo</strong>
+            <strong th:text="${#lists.size(orders)}">0</strong>
           </div>
           <div class="metric">
             <span class="meta-label">Custom</span>
@@ -91,8 +91,14 @@
         </tr>
         </thead>
         <tbody>
-        <tr>
-          <td colspan="4">Lo storico ordini non e ancora collegato al profilo.</td>
+        <tr th:if="${#lists.isEmpty(orders)}">
+          <td colspan="4">Non hai ancora effettuato ordini.</td>
+        </tr>
+        <tr th:each="order : ${orders}">
+          <td th:text="${'#' + order.id}"></td>
+          <td th:text="${order.date}"></td>
+          <td th:text="${#numbers.formatDecimal(order.total, 1, 'POINT', 2, 'COMMA') + ' ' + order.currency}"></td>
+          <td th:text="${order.shipment}"></td>
         </tr>
         </tbody>
       </table>
