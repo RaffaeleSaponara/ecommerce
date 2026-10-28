@@ -80,7 +80,9 @@
           <button class="submit-button" type="submit">Crea account</button>
         </form>
 
-        <p th:if="${param.error}" class="error-message">Registrazione non riuscita. Controlla email e password.</p>
+        <p th:if="${param.error != null and param.error[0] == 'email'}" class="error-message" role="alert">Questa email è già registrata. <a href="/login">Accedi al tuo account</a>.</p>
+        <p th:if="${param.error != null and param.error[0] == 'password'}" class="error-message" role="alert">Le due password non coincidono. Reinseriscile uguali in entrambi i campi.</p>
+        <p th:if="${param.error != null and param.error[0] != 'email' and param.error[0] != 'password'}" class="error-message" role="alert">Registrazione non riuscita. Controlla email e password.</p>
 
         <div class="auth-links">
           Hai gia un account? <a href="/login">Accedi</a>

@@ -274,6 +274,35 @@ class SessionSecurityTests {
     }
 
     @Test
+    void signupExplainsAnAlreadyRegisteredEmailWithoutCreatingAnotherAccount() throws Exception {
+        mvc.perform(post("/signup").with(csrf()).param("username", "Alice")
+                        .param("email", customer.getEmail()).param("password", "test-password")
+                        .param("confirmPassword", "test-password"))
+                .andExpect(redirectedUrl("/registrazione?error=email"));
+        verify(customersService, never()).addCustomer(any());
+        mvc.perform(get("/registrazione").param("error", "email"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Questa email è già registrata")))
+                .andExpect(content().string(not(containsString("Le due password non coincidono"))));
+    }
+
+    @Test
+    void signupExplainsMismatchedPasswordsWithoutSavingEitherPassword() throws Exception {
+        when(customersService.getByEmail("new@example.com")).thenReturn(new Customers());
+        mvc.perform(post("/signup").with(csrf()).param("username", "New")
+                        .param("email", "new@example.com").param("password", "first-secret")
+                        .param("confirmPassword", "different-secret"))
+                .andExpect(redirectedUrl("/registrazione?error=password"));
+        verify(customersService, never()).addCustomer(any());
+        mvc.perform(get("/registrazione").param("error", "password"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Le due password non coincidono")))
+                .andExpect(content().string(not(containsString("Questa email è già registrata"))))
+                .andExpect(content().string(not(containsString("first-secret"))))
+                .andExpect(content().string(not(containsString("different-secret"))));
+    }
+
+    @Test
     void publicCatalogUsesProductDtos() throws Exception {
         when(productsService.getAllProducts()).thenReturn(List.of(product));
         mvc.perform(get("/prodotti/all")).andExpect(status().isOk())
