@@ -7,7 +7,7 @@ $runner = Join-Path $root 'tools/checkout-browser.ps1'
 $tokens=$null; $errors=$null
 $ast=[Management.Automation.Language.Parser]::ParseFile($runner,[ref]$tokens,[ref]$errors)
 if ($errors.Count) { throw 'Runner PowerShell syntax invalid' }
-foreach ($name in @('Get-OwnerHash','Get-OwnedDirectory','Assert-OwnedState','Read-OwnedState','Write-OwnedStopRequest','Test-LauncherAlive','Assert-LocalDocker','Remove-OwnedContainer')) {
+foreach ($name in @('Assert-V2WorkspaceFacts','Get-OwnerHash','Get-OwnedDirectory','Assert-OwnedState','Read-OwnedState','Write-OwnedStopRequest','Test-LauncherAlive','Assert-LocalDocker','Remove-OwnedContainer')) {
     $definition=$ast.Find({param($node) $node -is [Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -eq $name},$true)
     if (-not $definition) { throw "Missing function $name" }
     Invoke-Expression $definition.Extent.Text
@@ -108,3 +108,11 @@ try {
     Must-Reject { Test-LauncherAlive $state $directory }
 } finally { Remove-Item Function:\Get-Process; Remove-Item Function:\Get-CimInstance }
 Write-Output 'PASS: 9 mocked process lifecycle cases: absent, exit before CIM, null command after exit, exit during StartTime, unattestable live PID, foreign command, null command on live PID, owned live launcher, reused PID. No real process stopped.'
+
+# Branch-independent workspace identity: pure facts, never invokes Git or services.
+$blob='d'*40
+Assert-V2WorkspaceFacts $root $root $blob $blob
+Must-Reject { Assert-V2WorkspaceFacts $root ([IO.Path]::GetDirectoryName($root)) $blob $blob }
+Must-Reject { Assert-V2WorkspaceFacts $root $root '' $blob }
+Must-Reject { Assert-V2WorkspaceFacts $root $root $blob ('e'*40) }
+Write-Output 'PASS: 4 workspace/V1 checks; Git root match, tracked schema and immutable V1; no branch-name dependency.'

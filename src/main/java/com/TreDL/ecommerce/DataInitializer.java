@@ -4,13 +4,15 @@ import com.TreDL.ecommerce.model.Products;
 import com.TreDL.ecommerce.repository.ProductsRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Profile;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 import java.util.List;
 import java.math.BigDecimal;
 
 @Component
-@ConditionalOnProperty(name = "app.data-initializer.enabled", havingValue = "true", matchIfMissing = true)
+@Profile("checkout-browser")
+@ConditionalOnProperty(name = "app.data-initializer.enabled", havingValue = "true", matchIfMissing = false)
 public class DataInitializer implements CommandLineRunner {
     private final ProductsRepository productsRepository;
 

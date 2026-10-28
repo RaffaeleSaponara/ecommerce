@@ -1,1 +1,1 @@
-org.springframework.boot.env.EnvironmentPostProcessor=com.TreDL.ecommerce.release.ReleaseEnvironment
+org.springframework.boot.env.EnvironmentPostProcessor=com.TreDL.ecommerce.release.CheckoutStartupEnvironment

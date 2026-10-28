@@ -253,7 +253,12 @@ Usa Hibernate validate, generate-ddl=false, open-in-view=false, show-sql=false,
 Flyway runtime, inizializzazione SQL, DataInitializer e console H2 disabilitati;
 cookie Secure, HttpOnly, SameSite=Lax; bind 127.0.0.1:9086.
 Configurazione incompleta, HMAC invalido e grant errati bloccano readiness.
-I profili default/dev e V1 restano invariati e non vanno usati per il rilascio.
+La V1 resta invariata. I profili default/dev sono ritirati: il bootstrap li
+rifiuta prima di datasource/JPA, anche con URL esplicito. La guardia globale
+CheckoutStartupEnvironment verifica prima il modo di avvio e poi la
+configurazione finale dei bean, delegando le protezioni release a ReleaseEnvironment.
+Il solo profilo test o checkout-browser nel JAR normale non consente l'avvio.
+Per sviluppo usare il runner proprietario descritto in CHECKOUT_V2_DEVELOPMENT.md.
 
 Prima dell'apertura del traffico verificare HTTPS/proxy, login/sessione/CSRF,
 catalogo, preventivi, ordine atomico, replay e conflitti 409. Il catalogo è vuoto:
@@ -268,6 +273,8 @@ Bloccare nuovi checkout al gateway, attendere richieste in corso e arrestare
 Spring ordinatamente. Non riutilizzare il runner browser per il rilascio.
 Prima dell'attivazione ritirare il candidato/configurazione e conservare il DB.
 Dopo l'attivazione preservare ordini, history e chiavi idempotenti; prevedere
-riconciliazione autorizzata. Non avviare il legacy sul database V2.
-Tornare allo stabile richiede artefatto/configurazione/destinazione compatibili
-con piano approvato. Il rollback Git non è rollback dei dati.
+riconciliazione autorizzata. Checkout V2 è il solo modello supportato; nessuna compatibilità con order_details o importazione legacy.
+Un rollback applicativo richiede un artefatto V2 compatibile con schema V1 e dati
+già creati, con piano approvato. Non riabilitare configurazioni legacy o Hibernate
+update. In assenza di un candidato V2 compatibile, bloccare il traffico e preservare
+il database. Il rollback Git non è rollback dei dati.

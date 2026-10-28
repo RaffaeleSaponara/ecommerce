@@ -9,6 +9,21 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $repoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 
+function Assert-V2WorkspaceFacts([string]$Root,[string]$GitRoot,[string]$ApprovedV1,[string]$WorkingV1) {
+    if (-not $GitRoot -or [IO.Path]::GetFullPath($GitRoot).TrimEnd('\') -ine [IO.Path]::GetFullPath($Root).TrimEnd('\')) { throw 'Unexpected Git worktree root' }
+    if ($ApprovedV1 -cnotmatch '^[a-f0-9]{40}$' -or $WorkingV1 -cne $ApprovedV1) { throw 'Tracked approved V1 required; migration changes forbidden' }
+}
+function Assert-V2Workspace([string]$Root) {
+    $gitRoot = & git -C $Root rev-parse --show-toplevel
+    if ($LASTEXITCODE -ne 0) { throw 'Git worktree required' }
+    $schema = 'src/main/resources/db/checkout-v2/V1__create_checkout_v2.sql'
+    $approvedV1 = & git -C $Root rev-parse "HEAD:$schema"
+    if ($LASTEXITCODE -ne 0) { throw 'Checkout V2 schema must exist in HEAD' }
+    $workingV1 = & git -C $Root hash-object -- $schema
+    if ($LASTEXITCODE -ne 0) { throw 'V1 cannot be verified' }
+    Assert-V2WorkspaceFacts $Root $gitRoot $approvedV1 $workingV1
+}
+
 function Get-OwnerHash([string]$Root) {
     $bytes = [Text.Encoding]::UTF8.GetBytes($Root.ToLowerInvariant())
     return [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($bytes)).ToLowerInvariant()
@@ -149,7 +164,7 @@ function Initialize-BrowserRuntime([string]$Root,[string]$Directory) {
 
 if ($Action -eq 'Start') {
     if ($RunId) { throw 'Start always creates a fresh RunId' }
-    if ((& git -C $repoRoot branch --show-current) -ne 'feature/checkout-v2-integration') { throw 'Unexpected worktree branch' }
+    Assert-V2Workspace $repoRoot
     Assert-LocalDocker
     $RunId = [guid]::NewGuid().ToString('N')
     $directory = Get-OwnedDirectory $repoRoot $RunId

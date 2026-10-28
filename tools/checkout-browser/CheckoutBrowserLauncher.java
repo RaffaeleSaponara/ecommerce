@@ -25,6 +25,9 @@ import java.util.regex.*;
 
 /** Local-only browser supervisor. No Spring test classes or test resources on its classpath. */
 public final class CheckoutBrowserLauncher {
+    /** Present only in the isolated launcher classpath, never in the application JAR. */
+    @org.springframework.context.annotation.Configuration(proxyBeanMethods=false)
+    public static class DevelopmentBootstrap {}
     private static final ObjectMapper JSON = new ObjectMapper();
     private static final String IMAGE = "mysql:8.4.3";
     private static final String RUN_LABEL = "com.3dl.checkout.browser.run";
@@ -32,7 +35,9 @@ public final class CheckoutBrowserLauncher {
     private static final Map<String,String> CONFIG = Map.ofEntries(
         Map.entry("server.address","127.0.0.1"), Map.entry("server.port","9085"),
         Map.entry("server.shutdown","graceful"), Map.entry("spring.lifecycle.timeout-per-shutdown-phase","15s"),
-        Map.entry("spring.jpa.hibernate.ddl-auto","validate"), Map.entry("spring.jpa.open-in-view","false"),
+        Map.entry("spring.jpa.hibernate.ddl-auto","validate"),
+        Map.entry("spring.jpa.properties.hibernate.hbm2ddl.auto","validate"), Map.entry("spring.jpa.generate-ddl","false"),
+        Map.entry("spring.sql.init.mode","never"), Map.entry("spring.jpa.open-in-view","false"),
         Map.entry("spring.jpa.show-sql","false"), Map.entry("spring.flyway.enabled","false"),
         Map.entry("spring.h2.console.enabled","false"), Map.entry("app.data-initializer.enabled","true"),
         Map.entry("checkout.quote-secret-base64","${CHECKOUT_QUOTE_SECRET_BASE64}"),
@@ -117,7 +122,7 @@ public final class CheckoutBrowserLauncher {
             Thread.sleep(500);
         }
         require(ready,"Owned MySQL did not become ready"); require(state(),"Cannot record server identity");
-        DataSource source=new GuardedSource(delegate);
+        GuardedSource source=new GuardedSource(delegate);
         try(Connection connection=source.getConnection(); Statement statement=connection.createStatement();
             ResultSet tables=statement.executeQuery("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE()")) {
             require(tables.next() && tables.getLong(1)==0,"Owned schema must be empty");
@@ -125,13 +130,13 @@ public final class CheckoutBrowserLauncher {
         Flyway.configure().dataSource(source).locations("classpath:db/checkout-v2")
             .cleanDisabled(true).baselineOnMigrate(false).createSchemas(false).load().migrate();
         require(!stopRequested(),"Stop requested before Spring startup");
-        SpringApplication boot=new SpringApplication(EcommerceApplication.class);
+        SpringApplication boot=new SpringApplication(EcommerceApplication.class, DevelopmentBootstrap.class);
         boot.addInitializers(context -> {
             require(Arrays.equals(context.getEnvironment().getActiveProfiles(),new String[]{"checkout-browser"}),"Unexpected profiles");
             for(String key:List.of("spring.datasource.url","spring.datasource.username","spring.datasource.password","spring.datasource.driver-class-name"))
                 require(context.getEnvironment().getProperty(key)==null,"External datasource configuration is forbidden");
             GenericApplicationContext generic=(GenericApplicationContext)context;
-            generic.registerBeanDefinition("dataSource",BeanDefinitionBuilder.genericBeanDefinition(DataSource.class,()->source).getBeanDefinition());
+            generic.registerBeanDefinition("dataSource",BeanDefinitionBuilder.genericBeanDefinition(GuardedSource.class,()->source).getBeanDefinition());
             // Pin invariants above all other property sources. Secrets stay in environment/memory.
             Map<String,Object> pinned=new HashMap<>(CONFIG);
             pinned.put("checkout.quote-secret-base64",System.getenv("CHECKOUT_QUOTE_SECRET_BASE64"));
