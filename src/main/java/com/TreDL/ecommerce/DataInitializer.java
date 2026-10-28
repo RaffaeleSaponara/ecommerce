@@ -11,7 +11,7 @@ import java.util.List;
 import java.math.BigDecimal;
 
 @Component
-@Profile("checkout-browser")
+@Profile("dev")
 @ConditionalOnProperty(name = "app.data-initializer.enabled", havingValue = "true", matchIfMissing = false)
 public class DataInitializer implements CommandLineRunner {
     private final ProductsRepository productsRepository;
