@@ -65,6 +65,7 @@
         </div>
 
         <div class="action-stack">
+          <a th:if="${isAdmin == true}" href="/admin" class="button button-secondary">Amministrazione</a>
           <a href="/prodotti" class="button button-primary">Sfoglia lo shop</a>
           <a href="/cart" class="button button-secondary">Vai al carrello</a>
         </div>

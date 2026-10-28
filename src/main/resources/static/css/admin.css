@@ -1,0 +1,27 @@
+[hidden] { display: none !important; }
+.admin-main { padding-bottom: 60px; }
+.admin-sections, .section-heading { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+.admin-sections { margin-bottom: 24px; }
+.section-heading { justify-content: space-between; }
+.admin-panel { margin-bottom: 24px; scroll-margin-top: 24px; }
+.admin-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.admin-product-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 340px); gap: 28px; margin-top: 20px; align-items: start; }
+.table-scroll { min-width: 0; overflow-x: auto; }
+.orders-table th, .orders-table td { padding: 14px 12px 14px 0; vertical-align: top; overflow-wrap: anywhere; }
+.orders-table { min-width: 480px; }
+.product-editor { border-left: 1px solid var(--line); padding-left: 24px; }
+.product-editor h3 { margin-bottom: 18px; }
+.product-editor .button { margin-bottom: 10px; }
+textarea { width: 100%; resize: vertical; padding: 12px 14px; border: 1px solid var(--line); border-radius: 6px; background: rgba(251, 250, 247, .82); color: var(--ink); font: inherit; }
+button { cursor: pointer; font: inherit; }
+button:disabled { opacity: .55; cursor: wait; }
+:is(a, button, input, textarea, .table-scroll):focus-visible { outline: 3px solid var(--accent-dark); outline-offset: 3px; }
+.order-detail { margin-top: 26px; padding-top: 24px; border-top: 1px solid var(--line); }
+.admin-main .button-primary { width: auto; }
+@media (max-width: 920px) {
+  .admin-product-layout, .admin-metrics { grid-template-columns: 1fr; }
+  .product-editor { border-left: 0; border-top: 1px solid var(--line); padding-left: 0; padding-top: 24px; }
+  .admin-panel { padding: 18px; }
+  .admin-main .page-hero { padding-top: 174px; gap: 12px; }
+  .site-nav .nav-actions { flex-direction: row; }
+}

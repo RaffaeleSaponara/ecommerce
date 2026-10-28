@@ -37,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 // MVC slice: real security chain, password encoder and user lookup; no datasource or external services.
 @WebMvcTest({AuthController.class, HomeController.class, CartController.class,
-        CustomersController.class, ProductsController.class})
+        CustomersController.class, ProductsController.class, OrdersController.class})
 @Import({SecurityConfig.class, CustomUserDetailsService.class})
 class SessionSecurityTests {
     @Autowired MockMvc mvc;
@@ -47,6 +47,7 @@ class SessionSecurityTests {
     @MockitoBean CartService cartService;
     @MockitoBean ProductsService productsService;
     @MockitoBean CheckoutService checkoutService;
+    @MockitoBean OrderHistoryService orderHistoryService;
 
     private Customers customer;
     private Products product;
@@ -271,6 +272,35 @@ class SessionSecurityTests {
                 .andExpect(redirectedUrl("/login"));
         verify(customersService).addCustomer(argThat(saved ->
                 passwords.matches("new-password", saved.getPassword()) && saved.getRole().equals("USER")));
+    }
+
+    @Test
+    void signupExplainsAnAlreadyRegisteredEmailWithoutCreatingAnotherAccount() throws Exception {
+        mvc.perform(post("/signup").with(csrf()).param("username", "Alice")
+                        .param("email", customer.getEmail()).param("password", "test-password")
+                        .param("confirmPassword", "test-password"))
+                .andExpect(redirectedUrl("/registrazione?error=email"));
+        verify(customersService, never()).addCustomer(any());
+        mvc.perform(get("/registrazione").param("error", "email"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Questa email è già registrata")))
+                .andExpect(content().string(not(containsString("Le due password non coincidono"))));
+    }
+
+    @Test
+    void signupExplainsMismatchedPasswordsWithoutSavingEitherPassword() throws Exception {
+        when(customersService.getByEmail("new@example.com")).thenReturn(new Customers());
+        mvc.perform(post("/signup").with(csrf()).param("username", "New")
+                        .param("email", "new@example.com").param("password", "first-secret")
+                        .param("confirmPassword", "different-secret"))
+                .andExpect(redirectedUrl("/registrazione?error=password"));
+        verify(customersService, never()).addCustomer(any());
+        mvc.perform(get("/registrazione").param("error", "password"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Le due password non coincidono")))
+                .andExpect(content().string(not(containsString("Questa email è già registrata"))))
+                .andExpect(content().string(not(containsString("first-secret"))))
+                .andExpect(content().string(not(containsString("different-secret"))));
     }
 
     @Test

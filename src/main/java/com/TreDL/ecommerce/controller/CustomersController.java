@@ -35,10 +35,10 @@ public class CustomersController {
                 return "redirect:/login";  // oppure "redirect:/home" se la registrazione è riuscita
             } else {
                 // Se le password non corrispondono, mostra errore
-                return "redirect:/registrazione?error=true";
+                return "redirect:/registrazione?error=password";
             }
         }else{
-            return "redirect:/registrazione?error=true";
+            return "redirect:/registrazione?error=email";
         }
     }
 
