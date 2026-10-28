@@ -28,6 +28,8 @@
 	</scm>
 	<properties>
 		<java.version>17</java.version>
+		<!-- Qualified candidate: no automatic Flyway upgrade. -->
+		<flyway.version>10.20.1</flyway.version>
 	</properties>
 	<dependencies>
 		<!-- Schema preparation only: Flyway is deliberately absent at runtime. -->

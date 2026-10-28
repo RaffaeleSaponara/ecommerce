@@ -25,12 +25,24 @@ abstract class CheckoutV2SchemaContract {
     protected abstract String username();
     protected abstract String password();
 
+    protected void assertDatabaseIdentity(Connection connection) throws SQLException {
+        assertThat(connection.getMetaData().getURL()).startsWith("jdbc:h2:mem:");
+    }
     @BeforeEach
     void migrateTemporaryDatabase() throws Exception {
         jdbcUrl = url();
         // Implementations supply either a new H2 UUID or the managed container URL.
         db = DriverManager.getConnection(jdbcUrl, username(), password());
-        flyway = Flyway.configure().dataSource(jdbcUrl, username(), password())
+        assertDatabaseIdentity(db);
+        javax.sql.DataSource ownedSource=new org.springframework.jdbc.datasource.AbstractDataSource() {
+            @Override public Connection getConnection() throws SQLException {
+                Connection c=DriverManager.getConnection(jdbcUrl,username(),password());
+                try { assertDatabaseIdentity(c);return c; }
+                catch(Throwable failure){c.close();throw failure;}
+            }
+            @Override public Connection getConnection(String user,String pass) throws SQLException { throw new SQLException("External fixture credentials forbidden"); }
+        };
+        flyway = Flyway.configure().dataSource(ownedSource)
                 .locations("classpath:db/checkout-v2")
                 .cleanDisabled(true).baselineOnMigrate(false).load();
         flyway.migrate();
@@ -253,6 +265,7 @@ abstract class CheckoutV2SchemaContract {
     }
 
     private void sql(String sql) throws SQLException {
+        assertDatabaseIdentity(db);
         try (var statement = db.createStatement()) { statement.executeUpdate(sql); }
     }
 

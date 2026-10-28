@@ -26,7 +26,9 @@ final class MySqlCheckoutTestDatabase implements AutoCloseable {
             .withPassword(UUID.randomUUID().toString()) // Ephemeral fixture, never a real credential.
             .withLabel("com.3dl.checkout.run", run)
             .withReuse(false)
-            .withTmpFs(Map.of("/var/lib/mysql", "rw,size=1g"));
+            .withTmpFs(Map.of("/var/lib/mysql", "rw,size=1g"))
+            .withCreateContainerCmdModifier(c->c.getHostConfig().withPortBindings(new com.github.dockerjava.api.model.PortBinding(
+                com.github.dockerjava.api.model.Ports.Binding.bindIpAndPort("127.0.0.1",0),com.github.dockerjava.api.model.ExposedPort.tcp(3306))));
     private GuardedDataSource source;
     private String serverUuid;
 
@@ -68,6 +70,10 @@ final class MySqlCheckoutTestDatabase implements AutoCloseable {
                 || !run.equals(info.getConfig().getLabels().get("com.3dl.checkout.run"))
                 || !"rw,size=1g".equals(info.getHostConfig().getTmpFs().get("/var/lib/mysql")))
             throw new IllegalStateException("Unexpected container ownership or storage");
+        if(info.getMounts().stream().anyMatch(m->!"tmpfs".equals(m.getRawValues().get("Type")))
+                || !"127.0.0.1".equals(info.getNetworkSettings().getPorts().getBindings()
+                    .get(com.github.dockerjava.api.model.ExposedPort.tcp(3306))[0].getHostIp()))
+            throw new IllegalStateException("Test MySQL must use tmpfs and loopback binding only");
         var identity = mysql.execInContainer("cat", "/var/lib/mysql/auto.cnf");
         Matcher uuid = Pattern.compile("(?m)^server-uuid\\s*=\\s*([a-fA-F0-9-]+)\\s*$").matcher(identity.getStdout());
         if (identity.getExitCode() != 0 || !uuid.find()) throw new IllegalStateException("Cannot establish server UUID");
