@@ -10,7 +10,7 @@ try {
  if(-not $rootPath.StartsWith($profilePath,[StringComparison]::OrdinalIgnoreCase)){throw 'Store must be inside operator profile'}
  $drive=[IO.DriveInfo]::new([IO.Path]::GetPathRoot($rootPath));if($drive.DriveType -ne 'Fixed' -or $drive.DriveFormat -cne 'NTFS'){throw 'Local fixed NTFS required'}
  $cursor=$rootPath
- while($cursor){if((Test-Path -LiteralPath $cursor) -and ((Get-Item -LiteralPath $cursor).Attributes -band [IO.FileAttributes]::ReparsePoint)){throw 'Reparse point forbidden'};$cursor=[IO.Path]::GetDirectoryName($cursor)}
+ while($cursor){if((Test-Path -LiteralPath $cursor) -and ((Get-Item -LiteralPath $cursor -Force).Attributes -band [IO.FileAttributes]::ReparsePoint)){throw 'Reparse point forbidden'};$cursor=[IO.Path]::GetDirectoryName($cursor)}
  function Private-Acl($path){
   $item=Get-Item -LiteralPath $path
   if($item.Attributes -band [IO.FileAttributes]::ReparsePoint){throw 'Redirected store object'}

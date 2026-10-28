@@ -46,7 +46,7 @@ final class MySqlCheckoutTestDatabase implements AutoCloseable {
                                 .addDependsOn("checkoutMySqlDatabase").getBeanDefinition());
                 // No reliance on application datasource configuration, including driver/credentials.
                 Map<String, Object> properties = new HashMap<>();
-                properties.put("spring.datasource.url", database.mysql.getJdbcUrl());
+                properties.put("spring.datasource.url", database.jdbcUrl());
                 properties.put("spring.datasource.username", database.mysql.getUsername());
                 properties.put("spring.datasource.password", database.mysql.getPassword());
                 properties.put("spring.datasource.driver-class-name", database.mysql.getDriverClassName());
@@ -89,12 +89,17 @@ final class MySqlCheckoutTestDatabase implements AutoCloseable {
                 .cleanDisabled(true).baselineOnMigrate(false).createSchemas(false).load().migrate();
     }
 
+    // Use the verified IPv4 loopback binding, independent of Testcontainers host discovery.
+    private String jdbcUrl() {
+        return "jdbc:mysql://127.0.0.1:" + mysql.getMappedPort(3306) + "/" + database;
+    }
+
     String databaseName() { return database; }
     String expectedServerUuid() { return serverUuid; }
 
     /** Identity query runs on the underlying connection, avoiding proxy recursion. */
     private void assertIdentity(Connection raw) throws SQLException {
-        String expectedUrl = mysql.getJdbcUrl().split("\\?", 2)[0];
+        String expectedUrl = jdbcUrl().split("\\?", 2)[0];
         if (!expectedUrl.equals(raw.getMetaData().getURL().split("\\?", 2)[0]))
             throw new SQLException("Refusing unexpected JDBC destination");
         try (Statement check = raw.createStatement(); ResultSet identity = check.executeQuery(
@@ -108,7 +113,7 @@ final class MySqlCheckoutTestDatabase implements AutoCloseable {
     final class GuardedDataSource extends AbstractDataSource {
         private final DriverManagerDataSource delegate;
         GuardedDataSource() {
-            delegate = new DriverManagerDataSource(mysql.getJdbcUrl(), mysql.getUsername(), mysql.getPassword());
+            delegate = new DriverManagerDataSource(jdbcUrl(), mysql.getUsername(), mysql.getPassword());
             delegate.setDriverClassName(mysql.getDriverClassName());
         }
         @Override public Connection getConnection() throws SQLException {

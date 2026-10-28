@@ -25,7 +25,7 @@ public final class WindowsPlanStore {
             var stream=p.getInputStream();var output=java.util.concurrent.CompletableFuture.supplyAsync(()->{try{return stream.readNBytes(131073);}catch(java.io.IOException e){throw new java.io.UncheckedIOException(e);}});
             if(!p.waitFor(15,TimeUnit.SECONDS) || p.exitValue()!=0)throw new IllegalStateException();
             byte[] bytes=output.get(2,TimeUnit.SECONDS);ReleaseDatabase.require(bytes.length<=131072,"Oversized store response");return new String(bytes,StandardCharsets.UTF_8);
-        }catch(Exception e){throw new IllegalStateException("Protected NTFS store operation failed");}finally{if(p!=null && p.isAlive())p.destroyForcibly();}
+        }catch(Exception e){throw new IllegalStateException("Protected NTFS store operation failed",e);}finally{if(p!=null && p.isAlive())p.destroyForcibly();}
     }
     public final class LocalMutex implements AutoCloseable {
         private final Process p;
