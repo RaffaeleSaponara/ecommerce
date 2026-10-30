@@ -50,7 +50,11 @@
       <a class="contact-link" href="https://wa.me/3406894426" target="_blank">Chiedi una variante</a>
     </section>
 
-    <section class="products" aria-live="polite"></section>
+    <form id="catalog-filters" class="catalog-filters" role="search" aria-label="Cerca nel catalogo">
+      <div class="filter-field"><label for="filter-q">Cerca prodotti</label><input id="filter-q" name="q" type="search" placeholder="Cerca per nome…" aria-controls="catalog-products" autocomplete="off"></div>
+    </form>
+    <p id="catalog-status" class="catalog-status" role="status" aria-live="polite" aria-atomic="true"></p>
+    <section id="catalog-products" class="products" aria-label="Prodotti"></section>
   </main>
 
   <footer>
@@ -96,19 +100,28 @@
       container.replaceChildren();
       products.forEach(product => {
         const article = catalogElement("article", "product");
-        const media = catalogElement("div", "product-media");
+        const media = catalogElement("a", "product-media");
+        const detailUrl = "/prodotti/" + encodeURIComponent(String(product.id));
+        media.href = detailUrl;
         const image = catalogElement("img", "");
-        image.src = /^\/images\/[a-zA-Z0-9_/-]+\.(?:png|jpe?g|webp|gif|avif)$/i.test(String(product.image))
-          ? product.image : "/images/b1.jpg";
+        image.src = /^(?:\/images\/[a-zA-Z0-9_/-]+\.(?:png|jpe?g|webp|gif|avif)|\/images\/product-placeholder\.svg|\/media\/products\/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\.png)$/i.test(String(product.image))
+          ? product.image : "/images/product-placeholder.svg";
         image.alt = product.nome;
+        image.addEventListener('error', () => {
+          if (!image.src.endsWith('/images/product-placeholder.svg')) image.src = '/images/product-placeholder.svg';
+        });
         media.appendChild(image);
         article.appendChild(media);
         const body = catalogElement("div", "product-body");
         body.appendChild(catalogElement("span", "category", product.categoria));
-        body.appendChild(catalogElement("h2", "", product.nome));
+        const title = catalogElement("h2", "");
+        const titleLink = catalogElement("a", "product-detail-link", product.nome);
+        titleLink.href = detailUrl;
+        title.appendChild(titleLink);
+        body.appendChild(title);
         body.appendChild(catalogElement("p", "", product.descrizione));
         const footer = catalogElement("div", "product-footer");
-        footer.appendChild(catalogElement("strong", "price", "\u20ac" + Number(product.prezzo).toFixed(2)));
+        footer.appendChild(catalogElement("strong", "price", "\u20ac" + catalogPrice(product.prezzo)));
         const button = catalogElement("button", "add-to-cart", "Aggiungi");
         button.type = "button";
         button.dataset.id = String(product.id);
@@ -119,14 +132,76 @@
         container.appendChild(article);
       });
     }
+    function catalogPrice(value) {
+      const parts = String(value).split(".");
+      return parts[0] + "." + (parts[1] || "").padEnd(2, "0");
+    }
+    async function catalogResponse(response) {
+      // Preserve decimal price tokens before JSON.parse converts them to binary numbers.
+      if (typeof response.text !== "function") return response.json();
+      const text = await response.text();
+      return JSON.parse(text.replace(/("(?:\\.|[^"\\])*")(\s*:\s*)(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)/g,
+        (match, key, separator, value) => key === '"prezzo"' ? key + separator + '"' + value + '"' : match));
+    }
     document.addEventListener("DOMContentLoaded", function() {
-      fetch("/prodotti/all")
-        .then(response => {
-          if (!response.ok) throw new Error("Errore nel recupero dei prodotti");
-          return response.json();
-        })
-        .then(renderCatalog)
-        .catch(error => console.error("Errore nel recupero dei prodotti:", error));
+      const form = document.getElementById("catalog-filters");
+      const q = document.getElementById("filter-q");
+      const status = document.getElementById("catalog-status");
+      const container = document.querySelector(".products");
+      let requestVersion = 0;
+      let searchTimer;
+
+      function message(text, error = false) {
+        status.textContent = text;
+        status.className = error ? "catalog-status is-error" : "catalog-status";
+      }
+      async function loadCatalog(params = new URLSearchParams()) {
+        const version = ++requestVersion;
+        const completeCatalog = !params.toString();
+        container.setAttribute("aria-busy", "true");
+        message("Caricamento prodotti…");
+        try {
+          const response = await fetch("/prodotti/all" + (completeCatalog ? "" : "?" + params.toString()));
+          if (!response.ok) {
+            let detail;
+            try { detail = await response.json(); } catch (_) { /* Use the readable fallback below. */ }
+            throw new Error(detail && typeof detail.message === "string" && detail.message.trim() ? detail.message : "Errore nel recupero dei prodotti. Riprova.");
+          }
+          const products = await catalogResponse(response);
+          if (!Array.isArray(products)) throw new Error("Risposta del catalogo non valida. Riprova.");
+          if (version !== requestVersion) return;
+          renderCatalog(products);
+          message(products.length ? products.length + (products.length === 1 ? " prodotto trovato" : " prodotti trovati") : "Nessun prodotto trovato. Prova un altro nome.");
+        } catch (error) {
+          if (version !== requestVersion) return;
+          container.replaceChildren();
+          message(error.message || "Errore nel recupero dei prodotti. Riprova.", true);
+          console.error("Errore nel recupero dei prodotti:", error);
+        } finally {
+          if (version === requestVersion) container.setAttribute("aria-busy", "false");
+        }
+      }
+      function search() {
+        clearTimeout(searchTimer);
+        const params = new URLSearchParams();
+        if (q.value.trim()) params.set("q", q.value.trim());
+        loadCatalog(params);
+      }
+      function scheduleSearch(event) {
+        clearTimeout(searchTimer);
+        // Invalidate in-flight responses as soon as the text changes, including during the debounce.
+        ++requestVersion;
+        container.setAttribute("aria-busy", "true");
+        message("Caricamento prodotti…");
+        if (!event.isComposing) searchTimer = setTimeout(search, 250);
+      }
+      q.addEventListener("input", scheduleSearch);
+      q.addEventListener("compositionend", scheduleSearch);
+      form.addEventListener("submit", event => {
+        event.preventDefault();
+        search();
+      });
+      loadCatalog();
     });
 
     function aggiungiAlCarrello(prodotto, button) {

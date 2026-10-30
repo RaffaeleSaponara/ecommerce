@@ -137,9 +137,12 @@
         const article = cartElement("article", "cart-item");
         const image = cartElement("img", "");
         // Catalog data is text, never HTML or executable URL/inline handlers.
-        image.src = /^\/images\/[a-zA-Z0-9_/-]+\.(?:png|jpe?g|webp|gif|avif)$/i.test(String(item.image))
-          ? item.image : "/images/b1.jpg";
+        image.src = /^(?:\/images\/[a-zA-Z0-9_/-]+\.(?:png|jpe?g|webp|gif|avif)|\/images\/product-placeholder\.svg|\/media\/products\/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\.png)$/i.test(String(item.image))
+          ? item.image : "/images/product-placeholder.svg";
         image.alt = item.nome;
+        image.addEventListener('error', () => {
+          if (!image.src.endsWith('/images/product-placeholder.svg')) image.src = '/images/product-placeholder.svg';
+        });
         article.appendChild(image);
         const details = cartElement("div", "");
         details.appendChild(cartElement("span", "category", item.categoria));

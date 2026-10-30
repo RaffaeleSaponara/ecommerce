@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="_csrf" th:content="${_csrf.token}">
+  <meta name="_csrf_header" th:content="${_csrf.headerName}">
+  <title th:text="${detail.product.nome + ' - Lure Lab'}">Prodotto - Lure Lab</title>
+  <link rel="stylesheet" href="/css/account.css">
+  <link rel="stylesheet" href="/css/prodotto.css">
+  <script src="/js/prodotto.js" defer></script>
+</head>
+<body>
+  <nav class="site-nav" aria-label="Navigazione principale">
+    <a class="brand" href="/"><img src="/images/3Dlogo_resize.png" alt="Lure Lab"><span>Lure Lab</span></a>
+    <div class="nav-actions"><a class="icon-link" href="/prodotti">Shop</a><a class="icon-link" href="/cart">Carrello</a><a class="icon-link" href="/user">Profilo</a></div>
+  </nav>
+  <main class="product-detail" th:with="safeImage=${detail.product.image != null and detail.product.image.matches('(?i)(/images/[a-z0-9_/-]+[.](png|jpe?g|webp|gif|avif)|/images/product-placeholder[.]svg|/media/products/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}[.]png)') ? detail.product.image : '/images/product-placeholder.svg'}">
+    <a href="/prodotti">← Torna allo shop</a>
+    <div class="detail-layout">
+      <section aria-label="Galleria prodotto">
+        <img id="product-main-image" class="detail-main-image" th:src="${safeImage}" th:alt="${detail.product.nome}">
+        <div class="detail-thumbnails" aria-label="Scegli immagine" th:if="${!#lists.isEmpty(detail.images)}">
+          <button type="button" class="detail-thumbnail" th:each="image, position : ${detail.images}" th:if="${image.url != null and image.url.matches('/media/products/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}[.]png')}" th:attr="data-image-url=${image.url},aria-label=${'Mostra immagine ' + (position.index + 1)},aria-pressed=${image.primary}">
+            <img th:src="${image.url}" alt="" loading="lazy">
+          </button>
+        </div>
+      </section>
+      <section class="detail-copy" aria-labelledby="product-title">
+        <p class="eyebrow" th:text="${detail.product.categoria}"></p>
+        <h1 id="product-title" th:text="${detail.product.nome}">Prodotto</h1>
+        <p class="detail-price" th:text="${'€ ' + detail.product.prezzo.toPlainString()}"></p>
+        <p class="detail-description" th:text="${detail.product.descrizione}"></p>
+        <button type="button" id="detail-add-cart" class="button button-primary" th:attr="data-product-id=${detail.product.id}">Aggiungi al carrello</button>
+        <p id="detail-cart-status" role="status" aria-live="polite"></p>
+        <noscript><p>Abilita JavaScript per aggiungere il prodotto al carrello.</p></noscript>
+      </section>
+    </div>
+  </main>
+  <footer>&copy; 2026 Lure Lab</footer>
+</body>
+</html>

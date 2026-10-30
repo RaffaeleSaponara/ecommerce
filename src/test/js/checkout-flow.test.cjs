@@ -138,7 +138,7 @@ test('catalog markup and image URLs never become HTML or inline handlers', () =>
     descrizione: attack, image: 'javascript:alert(1)', prezzo: '99999999999999999.99', quantita: '1' }] };
   vm.runInContext('renderCart(catalog)', p.context);
   const article = p.get('carrello-container').children[0];
-  assert.equal(article.children[0].src, '/images/b1.jpg');
+  assert.equal(article.children[0].src, '/images/product-placeholder.svg');
   const details = article.children[1];
   assert.equal(details.children[0].textContent, attack);
   assert.equal(details.children[1].textContent, attack);
@@ -147,6 +147,17 @@ test('catalog markup and image URLs never become HTML or inline handlers', () =>
   assert.equal(remove.attributes.onclick, undefined);
   assert.equal(typeof remove.listeners.click, 'function');
   assert.equal(p.get('totale').textContent, '99999999999999999.99');
+});
+
+test('cart accepts a managed UUID image and falls back when the file is unavailable', () => {
+  const p = page();
+  const url = '/media/products/12345678-1234-1234-1234-123456789abc.png';
+  p.context.catalog = {items: [{id: '7', nome: 'Esca', image: url, prezzo: '10.00', quantita: '1'}]};
+  vm.runInContext('renderCart(catalog)', p.context);
+  const image = p.get('carrello-container').children[0].children[0];
+  assert.equal(image.src, url);
+  image.listeners.error();
+  assert.equal(image.src, '/images/product-placeholder.svg');
 });
 
 function deferred() {

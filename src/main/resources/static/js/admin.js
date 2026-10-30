@@ -20,7 +20,7 @@ async function adminRequest(path, options = {}) {
     const header = document.querySelector('meta[name="_csrf_header"]')?.content;
     if (!token || !header) throw new Error('Token di sicurezza assente. Ricarica la pagina.');
     headers[header] = token;
-    headers['Content-Type'] = 'application/json';
+    if (!(options.body instanceof FormData)) headers['Content-Type'] = 'application/json';
   }
   const response = await fetch('/api/admin' + path, {...options, credentials: 'same-origin', headers});
   if (response.status === 401 || response.redirected) throw new Error('Sessione scaduta. Accedi nuovamente per continuare.');
@@ -79,6 +79,7 @@ function editProduct(product = null) {
   byId('editor-title').textContent = product ? 'Modifica prodotto #' + product.id : 'Nuovo prodotto';
   byId('save-product').textContent = product ? 'Salva modifiche' : 'Crea prodotto';
   byId('cancel-edit').hidden = !product;
+  resetProductImages();
   byId('product-name').focus();
 }
 
@@ -160,19 +161,20 @@ async function saveProduct(event) {
   byId('cancel-edit').disabled = true;
   notify('Salvataggio in corso…');
   try {
-    await adminRequest('/products' + (id == null ? '' : '/' + id), {method: id == null ? 'POST' : 'PUT', body: JSON.stringify(payload)});
-    editProduct();
+    const saved = await adminRequest('/products' + (id == null ? '' : '/' + id), {method: id == null ? 'POST' : 'PUT', body: JSON.stringify(payload)});
+    editProduct(saved && saved.id != null ? saved : null);
     if (await refreshAdmin()) notify('Prodotto salvato.');
   } catch (error) {
     notify(error.message, true);
   } finally {
-    byId('save-product').disabled = false;
+    byId('save-product').disabled = imageBusy;
     byId('new-product').disabled = false;
     byId('cancel-edit').disabled = false;
   }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  byId('product-image-upload-form').addEventListener('submit', uploadProductImage);
   byId('product-form').addEventListener('submit', saveProduct);
   byId('new-product').addEventListener('click', () => editProduct());
   byId('cancel-edit').addEventListener('click', () => editProduct());
@@ -186,3 +188,112 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   refreshAdmin();
 });
+
+let imageVersion = 0;
+let imageController = null;
+let imageCount = 0;
+let imageBusy = false;
+
+function imageMessage(text, error = false) {
+  const message = byId('product-images-message');
+  message.textContent = text;
+  message.className = error ? 'error-message' : 'status-message';
+}
+
+function imageControls(busy) {
+  imageBusy = busy;
+  byId('save-product').disabled = busy;
+  byId('upload-product-image').disabled = busy || imageCount >= 10;
+  byId('product-image-file').disabled = busy || imageCount >= 10;
+  byId('product-images-list').querySelectorAll('button').forEach(button => { button.disabled = busy || button.dataset.primary === 'true'; });
+}
+
+function resetProductImages() {
+  ++imageVersion;
+  if (imageController) imageController.abort();
+  imageController = new AbortController();
+  imageCount = 0;
+  byId('product-images').hidden = editingProductId == null;
+  byId('product-image-file').value = '';
+  byId('product-images-list').replaceChildren();
+  imageControls(false);
+  imageMessage('');
+  if (editingProductId != null) loadProductImages(editingProductId, imageVersion);
+}
+
+function managedImageUrl(url) {
+  return /^\/media\/products\/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\.png$/.test(String(url));
+}
+
+async function loadProductImages(id, version) {
+  imageControls(true);
+  imageMessage('Caricamento immagini…');
+  try {
+    const images = await adminRequest('/products/' + id + '/images', {signal: imageController.signal});
+    if (version !== imageVersion) return;
+    renderProductImages(images);
+    imageMessage(images.length ? images.length + ' di 10 immagini.' : 'Nessuna immagine caricata. Puoi aggiungere la prima.');
+  } catch (error) {
+    if (version === imageVersion) imageMessage(error.message, true);
+  } finally {
+    if (version === imageVersion) imageControls(false);
+  }
+}
+
+function renderProductImages(images) {
+  const list = byId('product-images-list');
+  list.replaceChildren();
+  imageCount = images.length;
+  images.forEach((image, index) => {
+    const item = document.createElement('li');
+    const preview = document.createElement('img');
+    preview.src = managedImageUrl(image.url) ? image.url : '/images/product-placeholder.svg';
+    preview.addEventListener('error', () => {
+      if (!preview.src.endsWith('/images/product-placeholder.svg')) preview.src = '/images/product-placeholder.svg';
+    });
+    preview.alt = 'Immagine ' + (index + 1);
+    item.appendChild(preview);
+    const primary = actionButton(image.primary ? 'Principale' : 'Imposta principale', () => mutateProductImage('/' + image.id + '/primary', {method: 'PUT'}));
+    primary.dataset.primary = String(image.primary);
+    primary.disabled = image.primary;
+    item.appendChild(primary);
+    item.appendChild(actionButton('Rimuovi immagine ' + (index + 1), () => mutateProductImage('/' + image.id, {method: 'DELETE'})));
+    list.appendChild(item);
+  });
+}
+
+async function mutateProductImage(suffix, options) {
+  if (editingProductId == null || imageBusy) return;
+  const id = editingProductId, version = imageVersion;
+  imageControls(true);
+  imageMessage('Aggiornamento immagini…');
+  try {
+    await adminRequest('/products/' + id + '/images' + suffix, {...options, signal: imageController.signal});
+    if (version !== imageVersion) return;
+    byId('product-image-file').value = '';
+    // Refresh the persisted image field too, so a subsequent product save cannot restore an old primary.
+    const products = await adminRequest('/products', {signal: imageController.signal});
+    if (version !== imageVersion) return;
+    renderProducts(products);
+    const product = products.find(product => product.id === id);
+    if (product) byId('product-form').elements.image.value = product.image || '';
+    await loadProductImages(id, version);
+  } catch (error) {
+    if (version === imageVersion) imageMessage(error.message, true);
+  } finally {
+    if (version === imageVersion) imageControls(false);
+  }
+}
+
+function uploadProductImage(event) {
+  event.preventDefault();
+  if (editingProductId == null || imageBusy) return;
+  const file = byId('product-image-file').files[0];
+  if (!file) { imageMessage('Scegli un file JPEG o PNG.', true); return; }
+  if (!['image/jpeg', 'image/png'].includes(file.type)) { imageMessage('Sono consentite solo immagini JPEG e PNG.', true); return; }
+  if (!file.size || file.size > 5 * 1024 * 1024) { imageMessage('Il file deve avere una dimensione massima di 5 MiB.', true); return; }
+  if (imageCount >= 10) { imageMessage('Puoi caricare al massimo 10 immagini per prodotto.', true); return; }
+  const body = new FormData();
+  body.append('file', file);
+  return mutateProductImage('', {method: 'POST', body});
+}

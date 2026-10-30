@@ -21,7 +21,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/admin", "/admin/**", "/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/", "/home", "/registrazione", "/signup", "/prodotti", "/prodotti/all","/css/**", "/js/**", "/images/**", "/videos/**", "/auth/check").permitAll() // Permetti accesso alla homepage e risorse statiche
+                        .requestMatchers("/", "/home", "/registrazione", "/signup", "/prodotti", "/prodotti/**", "/api/products/*", "/media/products/*", "/css/**", "/js/**", "/images/**", "/videos/**", "/auth/check").permitAll() // Catalogo pubblico e risorse statiche
                         .anyRequest().authenticated() // Tutti gli altri URL richiedono autenticazione
                 )
                 .formLogin(login -> login

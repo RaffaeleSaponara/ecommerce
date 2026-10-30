@@ -41,7 +41,7 @@ public class AdminService {
 
     @Transactional
     public ProductDTO update(long id, AdminProductRequest request) {
-        Products product = products.findById(id)
+        Products product = products.findByIdForUpdate(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Prodotto non trovato"));
         apply(product, request);
         return ProductDTO.convertToDTO(product);
@@ -71,7 +71,9 @@ public class AdminService {
         product.setPrezzo(price);
         product.setDescrizione(request.descrizione());
         product.setCategoria(request.categoria());
-        product.setImage(request.image());
+        // Managed primary images are changed only through the image API.
+        if (product.getImage() == null || !product.getImage().startsWith("/media/products/"))
+            product.setImage(request.image());
     }
 
     private void validateLength(String value) {

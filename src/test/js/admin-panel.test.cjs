@@ -8,8 +8,9 @@ const source = fs.readFileSync(path.resolve(__dirname, '../../main/resources/sta
 function page(responder = () => ({ok: true, json: async () => []})) {
   const elements = new Map(), calls = [], listeners = {};
   function element(tag) {
-    return {tag, children: [], listeners: {}, hidden: false, disabled: false, value: '', textContent: '',
+    return {tag, dataset: {}, files: [], children: [], listeners: {}, hidden: false, disabled: false, value: '', textContent: '',
       appendChild(child) {this.children.push(child);},
+      querySelectorAll(tag) {return this.children.flatMap(child => [...(child.tag === tag ? [child] : []), ...child.querySelectorAll(tag)]);},
       replaceChildren() {this.children = [];},
       addEventListener(name, action) {this.listeners[name] = action;},
       focus() {this.focused = true;},
@@ -24,7 +25,7 @@ function page(responder = () => ({ok: true, json: async () => []})) {
   form.elements = Object.fromEntries(['nome', 'prezzo', 'categoria', 'descrizione', 'image'].map(name => [name, element('input')]));
   form.reportValidity = () => true;
   form.reset = () => Object.values(form.elements).forEach(field => field.value = '');
-  const context = vm.createContext({Intl, console,
+  const context = vm.createContext({Intl, console, FormData, AbortController,
     document: {getElementById: byId, createElement: element,
       querySelector: selector => ({content: selector.includes('_csrf_header') ? 'X-CSRF-TOKEN' : 'csrf-test'}),
       addEventListener: (name, action) => listeners[name] = action},
@@ -86,7 +87,7 @@ test('HTTP validation errors preserve input and re-enable saving', async () => {
   assert.equal(p.byId('admin-message').className, 'error-message');
   assert.equal(p.byId('product-form').elements.nome.value, 'Jig');
   assert.equal(p.byId('save-product').disabled, false);
-  assert.equal(p.calls.length, 1);
+  assert.equal(p.calls.filter(call => call.options.method === 'PUT').length, 1);
 });
 
 test('expired session and forbidden API responses never render data', async () => {
@@ -117,4 +118,77 @@ test('empty collections show actionable empty states', () => {
   p.run('renderProducts([]); renderOrders([])');
   assert.match(p.byId('product-rows').children[0].children[0].textContent, /Nessun prodotto/);
   assert.match(p.byId('order-rows').children[0].children[0].textContent, /Nessun ordine/);
+});
+
+const image = {id: 11, url: '/media/products/12345678-1234-1234-1234-123456789abc.png', primary: true};
+const tick = () => new Promise(setImmediate);
+
+test('image upload keeps browser multipart boundary, CSRF and refreshes persisted primary/catalog', async () => {
+  let uploaded = false;
+  const p = page((url, options) => {
+    if (options.method === 'POST') uploaded = true;
+    return {ok: true, json: async () => url.endsWith('/images') ? uploaded ? [image] : [] : [{...product, image: image.url}]};
+  });
+  p.context.product = product;
+  p.run('editProduct(product)'); await tick();
+  p.byId('product-image-file').files = [new Blob(['png'], {type: 'image/png'})];
+  await p.run('uploadProductImage({preventDefault(){}})');
+  const call = p.calls.find(call => call.options.method === 'POST');
+  assert.equal(call.url, '/api/admin/products/7/images');
+  assert.ok(call.options.body instanceof FormData);
+  assert.equal(call.options.body.get('file').type, 'image/png');
+  assert.equal(call.options.headers['Content-Type'], undefined);
+  assert.equal(call.options.headers['X-CSRF-TOKEN'], 'csrf-test');
+  assert.equal(call.options.credentials, 'same-origin');
+  assert.equal(p.byId('product-form').elements.image.value, image.url);
+  assert.equal(p.byId('product-images-list').children[0].children[0].src, image.url);
+  assert.equal(p.byId('product-images-list').children[0].children[1].disabled, true);
+  assert.equal(p.byId('upload-product-image').disabled, false);
+});
+
+test('image upload rejects unsupported/oversized/empty files before network mutation', async () => {
+  const p = page(); p.context.product = product; p.run('editProduct(product)'); await tick();
+  for (const file of [{type: 'image/svg+xml', size: 10}, {type: 'image/png', size: 5242881}, {type: 'image/jpeg', size: 0}]) {
+    p.byId('product-image-file').files = [file];
+    await p.run('uploadProductImage({preventDefault(){}})');
+    assert.equal(p.byId('product-images-message').className, 'error-message');
+  }
+  assert.equal(p.calls.filter(call => call.options.method).length, 0);
+});
+
+test('image HTTP errors are visible and upload controls recover', async () => {
+  const p = page((url, options) => options.method ? {ok: false, status: 413, json: async () => ({message: 'File troppo grande'})} : {ok: true, json: async () => []});
+  p.context.product = product; p.run('editProduct(product)'); await tick();
+  p.byId('product-image-file').files = [new Blob(['png'], {type: 'image/png'})];
+  await p.run('uploadProductImage({preventDefault(){}})');
+  assert.equal(p.byId('product-images-message').textContent, 'File troppo grande');
+  assert.equal(p.byId('upload-product-image').disabled, false);
+});
+
+test('changing product aborts requests and stale image responses cannot overwrite the new editor', async () => {
+  const pending = [];
+  const p = page((url, options) => new Promise(resolve => pending.push({url, options, resolve})));
+  p.context.product = product; p.run('editProduct(product)');
+  const first = pending[0];
+  p.context.other = {...product, id: 8}; p.run('editProduct(other)');
+  assert.equal(first.options.signal.aborted, true);
+  pending[1].resolve({ok: true, json: async () => []}); await tick();
+  first.resolve({ok: true, json: async () => [image]}); await tick();
+  assert.equal(p.byId('product-images-list').children.length, 0);
+  assert.equal(p.byId('editor-title').textContent, 'Modifica prodotto #8');
+  p.run('editProduct()');
+  assert.equal(p.byId('product-images').hidden, true);
+  assert.equal(p.byId('product-image-file').value, '');
+});
+
+test('primary and removal use distinct protected endpoints and ten images disable uploads', async () => {
+  const p = page(url => ({ok: true, json: async () => url.endsWith('/images') ? [image] : [product]}));
+  p.context.product = product; p.run('editProduct(product)'); await tick();
+  await p.run("mutateProductImage('/11/primary', {method: 'PUT'})");
+  await p.run("mutateProductImage('/11', {method: 'DELETE'})");
+  assert.ok(p.calls.some(call => call.url.endsWith('/images/11/primary') && call.options.method === 'PUT'));
+  assert.ok(p.calls.some(call => call.url.endsWith('/images/11') && call.options.method === 'DELETE'));
+  p.context.images = Array.from({length: 10}, (_, i) => ({...image, id: i}));
+  p.run('renderProductImages(images); imageControls(false)');
+  assert.equal(p.byId('upload-product-image').disabled, true);
 });

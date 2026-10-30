@@ -165,21 +165,6 @@ main {
   position: relative;
 }
 
-.shop-hero::after {
-  content: "";
-  justify-self: end;
-  align-self: stretch;
-  width: min(360px, 100%);
-  min-height: 220px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background:
-    linear-gradient(180deg, rgba(17, 22, 20, 0.08), transparent),
-    url("/images/b4.jpg") center / contain no-repeat,
-    rgba(255, 255, 255, 0.68);
-  box-shadow: var(--soft-shadow);
-}
-
 .eyebrow,
 .toolbar-label,
 .category {
@@ -230,6 +215,44 @@ main {
 .contact-link:hover,
 .add-to-cart:hover {
   background: var(--accent-dark);
+}
+
+.catalog-filters {
+  padding: 24px 0 0;
+}
+
+.filter-field label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.filter-field input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px;
+  border: 1px solid var(--muted);
+  border-radius: 6px;
+  color: var(--ink);
+  background: var(--panel);
+  font: inherit;
+}
+
+.catalog-filters :focus-visible,
+.add-to-cart:focus-visible {
+  outline: 3px solid var(--accent-dark);
+  outline-offset: 3px;
+}
+
+.catalog-status {
+  min-height: 24px;
+  margin: 18px 0 0;
+}
+
+.catalog-status.is-error {
+  color: #9a2f16;
+  font-weight: 600;
 }
 
 .products {
@@ -293,6 +316,12 @@ main {
 
 .price {
   font-size: 22px;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+@media (max-width: 700px) {
+  .product-footer { flex-wrap: wrap; }
 }
 
 .add-to-cart {
@@ -420,9 +449,6 @@ footer {
     font-size: clamp(38px, 12vw, 48px);
   }
 
-  .shop-hero::after {
-    justify-self: stretch;
-  }
 }
 
 @media (min-width: 1024px) {
@@ -431,9 +457,8 @@ footer {
   }
 
   .shop-hero {
-    min-height: 360px;
     padding: 128px 0 46px;
-    grid-template-columns: minmax(0, 0.9fr) 300px minmax(0, 0.72fr);
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
     gap: 38px;
   }
 
@@ -442,16 +467,11 @@ footer {
     font-size: 68px;
   }
 
-  .shop-hero p {
-    grid-column: 3;
+  .shop-hero > p {
+    grid-column: 2;
     max-width: 620px;
     justify-self: end;
     padding-bottom: 10px;
-  }
-
-  .shop-hero::after {
-    grid-column: 2;
-    grid-row: 1;
   }
 
   .shop-toolbar {
@@ -483,3 +503,6 @@ footer {
     font-size: 20px;
   }
 }
+.product-detail-link { color: inherit; text-decoration: none; }
+.product-detail-link:hover { text-decoration: underline; }
+.product-media:focus-visible, .product-detail-link:focus-visible { outline: 3px solid #63563d; outline-offset: 3px; }
