@@ -25,9 +25,14 @@ function page({ storage = new Map(),
   }
   const get = id => { if (!elements.has(id)) elements.set(id, element()); return elements.get(id); };
   const calls = [];
+  get('shippingAddressId').value = '17';
+  get('billingAddressId').value = '23';
+  get('billingSame').checked = true;
   let keyNumber = 0;
+  let addressBook;
   const context = vm.createContext({
     console, Intl, Date,
+    AddressBook: { mount(options) { addressBook = options; } },
     crypto: { randomUUID: () => `client-attempt-${++keyNumber}` },
     sessionStorage: { getItem: key => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value), removeItem: key => storage.delete(key) },
     localStorage: { setItem() {}, removeItem() {} },
@@ -45,6 +50,11 @@ function page({ storage = new Map(),
   });
   vm.runInContext(script, context);
   return { context, elements, get, calls, storage,
+    saveAddress: async operation => {
+      if (!addressBook.canMutate()) return;
+      addressBook.onBusy(true);
+      try { await operation(); } finally { addressBook.onBusy(false); }
+    },
     start: async () => { listeners.get('DOMContentLoaded')(); await new Promise(setImmediate); },
     quote: () => vm.runInContext('requestQuote()', context),
     add: () => vm.runInContext('aggiungiProdotto(1)', context),
@@ -61,7 +71,7 @@ test('displays signed server totals safely and requires explicit checkbox confir
   await p.confirm();
   const request = p.calls.find(call => call.url === '/cart/checkout');
   assert.equal(request.headers['X-CSRF-TOKEN'], 'csrf-token');
-  assert.deepEqual(JSON.parse(request.body), { quoteToken: quote.quoteToken, confirmPrices: true });
+  assert.deepEqual(JSON.parse(request.body), { quoteToken: quote.quoteToken, confirmPrices: true, shippingAddressId: 17, billingAddressId: null });
   assert.equal(p.storage.size, 0);
   assert.match(p.get('checkout-status').textContent, /42/);
 });
@@ -206,4 +216,90 @@ test('failed mutation releases the quote guard but never restores stale confirma
   assert.equal(p.get('confirmPrices').disabled, true);
   assert.match(p.get('checkout-status').textContent, /network failure/);
   await p.quote(); assert.equal(p.calls.filter(c => c.url === '/cart/quote').length, 2);
+});
+
+test('new order requires a shipping address and billing when different', async () => {
+  const p = page(); await p.quote();
+  p.get('shippingAddressId').value = '';
+  await p.confirm();
+  assert.equal(p.calls.filter(c => c.url === '/cart/checkout').length, 0);
+  p.get('shippingAddressId').value = '17'; p.get('billingSame').checked = false;
+  p.get('billingAddressId').value = '';
+  await p.confirm();
+  assert.equal(p.calls.filter(c => c.url === '/cart/checkout').length, 0);
+  p.get('billingAddressId').value = '23';
+  await p.confirm();
+  assert.equal(JSON.parse(p.calls.find(c => c.url === '/cart/checkout').body).billingAddressId, 23);
+});
+
+test('pending stores exact address IDs and replays after address deletion or selection changes', async () => {
+  const storage = new Map();
+  const first = page({ storage, checkoutResponse: async () => { throw new Error('response lost'); } });
+  first.get('billingSame').checked = false;
+  await first.quote(); await first.confirm();
+  assert.deepEqual(Object.keys(JSON.parse([...storage.values()][0])).sort(), ['billingAddressId', 'key', 'quote', 'shippingAddressId']);
+  assert.equal(first.get('checkout-address-controls').disabled, true);
+  const retry = page({ storage }); await retry.start();
+  retry.get('shippingAddressId').value = ''; retry.get('billingAddressId').value = '';
+  await retry.confirm();
+  assert.equal(retry.calls.find(c => c.url === '/cart/checkout').body, first.calls.find(c => c.url === '/cart/checkout').body);
+});
+
+test('legacy pending without addresses is retried unchanged', async () => {
+  const storage = new Map([['3dl.checkout.v2.pending', JSON.stringify({ key: 'legacy-key', quote })]]);
+  const p = page({ storage }); await p.start();
+  p.get('shippingAddressId').value = '';
+  await p.confirm();
+  const sent = p.calls.find(c => c.url === '/cart/checkout');
+  assert.equal(sent.headers['Idempotency-Key'], 'legacy-key');
+  assert.deepEqual(JSON.parse(sent.body), { quoteToken: quote.quoteToken, confirmPrices: true });
+});
+
+test('changing either address selection invalidates explicit price confirmation', async () => {
+  const p = page(); await p.start(); await p.quote();
+  p.get('confirmPrices').checked = true;
+  p.get('billingSame').checked = false;
+  p.get('billingSame').listeners.change();
+  assert.equal(p.get('confirmPrices').checked, false);
+  assert.equal(p.get('paymentButton').disabled, true);
+  assert.equal(p.get('billing-address-choice').hidden, false);
+  await p.submit();
+  assert.equal(p.calls.filter(c => c.url === '/cart/checkout').length, 0);
+});
+
+for (const failure of [false, true]) {
+  test(`address mutation blocks quote/cart/confirmation through completion (failure=${failure})`, async () => {
+    const p = page(); await p.start(); await p.quote();
+    const response = deferred();
+    const saving = p.saveAddress(() => response.promise);
+    assert.equal(p.get('quoteButton').disabled, true);
+    assert.equal(p.get('checkout-address-controls').disabled, true);
+    assert.equal(p.get('confirmPrices').checked, false);
+    p.get('confirmPrices').checked = true;
+    p.get('confirmPrices').listeners.change();
+    assert.equal(p.get('paymentButton').disabled, true);
+    await p.quote(); await p.add(); await p.remove(); await p.confirm();
+    assert.equal(p.calls.filter(c => c.url === '/cart/quote').length, 1);
+    assert.equal(p.calls.filter(c => c.url === '/cart/add' || c.url.startsWith('/cart/remove/') || c.url === '/cart/checkout').length, 0);
+    // Match the component's finally callback even when an API request fails.
+    const completed = saving.catch(error => assert.equal(error.message, 'address error'));
+    if (failure) response.reject(new Error('address error')); else response.resolve();
+    await completed;
+    assert.equal(p.get('quoteButton').disabled, false);
+    assert.equal(p.get('checkout-address-controls').disabled, false);
+    await p.quote();
+    assert.equal(p.calls.filter(c => c.url === '/cart/quote').length, 2);
+  });
+}
+
+test('quote/cart pending guards also prevent starting an address mutation', async () => {
+  const response = deferred();
+  const p = page({ quoteResponse: () => response.promise }); await p.start();
+  const quoting = p.quote();
+  let writes = 0;
+  await p.saveAddress(async () => { writes++; });
+  assert.equal(writes, 0);
+  response.resolve({ ok: true, text: async () => JSON.stringify(quote) }); await quoting;
+  await p.saveAddress(async () => { writes++; });
+  assert.equal(writes, 1);
 });

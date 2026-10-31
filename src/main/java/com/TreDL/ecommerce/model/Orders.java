@@ -17,6 +17,32 @@ public class Orders {
     @ManyToOne(optional = false) @JoinColumn(name = "id_customer", nullable = false) private Customers customer;
     @OneToMany(mappedBy = "order", cascade = CascadeType.PERSIST) @OrderBy("lineNumber ASC")
     private List<OrderItem> items = new ArrayList<>();
+    @Embedded @AttributeOverrides({
+        @AttributeOverride(name="recipientName", column=@Column(name="shipping_recipient_name", length=150)),
+        @AttributeOverride(name="street", column=@Column(name="shipping_street", length=180)),
+        @AttributeOverride(name="houseNumber", column=@Column(name="shipping_house_number", length=20)),
+        @AttributeOverride(name="postalCode", column=@Column(name="shipping_postal_code", length=5)),
+        @AttributeOverride(name="municipality", column=@Column(name="shipping_municipality", length=100)),
+        @AttributeOverride(name="province", column=@Column(name="shipping_province", length=2)),
+        @AttributeOverride(name="country", column=@Column(name="shipping_country", length=2)),
+        @AttributeOverride(name="deliveryNotes", column=@Column(name="shipping_delivery_notes", length=500))
+    })
+    private AddressSnapshot shippingAddress;
+    public AddressSnapshot getShippingAddress() { return shippingAddress; }
+    public void setShippingAddress(AddressSnapshot address) { this.shippingAddress=address; }
+    @Embedded @AttributeOverrides({
+        @AttributeOverride(name="recipientName", column=@Column(name="billing_recipient_name", length=150)),
+        @AttributeOverride(name="street", column=@Column(name="billing_street", length=180)),
+        @AttributeOverride(name="houseNumber", column=@Column(name="billing_house_number", length=20)),
+        @AttributeOverride(name="postalCode", column=@Column(name="billing_postal_code", length=5)),
+        @AttributeOverride(name="municipality", column=@Column(name="billing_municipality", length=100)),
+        @AttributeOverride(name="province", column=@Column(name="billing_province", length=2)),
+        @AttributeOverride(name="country", column=@Column(name="billing_country", length=2)),
+        @AttributeOverride(name="deliveryNotes", column=@Column(name="billing_delivery_notes", length=500))
+    })
+    private AddressSnapshot billingAddress;
+    public AddressSnapshot getBillingAddress() { return billingAddress; }
+    public void setBillingAddress(AddressSnapshot address) { this.billingAddress=address; }
     public Long getId() { return id; }
     public LocalDateTime getDate() { return date; }
     public void setDate(LocalDateTime date) { this.date = Objects.requireNonNull(date); }

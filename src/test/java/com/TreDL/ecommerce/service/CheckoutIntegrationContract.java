@@ -68,13 +68,14 @@ abstract class CheckoutIntegrationContract {
     TransactionTemplate tx;
     Customers alice, bob;
     Products first, second;
+    final Map<Long, Long> addressIds = new HashMap<>();
 
     @BeforeEach void fixtures() {
         tx = new TransactionTemplate(transactionManager);
         tx.setIsolationLevel(org.springframework.transaction.TransactionDefinition.ISOLATION_READ_COMMITTED);
         clock.now = Instant.parse("2026-10-27T12:00:00Z");
         tx.executeWithoutResult(status -> {
-            for (String table : List.of("order_items","orders","cart_products","cart","products","customers"))
+            for (String table : List.of("order_items","orders","cart_products","cart","product_images","products","customer_addresses","customers"))
                 jdbc.update("DELETE FROM " + table);
             alice = customer("alice"); bob = customer("bob");
             first = product("First", "0.10"); second = product("Second", "0.20");
@@ -82,6 +83,9 @@ abstract class CheckoutIntegrationContract {
         cartService.addProductToCart(alice, second);
         cartService.addProductToCart(alice, first);
         cartService.addProductToCart(alice, first);
+        addressIds.clear();
+        addressIds.put(alice.getId(), address(alice));
+        addressIds.put(bob.getId(), address(bob));
     }
     private Customers customer(String name) {
         Customers c = new Customers(); c.setUsername(name); c.setEmail(name+"@example.com");
@@ -90,7 +94,21 @@ abstract class CheckoutIntegrationContract {
     private Products product(String name, String price) {
         Products p = new Products(); p.setNome(name); p.setPrezzo(new BigDecimal(price)); return products.saveAndFlush(p);
     }
-    protected CheckoutRequest confirm(QuoteDTO quote) { return new CheckoutRequest(quote.quoteToken(), true); }
+    private long address(Customers customer) {
+        try {
+            String response = mvc.perform(post("/api/addresses").with(user(customer.getEmail())).with(csrf())
+                    .contentType(MediaType.APPLICATION_JSON).content("{\"recipientName\":\"Mario Rossi\",\"street\":\"Via Roma\",\"houseNumber\":\"10\",\"postalCode\":\"00100\",\"municipality\":\"Roma\",\"province\":\"RM\",\"country\":\"IT\"}"))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+            return mapper.readTree(response).get("id").asLong();
+        } catch (Exception error) { throw new IllegalStateException("Cannot prepare address fixture", error); }
+    }
+    protected CheckoutRequest confirm(QuoteDTO quote) {
+        try {
+            // Test fixture lookup only: production verifies the full signature and principal.
+            long customerId = mapper.readTree(Base64.getUrlDecoder().decode(quote.quoteToken().split("\\.")[0])).get("customerId").asLong();
+            return new CheckoutRequest(quote.quoteToken(), true, addressIds.get(customerId), null);
+        } catch (Exception error) { throw new IllegalStateException(error); }
+    }
     protected List<Long> cartIds() {
         return tx.execute(status -> carts.findByCustomerId(alice.getId()).orElseThrow().getProducts()
                 .stream().map(Products::getId).sorted().toList());

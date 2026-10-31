@@ -47,7 +47,7 @@ public class CheckoutService {
         byte[] key = keyBytes(clientKey);
         if (request == null || !request.confirmPrices())
             throw new CheckoutException(BAD_REQUEST, "Explicit price confirmation is required");
-        byte[] hash = QuoteSigner.requestHash(request.quoteToken());
+        byte[] hash = requestHash(request);
         Customers customer = lockCustomer(authenticatedEmail);
         // All checkout and cart writers serialize on this row. Under READ_COMMITTED,
         // the waiter sees the preceding commit rather than a pre-lock snapshot.
@@ -66,8 +66,16 @@ public class CheckoutService {
         if (!current.equals(confirmed.items()) || !"EUR".equals(confirmed.currency()) || !total.equals(confirmed.total()))
             throw new CheckoutException(CONFLICT, "Cart or prices changed; request and confirm a new quote");
 
+        if (request.shippingAddressId() == null)
+            throw new CheckoutException(BAD_REQUEST, "Shipping address is required");
+        AddressSnapshot shipping = address(customer, request.shippingAddressId());
+        AddressSnapshot billing = request.billingAddressId() == null || request.billingAddressId().equals(request.shippingAddressId())
+                ? shipping : address(customer, request.billingAddressId());
+
         Orders order = new Orders();
         order.setCustomer(customer);
+        order.setShippingAddress(shipping);
+        order.setBillingAddress(billing);
         order.setDate(LocalDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.MICROS));
         order.setShipment("In elaborazione");
         order.setIdempotencyKey(key);
@@ -82,6 +90,32 @@ public class CheckoutService {
         cart.getProducts().clear();
         carts.saveAndFlush(cart);
         return OrderDTO.convertToDTO(order);
+    }
+
+    private AddressSnapshot address(Customers customer, Long id) {
+        CustomerAddress address = entityManager.find(CustomerAddress.class, id);
+        if (address == null || !address.getCustomer().getId().equals(customer.getId()))
+            throw new CheckoutException(NOT_FOUND, "Indirizzo non trovato");
+        AddressSnapshot a = address.getAddress();
+        return new AddressRequest(a.getRecipientName(), a.getStreet(), a.getHouseNumber(), a.getPostalCode(),
+                a.getMunicipality(), a.getProvince(), a.getCountry(), a.getDeliveryNotes(), false).validated();
+    }
+
+    public static byte[] requestHash(CheckoutRequest request) {
+        if (request == null) throw new CheckoutException(BAD_REQUEST, "Checkout request is required");
+        Long shipping = request.shippingAddressId(), billing = request.billingAddressId();
+        if ((shipping != null && shipping <= 0) || (billing != null && billing <= 0))
+            throw new CheckoutException(BAD_REQUEST, "Address IDs must be positive");
+        byte[] tokenHash = QuoteSigner.requestHash(request.quoteToken());
+        if (shipping == null && billing == null) return tokenHash;
+        if (shipping == null) throw new CheckoutException(BAD_REQUEST, "Shipping address is required");
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            digest.update("3DL-checkout-addresses-v1\0".getBytes(StandardCharsets.UTF_8));
+            digest.update(tokenHash);
+            digest.update(ByteBuffer.allocate(16).putLong(shipping).putLong(billing == null ? shipping : billing).array());
+            return digest.digest();
+        } catch (java.security.NoSuchAlgorithmException e) { throw new IllegalStateException(e); }
     }
 
     private Customers lockCustomer(String email) {

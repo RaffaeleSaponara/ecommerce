@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
+  <meta name="_csrf" th:content="${_csrf.token}">
+  <meta name="_csrf_header" th:content="${_csrf.headerName}">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Area cliente - Lure Lab</title>
@@ -80,6 +82,11 @@
       </aside>
     </section>
 
+    <section class="panel" aria-labelledby="addresses-heading">
+      <h2 id="addresses-heading">La tua rubrica</h2>
+      <div id="address-book"></div>
+    </section>
+
     <section class="panel" style="margin-bottom: 82px;">
       <h2>I tuoi ordini</h2>
       <table class="orders-table">
@@ -96,7 +103,19 @@
           <td colspan="4">Non hai ancora effettuato ordini.</td>
         </tr>
         <tr th:each="order : ${orders}">
-          <td th:text="${'#' + order.id}"></td>
+          <td><span th:text="${'#' + order.id}"></span>
+            <details>
+              <summary>Indirizzi dell'ordine</summary>
+              <p th:if="${order.shippingAddress == null}">Indirizzo non disponibile per questo ordine</p>
+              <div th:each="address, addressStatus : ${ {order.shippingAddress, order.billingAddress} }" th:if="${address != null}">
+                <strong th:text="${addressStatus.index == 0 ? 'Spedizione' : 'Fatturazione'}"></strong>
+                <p><span th:text="${address.recipientName}"></span><br>
+                  <span th:text="${address.street + ' ' + address.houseNumber}"></span><br>
+                  <span th:text="${address.postalCode + ' ' + address.municipality + ' (' + address.province + ') ' + address.country}"></span><br>
+                  <span th:text="${address.deliveryNotes}"></span></p>
+              </div>
+            </details>
+          </td>
           <td th:text="${order.date}"></td>
           <td th:text="${#numbers.formatDecimal(order.total, 1, 'POINT', 2, 'COMMA') + ' ' + order.currency}"></td>
           <td th:text="${order.shipment}"></td>
@@ -110,8 +129,10 @@
     &copy; 2026 Lure Lab. Tutti i diritti riservati.
   </footer>
 
+  <script src="/js/addresses.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", function() {
+      AddressBook.mount();
       const loginButton = document.getElementById("loginButton");
       const profileIcon = document.getElementById("profileIcon");
       const logoutButton = document.getElementById("logoutButton");

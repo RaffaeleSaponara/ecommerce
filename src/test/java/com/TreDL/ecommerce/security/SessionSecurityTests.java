@@ -214,7 +214,9 @@ class SessionSecurityTests {
                         .content("{\"quoteToken\":\"signed-quote\",\"confirmPrices\":true}"))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.total").isNumber())
                 .andExpect(jsonPath("$.total").value(12.5))
-                .andExpect(jsonPath("$", aMapWithSize(6)))
+                .andExpect(jsonPath("$", aMapWithSize(8)))
+                .andExpect(jsonPath("$.shippingAddress").value(org.hamcrest.Matchers.nullValue()))
+                .andExpect(jsonPath("$.billingAddress").value(org.hamcrest.Matchers.nullValue()))
                 .andExpect(jsonPath("$.items[0]", aMapWithSize(5)))
                 .andReturn().getResponse().getContentAsString();
         assertThat(body).doesNotContain("password", customer.getPassword(), "customer", "orders", "carts", "requestHash", "idempotencyKey");

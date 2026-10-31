@@ -686,3 +686,13 @@ footer {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
+
+.address-controls { border: 1px solid var(--border, #d9dce2); padding: 16px; margin: 16px 0; border-radius: 12px; min-width: 0; }
+.address-controls label, .address-form label { display: block; margin: 12px 0; }
+.address-controls select, .address-form input:not([type="checkbox"]), .address-form textarea { width: 100%; max-width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #c6cbd3; border-radius: 6px; font: inherit; }
+.address-controls input[type="checkbox"], .address-form input[type="checkbox"] { width: 20px; height: 20px; margin-right: 8px; vertical-align: middle; }
+.address-card { border-bottom: 1px solid #d9dce2; padding: 16px 0; overflow-wrap: anywhere; }
+.address-card button, .address-form button { margin: 6px 8px 6px 0; padding: 8px 12px; cursor: pointer; }
+.address-form { margin-top: 20px; }
+.address-controls summary, .orders-table summary { cursor: pointer; padding: 10px 0; }
+.address-controls :disabled { cursor: not-allowed; }

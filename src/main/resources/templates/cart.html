@@ -61,6 +61,17 @@
           <span>Totale</span>
           <strong>€<span id="totale">0.00</span></strong>
         </div>
+        <fieldset id="checkout-address-controls" class="address-controls">
+          <legend>Indirizzi dell'ordine</legend>
+          <label for="shippingAddressId">Spedizione</label>
+          <select id="shippingAddressId"><option value="">Seleziona un indirizzo</option></select>
+          <label><input type="checkbox" id="billingSame" checked> Fatturazione uguale alla spedizione</label>
+          <div id="billing-address-choice" hidden>
+            <label for="billingAddressId">Fatturazione</label>
+            <select id="billingAddressId"><option value="">Seleziona un indirizzo</option></select>
+          </div>
+          <details><summary>Aggiungi o gestisci indirizzi</summary><div id="address-book"></div></details>
+        </fieldset>
         <button type="button" class="payment-button" id="quoteButton">Verifica prezzi</button>
         <div id="price-confirmation" hidden>
           <p id="quote-summary"></p>
@@ -84,7 +95,7 @@
       if (!allowCartChange()) return;
       cartMutationBusy = true;
       invalidateQuote();
-      document.getElementById("quoteButton").disabled = true;
+      syncCheckoutControls();
       try {
         const response = await fetch(url, options);
         if (!response.ok) throw new Error("Errore nella modifica del carrello");
@@ -93,7 +104,7 @@
       } catch (error) { statusText(error.message); }
       finally {
         cartMutationBusy = false;
-        document.getElementById("quoteButton").disabled = !!pendingCheckout || quoteBusy;
+        syncCheckoutControls();
       }
     }
     function rimuoviProdotto(id) {
@@ -189,6 +200,7 @@
     let checkoutBusy = false;
     let cartMutationBusy = false;
     let quoteBusy = false;
+    let addressMutationBusy = false;
     // Preserve decimal lexemes from numeric JSON before JavaScript can round them.
     function parseExactJson(text) {
       let encoded = "";
@@ -221,8 +233,8 @@
       return { [document.querySelector('meta[name="_csrf_header"]').content]: document.querySelector('meta[name="_csrf"]').content };
     }
     function allowCartChange() {
-      if (cartMutationBusy || quoteBusy) {
-        statusText("Attendi il completamento dell’operazione sul carrello.");
+      if (cartMutationBusy || quoteBusy || addressMutationBusy) {
+        statusText("Attendi il completamento dell’operazione in corso.");
         return false;
       }
       if (pendingCheckout || checkoutBusy) {
@@ -258,32 +270,71 @@
       if (!allowCartChange()) return;
       quoteBusy = true;
       invalidateQuote();
-      const button = document.getElementById("quoteButton");
-      button.disabled = true;
+      syncCheckoutControls();
       try {
         const response = await fetch("/cart/quote", { method: "POST", headers: csrfHeaders() });
         if (!response.ok) throw new Error("Preventivo non disponibile. Aggiorna il carrello e riprova.");
         displayQuote(parseExactJson(await response.text()));
         statusText("Controlla il preventivo e conferma i prezzi.");
       } catch (error) { statusText(error.message); }
-      finally { quoteBusy = false; button.disabled = !!pendingCheckout || cartMutationBusy; }
+      finally { quoteBusy = false; syncCheckoutControls(); }
+    }
+    function selectedAddresses() {
+      const shipping = Number(document.getElementById("shippingAddressId").value);
+      const billing = document.getElementById("billingSame").checked ? null : Number(document.getElementById("billingAddressId").value);
+      return Number.isSafeInteger(shipping) && shipping > 0 && (billing === null || (Number.isSafeInteger(billing) && billing > 0))
+        ? { shippingAddressId: shipping, billingAddressId: billing } : null;
+    }
+    function updateAddressLock() {
+      document.getElementById("checkout-address-controls").disabled = !!pendingCheckout || checkoutBusy || quoteBusy || cartMutationBusy || addressMutationBusy;
+    }
+    function syncCheckoutControls() {
+      updateAddressLock();
+      const busy = checkoutBusy || quoteBusy || cartMutationBusy || addressMutationBusy;
+      document.getElementById("quoteButton").disabled = !!pendingCheckout || busy;
+      document.getElementById("paymentButton").disabled = busy || !currentQuote || !document.getElementById("confirmPrices").checked || (!pendingCheckout && !selectedAddresses());
+    }
+    function addressSelectionChanged() {
+      document.getElementById("billing-address-choice").hidden = document.getElementById("billingSame").checked;
+      document.getElementById("confirmPrices").checked = false;
+      document.getElementById("paymentButton").disabled = true;
+    }
+    function refreshAddressChoices(addresses) {
+      for (const id of ["shippingAddressId", "billingAddressId"]) {
+        const select = document.getElementById(id);
+        const previous = select.value;
+        select.replaceChildren(cartElement("option", "", "Seleziona un indirizzo"));
+        select.children[0].value = "";
+        for (const address of addresses) {
+          const option = cartElement("option", "", `${address.recipientName} — ${address.street} ${address.houseNumber}, ${address.municipality}${address.defaultAddress ? " (predefinito)" : ""}`);
+          option.value = String(address.id);
+          select.appendChild(option);
+        }
+        select.value = addresses.some(a => String(a.id) === previous) ? previous : String((addresses.find(a => a.defaultAddress) || {}).id || "");
+      }
+      if (!pendingCheckout) addressSelectionChanged();
     }
     async function submitCheckout(event) {
       event.preventDefault();
-      if (checkoutBusy || cartMutationBusy || quoteBusy || !currentQuote || !document.getElementById("confirmPrices").checked) return;
+      if (checkoutBusy || cartMutationBusy || quoteBusy || addressMutationBusy || !currentQuote || !document.getElementById("confirmPrices").checked) return;
+      if (!pendingCheckout && !selectedAddresses()) {
+        statusText("Seleziona gli indirizzi di spedizione e fatturazione prima di confermare.");
+        return;
+      }
       checkoutBusy = true;
-      document.getElementById("paymentButton").disabled = true;
-      document.getElementById("quoteButton").disabled = true;
+      syncCheckoutControls();
       try {
         if (!pendingCheckout) {
-          const attempt = { key: crypto.randomUUID(), quote: currentQuote };
+          const attempt = { key: crypto.randomUUID(), quote: currentQuote, ...selectedAddresses() };
           sessionStorage.setItem(pendingStorageKey, JSON.stringify(attempt));
           pendingCheckout = attempt;
         }
         const response = await fetch("/cart/checkout", {
           method: "POST",
           headers: { ...csrfHeaders(), "Content-Type": "application/json", "Idempotency-Key": pendingCheckout.key },
-          body: JSON.stringify({ quoteToken: pendingCheckout.quote.quoteToken, confirmPrices: true })
+          body: JSON.stringify({ quoteToken: pendingCheckout.quote.quoteToken, confirmPrices: true,
+            ...(Object.prototype.hasOwnProperty.call(pendingCheckout, "shippingAddressId")
+              ? { shippingAddressId: pendingCheckout.shippingAddressId, billingAddressId: pendingCheckout.billingAddressId } : {}) })
         });
         if (!response.ok) {
           // Authentication/CSRF changes and transient gateway/rate errors do not
@@ -308,17 +359,14 @@
       } catch (error) { statusText(error.message); }
       finally {
         checkoutBusy = false;
-        document.getElementById("quoteButton").disabled = !!pendingCheckout;
-        document.getElementById("paymentButton").disabled = !currentQuote || !document.getElementById("confirmPrices").checked;
+        syncCheckoutControls();
       }
     }
 
     document.addEventListener("DOMContentLoaded", function() {
       document.getElementById("quoteButton").addEventListener("click", requestQuote);
       document.getElementById("checkoutForm").addEventListener("submit", submitCheckout);
-      document.getElementById("confirmPrices").addEventListener("change", event => {
-        document.getElementById("paymentButton").disabled = !event.target.checked || !currentQuote || checkoutBusy;
-      });
+      document.getElementById("confirmPrices").addEventListener("change", syncCheckoutControls);
       try {
         pendingCheckout = JSON.parse(sessionStorage.getItem(pendingStorageKey));
         if (pendingCheckout) {
@@ -330,6 +378,19 @@
 
       caricaCarrello();
 
+      syncCheckoutControls();
+      for (const id of ["shippingAddressId", "billingAddressId", "billingSame"]) {
+        document.getElementById(id).addEventListener("change", addressSelectionChanged);
+      }
+      AddressBook.mount({
+        canMutate: () => !pendingCheckout && !checkoutBusy && !quoteBusy && !cartMutationBusy,
+        onBusy: busy => {
+          addressMutationBusy = busy;
+          if (busy) addressSelectionChanged();
+          syncCheckoutControls();
+        },
+        onChange: refreshAddressChoices
+      });
       const loginButton = document.getElementById("loginButton");
       const profileIcon = document.getElementById("profileIcon");
       const logoutButton = document.getElementById("logoutButton");
@@ -355,5 +416,6 @@
         .catch(error => console.error("Errore nel recupero dell'autenticazione:", error));
     });
   </script>
+  <script src="/js/addresses.js"></script>
 </body>
 </html>

@@ -41,12 +41,12 @@ public class SecurityConfig {
                             response.setStatus(401);
                             response.setContentType("application/json;charset=UTF-8");
                             response.getWriter().write("{\"message\":\"Autenticazione richiesta\"}");
-                        }, new AntPathRequestMatcher("/api/admin/**"))
+                        }, new org.springframework.security.web.util.matcher.OrRequestMatcher(new AntPathRequestMatcher("/api/admin/**"), new AntPathRequestMatcher("/api/addresses/**")))
                         .defaultAuthenticationEntryPointFor(
                                 new org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint("/login"),
                                 new AntPathRequestMatcher("/admin"))
                         .accessDeniedHandler((request, response, error) -> {
-                            if (request.getServletPath().startsWith("/api/admin/")) {
+                            if (request.getServletPath().startsWith("/api/admin/") || request.getServletPath().startsWith("/api/addresses")) {
                                 response.setStatus(403);
                                 response.setContentType("application/json;charset=UTF-8");
                                 response.getWriter().write("{\"message\":\"Operazione non consentita\"}");

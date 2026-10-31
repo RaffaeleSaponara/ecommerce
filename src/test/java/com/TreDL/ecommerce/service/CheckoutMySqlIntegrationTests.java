@@ -95,7 +95,7 @@ class CheckoutMySqlIntegrationTests extends CheckoutIntegrationContract {
         jdbc.query("SELECT idempotency_key, request_hash, total FROM orders WHERE id=?", rs -> {
             assertThat(rs.next()).isTrue();
             assertThat(rs.getBytes(1)).containsExactly(CheckoutService.keyBytes(key)).hasSize(128);
-            assertThat(rs.getBytes(2)).containsExactly(QuoteSigner.requestHash(quote.quoteToken())).hasSize(32);
+            assertThat(rs.getBytes(2)).containsExactly(CheckoutService.requestHash(confirm(quote))).hasSize(32);
             assertThat(rs.getBigDecimal(3)).isEqualTo(new BigDecimal("0.40")); return null;
         },order.id());
         assertThat(jdbc.queryForList("SELECT line_number FROM order_items WHERE id_order=? ORDER BY line_number",Integer.class,order.id()))
@@ -128,6 +128,8 @@ class CheckoutMySqlIntegrationTests extends CheckoutIntegrationContract {
         assertThat(orders.count()).isEqualTo(1);
         // Empty cart is unrelated to order history; remove it so only the order FK blocks the customer deletion.
         jdbc.update("DELETE FROM cart WHERE id_customer=?",alice.getId());
+        // Remove address FK blockers so this assertion still tests order history protection.
+        jdbc.update("DELETE FROM customer_addresses");
         assertThatThrownBy(() -> tx.executeWithoutResult(status -> {
             customers.deleteById(alice.getId()); customers.flush();
         })).isInstanceOf(DataIntegrityViolationException.class);
