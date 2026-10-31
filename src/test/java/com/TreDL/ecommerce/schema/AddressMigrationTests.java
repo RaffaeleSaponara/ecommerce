@@ -15,7 +15,7 @@ class AddressMigrationTests {
             try(PreparedStatement insert=db.prepareStatement("INSERT INTO orders(id,id_customer,date,total,currency,ship_status,idempotency_key,request_hash) VALUES(1,1,CURRENT_TIMESTAMP,12.50,'EUR','Spedito',?,?)")) {
                 insert.setBytes(1,new byte[]{1});insert.setBytes(2,new byte[32]);insert.executeUpdate();
             }
-            Flyway upgraded=Flyway.configure().dataSource(url,"sa","").locations("classpath:db/checkout-v2").cleanDisabled(true).load();
+            Flyway upgraded=Flyway.configure().dataSource(url,"sa","").locations("classpath:db/checkout-v2").target("3").cleanDisabled(true).load();
             assertThat(upgraded.migrate().migrationsExecuted).isEqualTo(1);upgraded.validate();
             assertThat(upgraded.info().current().getVersion().toString()).isEqualTo("3");
             try(ResultSet r=s.executeQuery("SELECT total,ship_status,request_hash,shipping_recipient_name,billing_recipient_name FROM orders WHERE id=1")) {

@@ -98,7 +98,11 @@
       syncCheckoutControls();
       try {
         const response = await fetch(url, options);
-        if (!response.ok) throw new Error("Errore nella modifica del carrello");
+        if (!response.ok) {
+          let data = {}; try { data = await response.json(); } catch (_) {}
+          if (response.status === 409) await caricaCarrello();
+          throw new Error(data.error || data.message || "Errore nella modifica del carrello");
+        }
         // Keep quote creation blocked through the refreshed cart rendering.
         await caricaCarrello();
       } catch (error) { statusText(error.message); }
@@ -168,10 +172,13 @@
         actions.appendChild(cartElement("span", "quantity", String(item.quantita)));
         const add = cartElement("button", "add-button", "+");
         add.type = "button";
+        const stock = /^[0-9]+$/.test(String(item.stock)) ? BigInt(item.stock) : 0n;
+        add.disabled = quantity >= stock;
         add.setAttribute("aria-label", "Aggiungi " + item.nome);
         add.addEventListener("click", () => aggiungiProdotto(item.id));
         actions.appendChild(add);
         details.appendChild(actions);
+        details.appendChild(cartElement("p", "stock-status", stock === 0n ? "Esaurito — rimuovi il prodotto per continuare" : "Disponibili: " + stock + (quantity > stock ? " — riduci la quantità nel carrello" : "")));
         article.appendChild(details);
         article.appendChild(cartElement("div", "cart-line-price", money(centsToDecimal(subtotal))));
         container.appendChild(article);
@@ -273,7 +280,10 @@
       syncCheckoutControls();
       try {
         const response = await fetch("/cart/quote", { method: "POST", headers: csrfHeaders() });
-        if (!response.ok) throw new Error("Preventivo non disponibile. Aggiorna il carrello e riprova.");
+        if (!response.ok) {
+          let data = {}; try { data = await response.json(); } catch (_) {}
+          throw new Error(data.error || data.message || "Preventivo non disponibile. Aggiorna il carrello e riprova.");
+        }
         displayQuote(parseExactJson(await response.text()));
         statusText("Controlla il preventivo e conferma i prezzi.");
       } catch (error) { statusText(error.message); }
@@ -343,10 +353,11 @@
             throw new Error("Richiesta in attesa: verifica la sessione e riprova con la stessa chiave.");
           }
           if (response.status >= 400 && response.status < 500) {
+            let data = {}; try { data = await response.json(); } catch (_) {}
             sessionStorage.removeItem(pendingStorageKey);
             pendingCheckout = null;
             invalidateQuote();
-            throw new Error("Conferma non valida o carrello/prezzi cambiati. Richiedi un nuovo preventivo; verifica anche la sessione.");
+            throw new Error((data.error || data.message || "Conferma non valida o carrello/prezzi/disponibilità cambiati.") + " Richiedi un nuovo preventivo.");
           }
           throw new Error("Risposta non disponibile. Riprova: la stessa richiesta non creerà un secondo ordine.");
         }

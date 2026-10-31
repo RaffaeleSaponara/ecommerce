@@ -26,13 +26,21 @@ public class Products {
     private String categoria;
     @Column(name = "image")
     private String image;
+    @Column(nullable = false)
+    private int stock = 0;
 
     @ManyToMany(mappedBy = "products")
     private List<Cart> carts;
 
 
     @PrePersist @PreUpdate
-    private void validatePrice() { prezzo = Money.validate(prezzo); }
+    private void validatePrice() { prezzo = Money.validate(prezzo); setStock(stock); }
+
+    public int getStock() { return stock; }
+    public void setStock(int stock) {
+        if (stock < 0) throw new IllegalArgumentException("La quantità disponibile non può essere negativa");
+        this.stock = stock;
+    }
 
     public Long getId() {
         return id;

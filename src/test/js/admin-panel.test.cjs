@@ -22,7 +22,8 @@ function page(responder = () => ({ok: true, json: async () => []})) {
     return elements.get(id);
   }
   const form = byId('product-form');
-  form.elements = Object.fromEntries(['nome', 'prezzo', 'categoria', 'descrizione', 'image'].map(name => [name, element('input')]));
+  form.elements = Object.fromEntries(['nome', 'prezzo', 'categoria', 'descrizione', 'image', 'stock'].map(name => [name, element('input')]));
+  form.elements.stock.value = '0';
   form.reportValidity = () => true;
   form.reset = () => Object.values(form.elements).forEach(field => field.value = '');
   const context = vm.createContext({Intl, console, FormData, AbortController,
@@ -34,7 +35,7 @@ function page(responder = () => ({ok: true, json: async () => []})) {
   vm.runInContext(source, context);
   return {context, byId, calls, listeners, run: expression => vm.runInContext(expression, context)};
 }
-const product = {id: 7, nome: 'Jig', prezzo: '12.50', categoria: 'Pesca', descrizione: 'Artigianale', image: '/images/b1.jpg'};
+const product = {id: 7, nome: 'Jig', prezzo: '12.50', categoria: 'Pesca', descrizione: 'Artigianale', image: '/images/b1.jpg', stock: 5};
 const order = {id: 3, date: '2026-10-28T12:00:00', total: '25.00', currency: 'EUR', shipment: 'In elaborazione', items: [{productName: 'Jig', unitPrice: '12.50', quantity: 2, subtotal: '25.00'}]};
 
 test('product and order content remain text, edit retains product fields', () => {
@@ -45,7 +46,7 @@ test('product and order content remain text, edit retains product fields', () =>
   const row = p.byId('product-rows').children[0];
   assert.equal(row.children[0].textContent, malicious);
   assert.equal(row.children[1].textContent, malicious);
-  row.children[3].children[0].listeners.click();
+  row.children[4].children[0].listeners.click();
   assert.equal(p.byId('product-form').elements.nome.value, malicious);
   assert.equal(p.byId('product-form').elements.prezzo.value, '12.50');
   assert.equal(p.byId('editor-title').textContent, 'Modifica prodotto #7');
@@ -88,6 +89,17 @@ test('HTTP validation errors preserve input and re-enable saving', async () => {
   assert.equal(p.byId('product-form').elements.nome.value, 'Jig');
   assert.equal(p.byId('save-product').disabled, false);
   assert.equal(p.calls.filter(call => call.options.method === 'PUT').length, 1);
+});
+
+test('editing unrelated fields preserves live stock, while an explicit stock edit sends the new count',async()=>{
+  const p=page();p.context.product=product;p.run('editProduct(product)');
+  await p.run('saveProduct({preventDefault(){}})');
+  let update=p.calls.find(c=>c.options.method==='PUT');
+  assert.equal(Object.hasOwn(JSON.parse(update.options.body),'stock'),false);
+  p.run('editProduct(product)');p.byId('product-form').elements.stock.value='0';
+  await p.run('saveProduct({preventDefault(){}})');
+  update=p.calls.filter(c=>c.options.method==='PUT').at(-1);
+  assert.equal(JSON.parse(update.options.body).stock,'0');
 });
 
 test('expired session and forbidden API responses never render data', async () => {

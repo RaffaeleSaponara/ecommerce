@@ -92,7 +92,7 @@ abstract class CheckoutIntegrationContract {
         c.setPassword("test-only-password"); c.setRole("USER"); return customers.saveAndFlush(c);
     }
     private Products product(String name, String price) {
-        Products p = new Products(); p.setNome(name); p.setPrezzo(new BigDecimal(price)); return products.saveAndFlush(p);
+        Products p = new Products(); p.setNome(name); p.setPrezzo(new BigDecimal(price)); p.setStock(100); return products.saveAndFlush(p);
     }
     private long address(Customers customer) {
         try {

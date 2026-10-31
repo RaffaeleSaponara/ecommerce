@@ -34,6 +34,7 @@ import static org.mockito.Mockito.when;
 class CartServiceUnitTests {
     @Mock private CartRepository carts;
     @Mock private CustomersRepository customers;
+    @Mock private jakarta.persistence.EntityManager entityManager;
     @InjectMocks private CartService service;
 
     private final Customers customer = new Customers();
@@ -41,6 +42,10 @@ class CartServiceUnitTests {
 
     void lockExistingCustomer() {
         when(customers.findByIdForUpdate(any())).thenReturn(Optional.of(customer));
+    }
+    void availableProduct() {
+        product.setStock(100);
+        when(entityManager.find(Products.class, product.getId())).thenReturn(product);
     }
 
     @ParameterizedTest
@@ -57,7 +62,7 @@ class CartServiceUnitTests {
             existingCart(null);
             switch (operation) {
                 case "create" -> service.getCart(customer);
-                case "add" -> service.addProductToCart(customer, product);
+                case "add" -> { availableProduct(); service.addProductToCart(customer, product); }
                 case "remove" -> service.removeProductToCart(customer, product);
                 default -> throw new AssertionError(operation);
             }
@@ -99,6 +104,7 @@ class CartServiceUnitTests {
 
     @Test
     void initializesNullProductCollectionOnAddition() {
+        availableProduct();
         Cart cart = existingCart(null);
         when(carts.save(cart)).thenReturn(cart);
 
@@ -109,6 +115,7 @@ class CartServiceUnitTests {
 
     @Test
     void appendsToExistingProductCollection() {
+        availableProduct();
         Cart cart = existingCart(new ArrayList<>(List.of(product)));
         when(carts.save(cart)).thenReturn(cart);
 

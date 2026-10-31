@@ -36,7 +36,7 @@ public class CheckoutService {
     public QuoteDTO quote(String authenticatedEmail) {
         Customers customer = lockCustomer(authenticatedEmail);
         Cart cart = nonEmptyCart(customer);
-        List<QuoteLineDTO> lines = currentLines(cart);
+        List<QuoteLineDTO> lines = currentLines(cart, LockModeType.PESSIMISTIC_READ);
         BigDecimal total = total(lines);
         long expiry = signer.expiresAt();
         var payload = new QuoteSigner.Payload(1, customer.getId(), expiry, "EUR", total, lines);
@@ -59,7 +59,7 @@ public class CheckoutService {
         }
         QuoteSigner.Payload confirmed = signer.verify(request.quoteToken(), customer.getId());
         Cart cart = nonEmptyCart(customer);
-        List<QuoteLineDTO> current = currentLines(cart);
+        List<QuoteLineDTO> current = currentLines(cart, LockModeType.PESSIMISTIC_WRITE);
         BigDecimal total = total(current);
         // Catalog locks may have blocked past the quote's validity window.
         signer.requireUnexpired(confirmed);
@@ -84,6 +84,7 @@ public class CheckoutService {
         int lineNumber = 1;
         for (QuoteLineDTO line : current) {
             Products product = entityManager.find(Products.class, line.productId());
+            product.setStock(product.getStock() - line.quantity());
             order.addItem(new OrderItem(order, lineNumber++, product, line.quantity()));
         }
         orders.saveAndFlush(order); // Includes all rows; any failure rolls everything back.
@@ -134,16 +135,18 @@ public class CheckoutService {
         return cart;
     }
 
-    private List<QuoteLineDTO> currentLines(Cart cart) {
+    private List<QuoteLineDTO> currentLines(Cart cart, LockModeType lockMode) {
         Map<Long, Integer> quantities = new TreeMap<>();
         for (Products occurrence : cart.getProducts()) quantities.merge(occurrence.getId(), 1, Math::addExact);
         List<QuoteLineDTO> lines = new ArrayList<>();
         for (var entry : quantities.entrySet()) {
-            Products product = entityManager.find(Products.class, entry.getKey(), LockModeType.PESSIMISTIC_READ);
+            Products product = entityManager.find(Products.class, entry.getKey(), lockMode);
             if (product == null) throw new CheckoutException(CONFLICT, "Product no longer available");
             // Refresh even if cart loading put the product in the first-level cache.
             // Hold catalog locks through commit so a price cannot change after verification.
-            entityManager.refresh(product, LockModeType.PESSIMISTIC_READ);
+            entityManager.refresh(product, lockMode);
+            if (product.getStock() < entry.getValue()) throw new CheckoutException(CONFLICT,
+                    "Disponibilità insufficiente per " + product.getNome() + ": " + product.getStock() + " unità disponibili");
             BigDecimal price = Money.validate(product.getPrezzo());
             lines.add(new QuoteLineDTO(product.getId(), product.getNome(), price, entry.getValue(),
                     Money.subtotal(price, entry.getValue())));

@@ -23,7 +23,7 @@ function page(response={ok:true,json:async()=>[]}) {
   vm.runInContext(scripts[1],context);
   return {context,container,calls,errors,listeners,render:products=>{context.products=products;vm.runInContext('renderCatalog(products)',context);}};
 }
-const product={id:7,nome:'Jig',descrizione:'Description',categoria:'Hardbaits',prezzo:12.5,image:'/images/b1.jpg'};
+const product={id:7,nome:'Jig',descrizione:'Description',categoria:'Hardbaits',prezzo:12.5,image:'/images/b1.jpg',stock:5};
 test('catalog treats malicious names, descriptions and categories as text',()=>{
   const p=page(); const markup='<img src=x onerror="window.stolen=true">';
   p.render([{...product,nome:markup,descrizione:markup,categoria:markup,image:'javascript:alert(1)'}]);
@@ -67,4 +67,22 @@ test('catalog does not render failed HTTP responses or external image URLs',asyn
   assert.equal(p.errors.length,1);assert.equal(p.container.children.length,0);
   p.render([{...product,image:'https://outside.invalid/tracker.png'}]);
   assert.equal(p.container.children[0].children[0].children[0].src,'/images/product-placeholder.svg');
+});
+
+test('sold-out catalog products cannot be added and the cart limit disables further additions',async()=>{
+  const p=page({ok:true,json:async()=>({items:[{id:7,stock:2,quantita:2}]})});
+  p.render([{...product,stock:0}]);
+  let body=p.container.children[0].children[1],button=body.children[3].children[1];
+  assert.equal(button.disabled,true);assert.match(body.children[4].textContent,/Esaurito/);
+  button.listeners.click();await new Promise(setImmediate);assert.equal(p.calls.length,0);
+  p.render([{...product,stock:2}]);body=p.container.children[0].children[1];button=body.children[3].children[1];
+  button.listeners.click();await new Promise(setImmediate);
+  assert.equal(button.disabled,true);assert.match(body.children[4].textContent,/Quantità massima/);
+});
+
+test('catalog stock conflict shows the server message without suggesting a login failure',async()=>{
+  const p=page({ok:false,status:409,json:async()=>({error:'Disponibilità insufficiente'})});p.render([product]);
+  const body=p.container.children[0].children[1];body.children[3].children[1].listeners.click();await new Promise(setImmediate);
+  assert.match(body.children[4].textContent,/Disponibilità insufficiente/);
+  assert.doesNotMatch(body.children[4].textContent,/Login/);
 });

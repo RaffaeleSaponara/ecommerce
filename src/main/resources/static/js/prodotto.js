@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   const button = document.getElementById('detail-add-cart');
   const status = document.getElementById('detail-cart-status');
+  let atLimit = button.disabled;
   button.addEventListener('click', async () => {
     if (button.disabled) return;
     button.disabled = true;
@@ -27,12 +28,22 @@ document.addEventListener('DOMContentLoaded', () => {
         headers: {'Content-Type': 'application/json', [header]: token}, body: button.dataset.productId});
       if (response.status === 401 || response.redirected) throw new Error('Accedi per aggiungere il prodotto al carrello.');
       if (response.status === 403) throw new Error('Sessione non valida. Ricarica la pagina.');
-      if (!response.ok) throw new Error('Impossibile aggiungere il prodotto. Riprova.');
+      if (!response.ok) {
+        let data = {}; try { data = await response.json(); } catch (_) {}
+        if (response.status === 409) atLimit = true;
+        throw new Error(data.error || data.message || 'Impossibile aggiungere il prodotto. Riprova.');
+      }
+      const cart = await response.json();
+      const item = (cart.items || []).find(item => String(item.id) === button.dataset.productId);
+      if (item) {
+        atLimit = Number(item.quantita) >= Number(item.stock);
+        document.getElementById('detail-stock').textContent = 'Disponibili: ' + item.stock + (atLimit ? ' — Quantità massima nel carrello' : '');
+      }
       status.textContent = 'Prodotto aggiunto al carrello.';
     } catch (error) {
       status.textContent = error.message || 'Connessione assente. Riprova.';
     } finally {
-      button.disabled = false;
+      button.disabled = atLimit;
     }
   });
 });

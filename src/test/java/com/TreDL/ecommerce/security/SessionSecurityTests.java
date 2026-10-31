@@ -182,7 +182,8 @@ class SessionSecurityTests {
                 .andExpect(status().isOk()).andExpect(jsonPath("$.items[0].nome").value("Jig"))
                 .andExpect(jsonPath("$.items[0].quantita").value(1))
                 .andExpect(jsonPath("$", aMapWithSize(3)))
-                .andExpect(jsonPath("$.items[0]", aMapWithSize(7)))
+                .andExpect(jsonPath("$.items[0]", aMapWithSize(8)))
+                .andExpect(jsonPath("$.items[0].stock").value(0))
                 .andReturn().getResponse().getContentAsString();
         assertThat(body).doesNotContain("password", customer.getPassword(), "orders", "carts", "\"customer\"");
         mvc.perform(get("/cart/view").with(user(customer.getEmail())))
@@ -309,7 +310,8 @@ class SessionSecurityTests {
     void publicCatalogUsesProductDtos() throws Exception {
         when(productsService.getAllProducts()).thenReturn(List.of(product));
         mvc.perform(get("/prodotti/all")).andExpect(status().isOk())
-                .andExpect(jsonPath("$[0]", aMapWithSize(7)))
+                .andExpect(jsonPath("$[0]", aMapWithSize(8)))
+                .andExpect(jsonPath("$[0].stock").value(0))
                 .andExpect(jsonPath("$[0].carts").doesNotExist());
     }
 }

@@ -26,12 +26,13 @@
           </button>
         </div>
       </section>
-      <section class="detail-copy" aria-labelledby="product-title">
+      <section class="detail-copy" th:classappend="${detail.product.stock == 0 ? 'is-sold-out' : ''}" aria-labelledby="product-title">
         <p class="eyebrow" th:text="${detail.product.categoria}"></p>
         <h1 id="product-title" th:text="${detail.product.nome}">Prodotto</h1>
         <p class="detail-price" th:text="${'€ ' + detail.product.prezzo.toPlainString()}"></p>
         <p class="detail-description" th:text="${detail.product.descrizione}"></p>
-        <button type="button" id="detail-add-cart" class="button button-primary" th:attr="data-product-id=${detail.product.id}">Aggiungi al carrello</button>
+        <p id="detail-stock" class="stock-status" th:text="${detail.product.stock > 0 ? 'Disponibili: ' + detail.product.stock : 'Esaurito'}"></p>
+        <button type="button" id="detail-add-cart" class="button button-primary" th:disabled="${detail.product.stock == 0}" th:attr="data-product-id=${detail.product.id}">Aggiungi al carrello</button>
         <p id="detail-cart-status" role="status" aria-live="polite"></p>
         <noscript><p>Abilita JavaScript per aggiungere il prodotto al carrello.</p></noscript>
       </section>

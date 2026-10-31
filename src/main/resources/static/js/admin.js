@@ -1,6 +1,7 @@
 'use strict';
 
 let editingProductId = null;
+let originalStock = '0';
 let detailRequest = 0;
 const byId = id => document.getElementById(id);
 const money = (value, currency = 'EUR') => new Intl.NumberFormat('it-IT', {style: 'currency', currency}).format(value);
@@ -57,12 +58,13 @@ function actionButton(label, action) {
 function renderProducts(products) {
   const body = byId('product-rows');
   body.replaceChildren();
-  if (!products.length) emptyRow(body, 4, 'Nessun prodotto. Crea il primo prodotto dal modulo.');
+  if (!products.length) emptyRow(body, 5, 'Nessun prodotto. Crea il primo prodotto dal modulo.');
   for (const product of products) {
     const row = document.createElement('tr');
     cell(row, product.nome);
     cell(row, product.categoria);
     cell(row, money(product.prezzo));
+    cell(row, product.stock === 0 ? '0 — Esaurito' : product.stock);
     const action = cell(row, '');
     action.appendChild(actionButton('Modifica #' + product.id, () => editProduct(product)));
     body.appendChild(row);
@@ -76,6 +78,8 @@ function editProduct(product = null) {
   for (const field of ['nome', 'prezzo', 'categoria', 'descrizione', 'image']) {
     form.elements[field].value = product?.[field] ?? '';
   }
+  originalStock = String(product?.stock ?? 0);
+  form.elements.stock.value = originalStock;
   byId('editor-title').textContent = product ? 'Modifica prodotto #' + product.id : 'Nuovo prodotto';
   byId('save-product').textContent = product ? 'Salva modifiche' : 'Crea prodotto';
   byId('cancel-edit').hidden = !product;
@@ -156,6 +160,9 @@ async function saveProduct(event) {
   for (const field of ['nome', 'prezzo', 'categoria', 'descrizione', 'image']) payload[field] = form.elements[field].value.trim();
   if (!payload.nome) { notify('Inserisci il nome del prodotto.', true); return; }
   const id = editingProductId;
+  const stock = form.elements.stock.value.trim();
+  if (!/^[0-9]+$/.test(stock) || Number(stock) > 2147483647) { notify('Inserisci una quantità intera tra 0 e 2147483647.', true); return; }
+  if (id == null || Number(stock) !== Number(originalStock)) payload.stock = stock;
   byId('save-product').disabled = true;
   byId('new-product').disabled = true;
   byId('cancel-edit').disabled = true;

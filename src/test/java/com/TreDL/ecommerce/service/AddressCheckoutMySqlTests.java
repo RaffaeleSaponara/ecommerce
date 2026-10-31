@@ -38,7 +38,7 @@ class AddressCheckoutMySqlTests {
         for(String table:new String[]{"order_items","orders","cart_products","cart","customer_addresses","product_images","products","customers"})
             jdbc.update("DELETE FROM "+table);
         alice=customer("alice");bob=customer("bob");
-        Products p=new Products();p.setNome("Jig");p.setPrezzo(new BigDecimal("3.00"));products.saveAndFlush(p);
+        Products p=new Products();p.setNome("Jig");p.setPrezzo(new BigDecimal("3.00"));p.setStock(100);products.saveAndFlush(p);
         carts.addProductToCart(alice,p);
     }
     Customers customer(String name) {

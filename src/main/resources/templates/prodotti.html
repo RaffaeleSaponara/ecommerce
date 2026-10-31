@@ -128,6 +128,14 @@
         button.addEventListener("click", () => aggiungiAlCarrello(product.id, button));
         footer.appendChild(button);
         body.appendChild(footer);
+        const stock = Number.isInteger(product.stock) && product.stock >= 0 ? product.stock : 0;
+        const availability = catalogElement("p", "stock-status", stock ? "Disponibili: " + stock : "Esaurito");
+        availability.setAttribute("role", "status");
+        if (!stock) article.className = "product is-sold-out";
+        body.appendChild(availability);
+        button.disabled = stock === 0;
+        if (!stock) button.textContent = "Esaurito";
+        button.stockMessage = availability;
         article.appendChild(body);
         container.appendChild(article);
       });
@@ -205,6 +213,9 @@
     });
 
     function aggiungiAlCarrello(prodotto, button) {
+      if (button.disabled) return;
+      button.disabled = true;
+      button.stockConflict = false;
       fetch("/cart/add", {
         method: "POST",
         headers: {
@@ -213,17 +224,26 @@
         },
         body: JSON.stringify(prodotto)
       })
-      .then(response => {
+      .then(async response => {
         if (!response.ok) {
-          throw new Error("Errore nell'aggiungere il prodotto al carrello.");
+          let data = {};
+          try { data = await response.json(); } catch (_) {}
+          if (response.status !== 409) button.disabled = false;
+          button.stockConflict = response.status === 409;
+          throw new Error(response.status === 401 || response.redirected ? "Accedi per aggiungere al carrello." : data.error || data.message || "Impossibile aggiungere il prodotto.");
         }
+        const cart = await response.json();
+        const item = (cart.items || []).find(item => String(item.id) === String(prodotto));
+        button.disabled = item ? Number(item.quantita) >= Number(item.stock) : false;
+        if (item && button.stockMessage) button.stockMessage.textContent = "Disponibili: " + item.stock + (button.disabled ? " — Quantità massima nel carrello" : "");
         button.textContent = "Aggiunto";
-        setTimeout(() => button.textContent = "Aggiungi", 1400);
+        setTimeout(() => button.textContent = button.disabled ? "Limite raggiunto" : "Aggiungi", 1400);
       })
       .catch(error => {
         console.error("Errore nella chiamata al backend:", error);
-        button.textContent = "Login richiesto";
-        setTimeout(() => button.textContent = "Aggiungi", 1600);
+        button.disabled = !!button.stockConflict;
+        if (button.stockMessage) button.stockMessage.textContent = error.message;
+        button.textContent = button.disabled ? "Non disponibile" : "Riprova";
       });
     }
   </script>

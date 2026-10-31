@@ -14,8 +14,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@Transactional
+@Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
 public class CartService {
+    @jakarta.persistence.PersistenceContext
+    private jakarta.persistence.EntityManager entityManager;
 
     @Autowired
     private CartRepository cartRepository;
@@ -45,11 +47,20 @@ public class CartService {
 
     public Cart addProductToCart(Customers customer, Products product) {
         Cart cart = getCart(customer);
+        // The cart is not a reservation: read fresh stock without blocking other carts.
+        // The customer's lock serializes quantity changes; checkout locks inventory for consumption.
+        Products current = entityManager.find(Products.class, product.getId());
+        if (current == null) throw new CheckoutException(org.springframework.http.HttpStatus.CONFLICT, "Prodotto non più disponibile");
+        entityManager.refresh(current);
+        long quantity = cart.getProducts() == null ? 0 : cart.getProducts().stream()
+                .filter(item -> java.util.Objects.equals(item.getId(), current.getId())).count();
+        if (quantity >= current.getStock()) throw new CheckoutException(org.springframework.http.HttpStatus.CONFLICT,
+                "Disponibilità insufficiente per " + current.getNome() + ": " + current.getStock() + " unità disponibili");
         if(cart.getProducts()!=null){
-            cart.getProducts().add(product);
+            cart.getProducts().add(current);
         }else{
             List<Products> prodotti = new ArrayList<>();
-            prodotti.add(product);
+            prodotti.add(current);
             cart.setProducts(prodotti);
         }
         return cartRepository.save(cart);

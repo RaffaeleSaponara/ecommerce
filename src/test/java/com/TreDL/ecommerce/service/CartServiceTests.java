@@ -208,6 +208,7 @@ class CartServiceTests {
         result.setCategoria("Hardbaits");
         result.setPrezzo(new java.math.BigDecimal("10.00"));
         result.setImage("/images/test.jpg");
+        result.setStock(100);
         return products.saveAndFlush(result);
     }
 }

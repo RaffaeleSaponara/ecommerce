@@ -26,7 +26,7 @@ class AddressCheckoutTests {
         Customers c=new Customers();String name=java.util.UUID.randomUUID().toString();c.setUsername(name);c.setEmail(name+"@example.com");c.setPassword("unused");c.setRole("USER");return customers.saveAndFlush(c);
     }
     @BeforeEach void setup() {
-        customer=customer();other=customer();product=new Products();product.setNome("Address product");product.setPrezzo(new BigDecimal("12.50"));products.saveAndFlush(product);
+        customer=customer();other=customer();product=new Products();product.setNome("Address product");product.setPrezzo(new BigDecimal("12.50"));product.setStock(100);products.saveAndFlush(product);
         carts.addProductToCart(customer,product);
         shipping=addresses.create(customer.getEmail(),input("Via Roma")).id();billing=addresses.create(customer.getEmail(),input("Via Milano")).id();
     }

@@ -67,6 +67,7 @@ class CartConcurrencyTests {
             otherCustomer = newCustomer("independent");
             Products item = new Products();
             item.setNome("Concurrent product");
+            item.setStock(100);
             item.setPrezzo(new java.math.BigDecimal("10.00"));
             product = products.saveAndFlush(item);
         });

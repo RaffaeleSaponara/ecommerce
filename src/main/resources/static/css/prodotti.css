@@ -273,6 +273,11 @@ main {
   transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
 }
 
+.stock-status { font-weight: 700; }
+.is-sold-out .stock-status { color: #9a2f16; }
+.is-sold-out { border-color: #c9b5ad; }
+.add-to-cart:disabled { opacity: .55; cursor: not-allowed; }
+
 .product-media {
   background: #fff;
   overflow: hidden;

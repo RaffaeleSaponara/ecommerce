@@ -170,6 +170,28 @@ test('cart accepts a managed UUID image and falls back when the file is unavaila
   assert.equal(image.src, '/images/product-placeholder.svg');
 });
 
+test('cart shows stock and blocks increases at the limit while allowing removal',()=>{
+  const p=page();p.context.catalog={items:[{id:'7',nome:'Esca',stock:2,quantita:'2',prezzo:'10.00'}]};
+  vm.runInContext('renderCart(catalog)',p.context);
+  const details=p.get('carrello-container').children[0].children[1],actions=details.children[3];
+  assert.equal(actions.children[2].disabled,true);assert.equal(actions.children[0].disabled,false);
+  assert.match(details.children[4].textContent,/Disponibili: 2/);
+});
+
+test('cart stock conflict refreshes availability and displays the specific error',async()=>{
+  const p=page({cartMutationResponse:async()=>({ok:false,status:409,json:async()=>({error:'Disponibilità insufficiente'})})});
+  await p.add();assert.ok(p.calls.some(call=>call.url==='/cart/view'));
+  assert.match(p.get('checkout-status').textContent,/Disponibilità insufficiente/);
+});
+
+test('stock errors from quote and checkout remain visible while invalidating the attempt',async()=>{
+  const response=async()=>({ok:false,status:409,json:async()=>({error:'Disponibilità insufficiente: 0 unità'})});
+  const q=page({quoteResponse:response});await q.quote();assert.match(q.get('checkout-status').textContent,/Disponibilità insufficiente/);
+  const p=page({checkoutResponse:response});await p.quote();await p.confirm();
+  assert.match(p.get('checkout-status').textContent,/Disponibilità insufficiente/);assert.equal(p.storage.size,0);
+  assert.equal(p.get('confirmPrices').disabled,true);
+});
+
 function deferred() {
   let resolve, reject;
   const promise = new Promise((yes, no) => { resolve = yes; reject = no; });

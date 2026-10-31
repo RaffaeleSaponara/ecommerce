@@ -45,12 +45,13 @@
       <div class="section-heading"><h2 id="products-title">Prodotti</h2><button id="new-product" type="button" class="button button-secondary">Nuovo prodotto</button></div>
       <div class="admin-product-layout">
         <div class="table-scroll" tabindex="0" role="region" aria-label="Elenco prodotti">
-          <table class="orders-table"><thead><tr><th scope="col">Prodotto</th><th scope="col">Categoria</th><th scope="col">Prezzo</th><th scope="col">Azione</th></tr></thead><tbody id="product-rows"><tr><td colspan="4">Caricamento prodotti…</td></tr></tbody></table>
+          <table class="orders-table"><thead><tr><th scope="col">Prodotto</th><th scope="col">Categoria</th><th scope="col">Prezzo</th><th scope="col">Disponibili</th><th scope="col">Azione</th></tr></thead><tbody id="product-rows"><tr><td colspan="5">Caricamento prodotti…</td></tr></tbody></table>
         </div>
         <form id="product-form" class="product-editor">
           <h3 id="editor-title">Nuovo prodotto</h3>
           <div class="field"><label for="product-name">Nome</label><input id="product-name" name="nome" required maxlength="255"></div>
           <div class="field"><label for="product-price">Prezzo (€)</label><input id="product-price" name="prezzo" type="number" min="0" step="0.01" required></div>
+          <div class="field"><label for="product-stock">Quantità disponibile</label><input id="product-stock" name="stock" type="number" min="0" max="2147483647" step="1" value="0" required><small>Zero indica esaurito. Inserisci una quantità verificata.</small></div>
           <div class="field"><label for="product-category">Categoria</label><input id="product-category" name="categoria" maxlength="255"></div>
           <div class="field"><label for="product-description">Descrizione</label><textarea id="product-description" name="descrizione" rows="3" maxlength="255"></textarea></div>
           <div class="field"><label for="product-image">Percorso immagine compatibile</label><input id="product-image" name="image" maxlength="255" placeholder="/images/b1.jpg" aria-describedby="legacy-image-help"><small id="legacy-image-help">Per le immagini esistenti usa /images/…; per nuovi file usa la gestione immagini qui sotto, dopo il salvataggio. La principale aggiorna automaticamente questo percorso.</small></div>

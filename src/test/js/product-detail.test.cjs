@@ -7,12 +7,14 @@ const root = path.resolve(__dirname, '../../main/resources');
 const source = fs.readFileSync(path.join(root, 'static/js/prodotto.js'), 'utf8');
 const html = fs.readFileSync(path.join(root, 'templates/prodotto.html'), 'utf8');
 const imageUrl = '/media/products/12345678-1234-1234-1234-123456789abc.png';
-function page(response = {ok: true}) {
+function page(response = {ok: true, json: async () => ({items: []})}, soldOut = false) {
   function element(dataset = {}) {return {dataset, listeners: {}, textContent: '', disabled: false,
     addEventListener(name, callback) {this.listeners[name] = callback;},
     setAttribute(name, value) {this[name] = value;}};}
   const ids = {'product-main-image': {...element(), src: '/images/b1.jpg'}, 'detail-add-cart': element({productId: '7'}), 'detail-cart-status': element()};
   const thumbs = [element({imageUrl}), element({imageUrl: 'javascript:alert(1)'})];
+  ids['detail-add-cart'].disabled = soldOut;
+  ids['detail-stock'] = element();
   const calls = []; let ready;
   const context = vm.createContext({document: {getElementById: id => ids[id], querySelectorAll: () => thumbs,
     querySelector: selector => ({content: selector.includes('_csrf_header') ? 'X-CSRF-TOKEN' : 'csrf-test'}),
@@ -56,4 +58,11 @@ test('detail cart reports expired session, forbidden and server errors and allow
     assert.doesNotMatch(p.ids['detail-cart-status'].textContent, /aggiunto/);
     assert.equal(p.ids['detail-add-cart'].disabled, false);
   }
+});
+
+test('detail blocks sold-out products and stops at the quantity returned by the cart',async()=>{
+  const empty=page(undefined,true);await empty.ids['detail-add-cart'].listeners.click();assert.equal(empty.calls.length,0);
+  const p=page({ok:true,json:async()=>({items:[{id:7,stock:1,quantita:1}]})});
+  await p.ids['detail-add-cart'].listeners.click();assert.equal(p.ids['detail-add-cart'].disabled,true);
+  assert.match(p.ids['detail-stock'].textContent,/Quantità massima/);
 });

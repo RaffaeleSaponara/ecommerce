@@ -67,10 +67,17 @@ public class AdminService {
         if (request.prezzo() == null) throw new IllegalArgumentException("Il prezzo è obbligatorio");
         // Validate everything before changing a managed entity.
         var price = Money.validate(request.prezzo());
+        Integer stock = null;
+        if (request.stock() != null) {
+            try { stock = request.stock().intValueExact(); }
+            catch (ArithmeticException error) { throw new IllegalArgumentException("La quantità deve essere un intero tra 0 e 2147483647"); }
+            if (stock < 0) throw new IllegalArgumentException("La quantità disponibile non può essere negativa");
+        }
         product.setNome(request.nome().strip());
         product.setPrezzo(price);
         product.setDescrizione(request.descrizione());
         product.setCategoria(request.categoria());
+        if (stock != null) product.setStock(stock);
         // Managed primary images are changed only through the image API.
         if (product.getImage() == null || !product.getImage().startsWith("/media/products/"))
             product.setImage(request.image());

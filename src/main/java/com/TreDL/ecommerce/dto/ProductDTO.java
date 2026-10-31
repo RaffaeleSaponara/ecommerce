@@ -14,6 +14,7 @@ public class ProductDTO {
     private String categoria;
     private String image;
     private int quantita;
+    private int stock;
 
 
     public static ProductDTO convertToDTO(Products prodotto) {
@@ -24,6 +25,7 @@ public class ProductDTO {
         userDTO.setDescrizione(prodotto.getDescrizione());
         userDTO.setPrezzo(prodotto.getPrezzo());
         userDTO.setImage(prodotto.getImage());
+        userDTO.setStock(prodotto.getStock());
         return userDTO;
     }
 
@@ -78,6 +80,9 @@ public class ProductDTO {
     public int getQuantita() {
         return quantita;
     }
+
+    public int getStock() { return stock; }
+    public void setStock(int stock) { this.stock = stock; }
 
     public void setQuantita(int quantita) {
         this.quantita = quantita;
