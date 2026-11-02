@@ -17,13 +17,16 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http,com.TreDL.ecommerce.security.AuthAttemptLimiter limits) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,com.TreDL.ecommerce.security.AuthAttemptLimiter limits,org.springframework.security.core.session.SessionRegistry sessions) throws Exception {
         var success=new org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler();
         success.setDefaultTargetUrl("/");success.setAlwaysUseDefaultTargetUrl(true);
         var failure=new org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler("/login?error");
         http
+                .addFilterBefore(new com.TreDL.ecommerce.security.RecoveryHeadersFilter(),org.springframework.security.web.csrf.CsrfFilter.class)
+                .sessionManagement(session->session.maximumSessions(-1).sessionRegistry(sessions).expiredUrl("/login?sessionExpired"))
                 .addFilterBefore(new com.TreDL.ecommerce.security.AuthAttemptFilter(limits),org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/forgot-password","/reset-password").permitAll()
                         .requestMatchers("/admin", "/admin/**", "/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/", "/home", "/registrazione", "/signup", "/prodotti", "/prodotti/**", "/api/products/*", "/media/products/*", "/css/**", "/js/**", "/images/**", "/videos/**", "/auth/check").permitAll() // Catalogo pubblico e risorse statiche
                         .anyRequest().authenticated() // Tutti gli altri URL richiedono autenticazione
@@ -84,6 +87,14 @@ public class SecurityConfig {
         return http.build();
     }
 
+    @Bean
+    public org.springframework.security.core.session.SessionRegistry sessionRegistry() {
+        return new org.springframework.security.core.session.SessionRegistryImpl();
+    }
+    @Bean
+    public org.springframework.security.web.session.HttpSessionEventPublisher sessionEvents() {
+        return new org.springframework.security.web.session.HttpSessionEventPublisher();
+    }
     @Bean
     public com.TreDL.ecommerce.security.AuthAttemptLimiter authenticationLimits() {
         return new com.TreDL.ecommerce.security.AuthAttemptLimiter(java.time.Clock.systemUTC());

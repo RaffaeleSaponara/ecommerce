@@ -1,5 +1,18 @@
 name: 3dl
 services:
+  mailpit:
+    image: axllent/mailpit:v1.27.4
+    profiles: [dev-mail]
+    ports:
+      - "127.0.0.1:${DEV_SMTP_PORT:-1025}:1025"
+      - "127.0.0.1:${DEV_MAILPIT_PORT:-8025}:8025"
+    environment:
+      MP_MAX_MESSAGES: 500
+      MP_DATABASE: /data/mailpit.db
+    tmpfs:
+      - /data
+    labels:
+      com.3dl.environment: dev
   mysql:
     image: mysql:8.4.3
     container_name: 3dl-mysql-dev

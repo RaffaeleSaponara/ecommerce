@@ -40,6 +40,7 @@ public class ProfileService {
         RegistrationService.validatePassword(next,confirmation);
         if(passwords.matches(next,customer.getPassword())) throw new RegistrationService.InvalidRegistration("passwordReused");
         customer.setPassword(passwords.encode(next));
+        em.createQuery("delete from PasswordResetToken t where t.customerId=:id").setParameter("id",customer.getId()).executeUpdate();
         customers.flush();
     }
     private Customers customer(String email) {

@@ -32,6 +32,10 @@
 		<flyway.version>10.20.1</flyway.version>
 	</properties>
 	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
 		<!-- Dev applies V1 with Flyway; Hibernate only validates. -->
 		<dependency>
 			<groupId>org.flywaydb</groupId>

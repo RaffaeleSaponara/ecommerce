@@ -58,6 +58,8 @@
 
       <div class="auth-card">
         <h2>Login</h2>
+        <p th:if="${param.passwordReset != null}" role="status">Password reimpostata. Accedi con la nuova password.</p>
+        <p th:if="${param.sessionExpired != null}" role="status">Sessione terminata per sicurezza. Accedi di nuovo.</p>
         <p th:if="${param.limited != null}" role="alert" class="error-message">Troppi tentativi. Accesso temporaneamente limitato: attendi e riprova.</p>
         <p th:if="${param.passwordChanged != null}" role="status">Password aggiornata correttamente. Accedi con la nuova password.</p>
         <p>Usa l'email scelta in registrazione.</p>
@@ -79,6 +81,7 @@
         <p th:if="${param.logout}" class="status-message">Logout completato.</p>
 
         <div class="auth-links">
+          <p><a href="/forgot-password">Password dimenticata?</a></p>
           Non hai ancora un account? <a href="/registrazione">Registrati</a>
         </div>
       </div>
