@@ -58,6 +58,7 @@
 
       <div class="auth-card">
         <h2>Registrazione</h2>
+        <p th:if="${param.error != null and param.error[0] == 'limited'}" role="alert" class="error-message">Troppe richieste di registrazione. Attendi qualche minuto e riprova.</p>
         <p>Ti servono solo nome, email e password.</p>
         <form method="post" th:action="@{/signup}">
           <div class="field">

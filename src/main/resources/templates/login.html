@@ -58,6 +58,8 @@
 
       <div class="auth-card">
         <h2>Login</h2>
+        <p th:if="${param.limited != null}" role="alert" class="error-message">Troppi tentativi. Accesso temporaneamente limitato: attendi e riprova.</p>
+        <p th:if="${param.passwordChanged != null}" role="status">Password aggiornata correttamente. Accedi con la nuova password.</p>
         <p>Usa l'email scelta in registrazione.</p>
         <form method="post" th:action="@{/login}">
           <div class="field">

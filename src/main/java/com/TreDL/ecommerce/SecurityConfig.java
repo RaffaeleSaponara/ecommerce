@@ -17,8 +17,12 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,com.TreDL.ecommerce.security.AuthAttemptLimiter limits) throws Exception {
+        var success=new org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler();
+        success.setDefaultTargetUrl("/");success.setAlwaysUseDefaultTargetUrl(true);
+        var failure=new org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler("/login?error");
         http
+                .addFilterBefore(new com.TreDL.ecommerce.security.AuthAttemptFilter(limits),org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/admin", "/admin/**", "/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/", "/home", "/registrazione", "/signup", "/prodotti", "/prodotti/**", "/api/products/*", "/media/products/*", "/css/**", "/js/**", "/images/**", "/videos/**", "/auth/check").permitAll() // Catalogo pubblico e risorse statiche
@@ -27,6 +31,28 @@ public class SecurityConfig {
                 .formLogin(login -> login
                         .loginPage("/login")
                         .defaultSuccessUrl("/", true)
+                        .successHandler((request,response,authentication)->{
+                            var ticket=(com.TreDL.ecommerce.security.AuthAttemptLimiter.Ticket)request.getAttribute(com.TreDL.ecommerce.security.AuthAttemptFilter.TICKET);
+                            if(limits.complete(ticket,true)) success.onAuthenticationSuccess(request,response,authentication);
+                            else {
+                                new org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler().logout(request,response,authentication);
+                                response.sendRedirect(request.getContextPath()+"/login?limited");
+                            }
+                        })
+                        .failureHandler((request,response,error)->{
+                            var ticket=(com.TreDL.ecommerce.security.AuthAttemptLimiter.Ticket)request.getAttribute(com.TreDL.ecommerce.security.AuthAttemptFilter.TICKET);
+                            // DAO authentication wraps failures from user lookup. A blocked canonical
+                            // identity is rejected without counting it again or extending the block.
+                            for(Throwable cause=error;cause!=null;cause=cause.getCause()) {
+                                if(cause instanceof com.TreDL.ecommerce.security.AuthAttemptLimiter.Limited limited) {
+                                    limits.cancel(ticket);
+                                    response.setHeader("Retry-After",Long.toString(limited.retryAfter()));
+                                    response.sendRedirect(request.getContextPath()+"/login?limited");return;
+                                }
+                            }
+                            if(limits.complete(ticket,false)) failure.onAuthenticationFailure(request,response,error);
+                            else response.sendRedirect(request.getContextPath()+"/login?limited");
+                        })
                         .permitAll()
                 )
                 .logout(logout -> logout
@@ -56,6 +82,11 @@ public class SecurityConfig {
                         }));
 
         return http.build();
+    }
+
+    @Bean
+    public com.TreDL.ecommerce.security.AuthAttemptLimiter authenticationLimits() {
+        return new com.TreDL.ecommerce.security.AuthAttemptLimiter(java.time.Clock.systemUTC());
     }
 
     @Bean

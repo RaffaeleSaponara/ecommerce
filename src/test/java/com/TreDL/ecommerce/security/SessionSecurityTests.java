@@ -48,6 +48,7 @@ class SessionSecurityTests {
     @MockitoBean ProductsService productsService;
     @MockitoBean CheckoutService checkoutService;
     @MockitoBean OrderHistoryService orderHistoryService;
+    @MockitoBean ProfileService profileService;
 
     private Customers customer;
     private Products product;

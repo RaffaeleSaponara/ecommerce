@@ -25,6 +25,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         Customers customer = customersRepository.findByEmail(RegistrationService.normalizeEmail(email)).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        com.TreDL.ecommerce.security.AuthAttemptFilter.bindAccount(customer.getEmail());
         return User.builder()
                     .username(customer.getEmail())
                     .password(customer.getPassword())

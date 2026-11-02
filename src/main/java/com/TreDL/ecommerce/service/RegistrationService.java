@@ -18,6 +18,18 @@ public class RegistrationService {
         this.customers=customers; this.passwords=passwords;
     }
     public static String normalizeEmail(String email) { return email==null?"":email.trim().toLowerCase(Locale.ROOT); }
+    public static String validateUsername(String username) {
+        String name=username==null?"":username.strip();
+        if(name.length()<3 || name.length()>50 || name.codePoints().anyMatch(Character::isISOControl)) throw new InvalidRegistration("usernameInvalid");
+        return name;
+    }
+    public static void validatePassword(String password, String confirmation) {
+        if(password==null || password.isBlank() || password.codePointCount(0,password.length())<12
+                || password.getBytes(StandardCharsets.UTF_8).length>72
+                || password.codePoints().noneMatch(Character::isLetter) || password.codePoints().noneMatch(Character::isDigit)
+                || password.codePoints().anyMatch(Character::isISOControl)) throw new InvalidRegistration("passwordInvalid");
+        if(!password.equals(confirmation)) throw new InvalidRegistration("password");
+    }
     public static final class InvalidRegistration extends RuntimeException {
         private final String code;
         public InvalidRegistration(String code) { super("Registrazione non valida"); this.code=code; }
@@ -25,15 +37,10 @@ public class RegistrationService {
     }
     @Transactional
     public void register(String username, String email, String password, String confirmation) {
-        String name=username==null?"":username.strip();
+        String name=validateUsername(username);
         String normalized=normalizeEmail(email);
-        if(name.length()<3 || name.length()>50 || name.codePoints().anyMatch(Character::isISOControl)) throw new InvalidRegistration("usernameInvalid");
         if(normalized.length()>254 || normalized.indexOf('@')>64 || !EMAIL.matcher(normalized).matches()) throw new InvalidRegistration("emailInvalid");
-        if(password==null || password.isBlank() || password.codePointCount(0,password.length())<12
-                || password.getBytes(StandardCharsets.UTF_8).length>72
-                || password.codePoints().noneMatch(Character::isLetter) || password.codePoints().noneMatch(Character::isDigit)
-                || password.codePoints().anyMatch(Character::isISOControl)) throw new InvalidRegistration("passwordInvalid");
-        if(!password.equals(confirmation)) throw new InvalidRegistration("password");
+        validatePassword(password,confirmation);
         if(customers.findByEmail(normalized).isPresent()) throw new InvalidRegistration("email");
         if(customers.findByUsername(name).isPresent()) throw new InvalidRegistration("username");
         Customers customer=new Customers();

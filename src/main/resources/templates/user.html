@@ -45,6 +45,42 @@
       <p>Controlla i tuoi ordini, accedi al carrello e contattaci per le richieste custom.</p>
     </section>
 
+    <section class="profile-layout" id="account-settings" aria-label="Impostazioni account" th:if="${profile != null}">
+      <div class="panel" id="my-profile">
+        <h2>Il mio profilo</h2>
+        <p>Email: <strong th:text="${profile.email}"></strong></p>
+        <p>L’email non è modificabile da questa pagina.</p>
+        <p th:if="${param.profileSaved != null}" role="status">Profilo aggiornato correttamente.</p>
+        <div th:if="${param.profileError != null}" role="alert" class="error-message">
+          <p th:if="${param.profileError[0] == 'username'}">Nome utente già utilizzato. Scegline un altro.</p>
+          <p th:if="${param.profileError[0] == 'usernameInvalid'}">Il nome utente deve contenere da 3 a 50 caratteri, senza caratteri di controllo.</p>
+          <p th:if="${param.profileError[0] == 'currentPassword'}">La password attuale non è corretta.</p>
+          <p th:if="${param.profileError[0] == 'passwordInvalid'}">La nuova password deve avere almeno 12 caratteri, una lettera e un numero, massimo 72 byte UTF-8 e nessun carattere di controllo.</p>
+          <p th:if="${param.profileError[0] == 'password'}">La conferma della nuova password non corrisponde.</p>
+          <p th:if="${param.profileError[0] == 'passwordReused'}">Scegli una password diversa da quella attuale.</p>
+          <p th:if="${param.profileError[0] == 'storage'}">Salvataggio temporaneamente non disponibile. Riprova più tardi.</p>
+        </div>
+        <form method="post" th:action="@{/user/profile}">
+          <div class="field"><label for="profile-username">Nome utente</label>
+            <input id="profile-username" name="username" th:value="${profile.username}" autocomplete="username" minlength="3" maxlength="50" required></div>
+          <button class="button button-primary" type="submit">Salva profilo</button>
+        </form>
+      </div>
+      <div class="panel" id="change-password">
+        <h2>Cambia password</h2>
+        <p id="profile-password-rules">Almeno 12 caratteri, con una lettera e un numero; massimo 72 byte UTF-8, senza troncamento. Dopo il cambio dovrai accedere di nuovo.</p>
+        <form method="post" th:action="@{/user/password}">
+          <div class="field"><label for="current-password">Password attuale</label>
+            <input id="current-password" name="currentPassword" type="password" autocomplete="current-password" maxlength="72" required></div>
+          <div class="field"><label for="new-password">Nuova password</label>
+            <input id="new-password" name="newPassword" type="password" autocomplete="new-password" aria-describedby="profile-password-rules" minlength="12" maxlength="72" required></div>
+          <div class="field"><label for="confirm-new-password">Conferma nuova password</label>
+            <input id="confirm-new-password" name="confirmPassword" type="password" autocomplete="new-password" maxlength="72" required></div>
+          <button class="button button-primary" type="submit">Cambia password e accedi di nuovo</button>
+        </form>
+      </div>
+    </section>
+
     <section class="profile-layout">
       <div class="panel">
         <h2>Panoramica</h2>
