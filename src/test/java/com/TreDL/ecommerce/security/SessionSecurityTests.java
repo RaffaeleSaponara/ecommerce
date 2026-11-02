@@ -38,7 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 // MVC slice: real security chain, password encoder and user lookup; no datasource or external services.
 @WebMvcTest({AuthController.class, HomeController.class, CartController.class,
         CustomersController.class, ProductsController.class, OrdersController.class})
-@Import({SecurityConfig.class, CustomUserDetailsService.class})
+@Import({SecurityConfig.class, CustomUserDetailsService.class, RegistrationService.class})
 class SessionSecurityTests {
     @Autowired MockMvc mvc;
     @Autowired PasswordEncoder passwords;
@@ -271,18 +271,18 @@ class SessionSecurityTests {
     void signupAcceptsValidCsrfAndStoresOnlyEncodedPasswordWithUserRole() throws Exception {
         when(customersService.getByEmail("new@example.com")).thenReturn(new Customers());
         mvc.perform(post("/signup").with(csrf()).param("username", "New")
-                        .param("email", "new@example.com").param("password", "new-password")
-                        .param("confirmPassword", "new-password").param("role", "ADMIN"))
+                        .param("email", "new@example.com").param("password", "new-password1")
+                        .param("confirmPassword", "new-password1").param("role", "ADMIN"))
                 .andExpect(redirectedUrl("/login"));
-        verify(customersService).addCustomer(argThat(saved ->
-                passwords.matches("new-password", saved.getPassword()) && saved.getRole().equals("USER")));
+        verify(customersRepository).saveAndFlush(argThat(saved ->
+                passwords.matches("new-password1", saved.getPassword()) && saved.getRole().equals("USER")));
     }
 
     @Test
     void signupExplainsAnAlreadyRegisteredEmailWithoutCreatingAnotherAccount() throws Exception {
         mvc.perform(post("/signup").with(csrf()).param("username", "Alice")
-                        .param("email", customer.getEmail()).param("password", "test-password")
-                        .param("confirmPassword", "test-password"))
+                        .param("email", customer.getEmail()).param("password", "test-password1")
+                        .param("confirmPassword", "test-password1"))
                 .andExpect(redirectedUrl("/registrazione?error=email"));
         verify(customersService, never()).addCustomer(any());
         mvc.perform(get("/registrazione").param("error", "email"))
@@ -295,7 +295,7 @@ class SessionSecurityTests {
     void signupExplainsMismatchedPasswordsWithoutSavingEitherPassword() throws Exception {
         when(customersService.getByEmail("new@example.com")).thenReturn(new Customers());
         mvc.perform(post("/signup").with(csrf()).param("username", "New")
-                        .param("email", "new@example.com").param("password", "first-secret")
+                        .param("email", "new@example.com").param("password", "first-secret1")
                         .param("confirmPassword", "different-secret"))
                 .andExpect(redirectedUrl("/registrazione?error=password"));
         verify(customersService, never()).addCustomer(any());

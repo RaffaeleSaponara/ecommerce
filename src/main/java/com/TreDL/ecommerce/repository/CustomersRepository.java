@@ -18,5 +18,6 @@ public interface CustomersRepository extends JpaRepository<Customers, Long> {
 
     Optional<Customers> findByUsername(String username);
 
-    Optional<Customers> findByEmail(String email);
+    @Query("select c from Customers c where lower(trim(c.email)) = lower(trim(:email))")
+    Optional<Customers> findByEmail(@Param("email") String email);
 }
