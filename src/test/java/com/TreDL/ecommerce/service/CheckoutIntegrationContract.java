@@ -126,7 +126,7 @@ abstract class CheckoutIntegrationContract {
     @Test void createsAtomicOrderWithAggregatedQuantitiesExactTotalsAndHistoricSnapshots() {
         QuoteDTO quote = checkout.quote(alice.getEmail());
         OrderDTO result = checkout.checkout(alice.getEmail(), "success", confirm(quote));
-        assertThat(result.id()).isNotNull(); assertThat(result.total()).isEqualByComparingTo("0.40");
+        assertThat(result.id()).isNotNull(); assertThat(result.total()).isEqualByComparingTo("6.30");
         assertThat(result.currency()).isEqualTo("EUR"); assertThat(cartIds()).isEmpty();
         assertThat(result.items()).extracting(OrderItemDTO::lineNumber).containsExactly(1,2);
         assertThat(result.items()).extracting(OrderItemDTO::quantity).containsExactly(2,1);
@@ -159,10 +159,10 @@ abstract class CheckoutIntegrationContract {
         assertThat(history).extracting(OrderHistoryService.Summary::id)
                 .containsExactly(secondOrder.id(), firstOrder.id()).doesNotContain(bobOrder.id());
         assertThat(history).extracting(OrderHistoryService.Summary::total)
-                .containsExactly(new BigDecimal("0.10"), new BigDecimal("0.40"));
+                .containsExactly(new BigDecimal("6.00"), new BigDecimal("6.30"));
         String html = response.getResponse().getContentAsString();
         assertThat(html).contains("#" + firstOrder.id(), "#" + secondOrder.id(),
-                "28/10/2026 13:00", "0,40 EUR", "CONFERMATO")
+                "28/10/2026 13:00", "6,30 EUR", "CONFERMATO")
                 .doesNotContain("Lo storico ordini non", "Non hai ancora effettuato ordini.");
         assertThat(orders.count()).isEqualTo(3);
     }
@@ -210,7 +210,7 @@ abstract class CheckoutIntegrationContract {
         assertThatThrownBy(() -> checkout.checkout(alice.getEmail(), "failed", confirm(quote)))
                 .isInstanceOf(DataIntegrityViolationException.class);
         intact(); reset(orders);
-        assertThat(checkout.checkout(alice.getEmail(), "failed", confirm(quote)).total()).isEqualTo(new BigDecimal("0.40"));
+        assertThat(checkout.checkout(alice.getEmail(), "failed", confirm(quote)).total()).isEqualTo(new BigDecimal("6.30"));
     }
 
     @Test void failureAfterOrderRowsWereFlushedRollsBackEverything() {
@@ -282,7 +282,7 @@ abstract class CheckoutIntegrationContract {
         String response = mvc.perform(post("/cart/checkout").with(user(alice.getEmail())).with(csrf())
                 .header("Idempotency-Key","http").contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.id").isNumber())
-                .andExpect(jsonPath("$.total").isNumber()).andExpect(jsonPath("$.total").value(0.40))
+                .andExpect(jsonPath("$.total").isNumber()).andExpect(jsonPath("$.total").value(6.30))
                 .andExpect(jsonPath("$.items[0].quantity").value(2))
                 .andReturn().getResponse().getContentAsString();
         assertThat(response).doesNotContain("password","customer","requestHash","idempotencyKey","hibernateLazyInitializer");
@@ -356,7 +356,7 @@ abstract class CheckoutIntegrationContract {
             Future<OrderDTO> retry = workers.submit(() -> checkout.checkout(alice.getEmail(),"rollback-race",confirm(quote)));
             assertThatThrownBy(() -> retry.get(300,TimeUnit.MILLISECONDS)).isInstanceOf(TimeoutException.class);
             release.countDown(); failed.get(10,TimeUnit.SECONDS);
-            assertThat(retry.get(10,TimeUnit.SECONDS).total()).isEqualTo(new BigDecimal("0.40"));
+            assertThat(retry.get(10,TimeUnit.SECONDS).total()).isEqualTo(new BigDecimal("6.30"));
             assertThat(orders.count()).isEqualTo(1); assertThat(cartIds()).isEmpty();
         } finally { release.countDown(); workers.shutdownNow(); assertThat(workers.awaitTermination(10,TimeUnit.SECONDS)).isTrue(); }
     }
@@ -433,7 +433,7 @@ abstract class CheckoutIntegrationContract {
             assertThat(writerStarted.await(10, TimeUnit.SECONDS)).isTrue();
             assertThatThrownBy(() -> writer.get(300, TimeUnit.MILLISECONDS)).isInstanceOf(TimeoutException.class);
             release.countDown(); OrderDTO original = attempt.get(10, TimeUnit.SECONDS); writer.get(10, TimeUnit.SECONDS);
-            assertThat(original.total()).isEqualTo(new BigDecimal("0.40"));
+            assertThat(original.total()).isEqualTo(new BigDecimal("6.30"));
             assertThat(checkout.checkout(alice.getEmail(), "catalog-stable", confirm(quote))).isEqualTo(original);
         } finally {
             release.countDown(); workers.shutdownNow();

@@ -215,7 +215,7 @@ class SessionSecurityTests {
                         .content("{\"quoteToken\":\"signed-quote\",\"confirmPrices\":true}"))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.total").isNumber())
                 .andExpect(jsonPath("$.total").value(12.5))
-                .andExpect(jsonPath("$", aMapWithSize(9)))
+                .andExpect(jsonPath("$", aMapWithSize(13)))
                 .andExpect(jsonPath("$.statusHistory", hasSize(0)))
                 .andExpect(jsonPath("$.shippingAddress").value(org.hamcrest.Matchers.nullValue()))
                 .andExpect(jsonPath("$.billingAddress").value(org.hamcrest.Matchers.nullValue()))

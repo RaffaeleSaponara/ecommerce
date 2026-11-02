@@ -27,6 +27,10 @@ public class AdminController {
     @GetMapping("/orders") public List<OrderDTO> orders() { return admin.orders(); }
     @GetMapping("/orders/{id}") public OrderDTO order(@PathVariable long id) { return admin.order(id); }
     @org.springframework.beans.factory.annotation.Autowired private OrderManagementService orderManagement;
+    @org.springframework.beans.factory.annotation.Autowired private com.TreDL.ecommerce.service.ShippingService shipping;
+    @GetMapping("/shipping-settings") public com.TreDL.ecommerce.service.ShippingService.Settings shippingSettings(){return shipping.settings();}
+    @PutMapping("/shipping-settings") public com.TreDL.ecommerce.service.ShippingService.Settings shippingSettings(@RequestBody com.TreDL.ecommerce.service.ShippingService.Settings input){return shipping.update(input);}
+    @PutMapping("/orders/{id}/tracking") public OrderDTO tracking(@PathVariable long id,@RequestBody com.TreDL.ecommerce.service.ShippingService.Tracking input){return shipping.tracking(id,input);}
     public record StatusRequest(String status) {}
     @PostMapping("/orders/{id}/status")
     public OrderDTO status(@PathVariable long id, @RequestBody StatusRequest request) {

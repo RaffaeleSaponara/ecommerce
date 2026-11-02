@@ -11,6 +11,16 @@ public class Orders {
     @Column(nullable = false) private LocalDateTime date;
     @Column(nullable = false, precision = 19, scale = 2) private BigDecimal total;
     @Column(nullable = false, columnDefinition = "CHAR(3)") private String currency = "EUR";
+    @Column(precision=19,scale=2) private BigDecimal subtotal;
+    @Column(name="shipping_cost",precision=19,scale=2) private BigDecimal shippingCost;
+    @Column(length=100) private String carrier;
+    @Column(name="tracking_code",length=150) private String trackingCode;
+    public BigDecimal getSubtotal(){return subtotal==null?total:subtotal;}
+    public void setSubtotal(BigDecimal v){subtotal=Money.validate(v);}
+    public BigDecimal getShippingCost(){return shippingCost==null?new BigDecimal("0.00"):shippingCost;}
+    public void setShippingCost(BigDecimal v){shippingCost=Money.validate(v);}
+    public String getCarrier(){return carrier;} public void setCarrier(String v){carrier=v;}
+    public String getTrackingCode(){return trackingCode;} public void setTrackingCode(String v){trackingCode=v;}
     @Column(name = "ship_status", nullable = false) private String shipment;
     // Existing orders are treated as already deducted by the experimental data policy.
     @Column(name="stock_deducted",nullable=false) private Boolean stockDeducted = true;

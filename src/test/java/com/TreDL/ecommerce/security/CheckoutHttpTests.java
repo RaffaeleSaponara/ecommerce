@@ -93,7 +93,7 @@ class CheckoutHttpTests {
                         .content("{\"quoteToken\":\"signed-quote\",\"confirmPrices\":true}"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$", aMapWithSize(9)))
+                .andExpect(jsonPath("$", aMapWithSize(13)))
                 .andExpect(jsonPath("$.statusHistory", hasSize(0)))
                 .andExpect(jsonPath("$.shippingAddress").value(org.hamcrest.Matchers.nullValue()))
                 .andExpect(jsonPath("$.billingAddress").value(org.hamcrest.Matchers.nullValue()))

@@ -28,6 +28,7 @@
       <a class="button button-secondary" href="#dashboard">Dashboard</a>
       <a class="button button-secondary" href="#products">Prodotti</a>
       <a class="button button-secondary" href="#orders">Ordini</a>
+      <a class="button button-secondary" href="#shipping">Spedizioni</a>
       <button class="button button-secondary" id="refresh" type="button">Aggiorna dati</button>
     </nav>
     <p id="admin-message" role="status" aria-live="polite" hidden></p>
@@ -70,6 +71,14 @@
         <ul id="product-images-list" class="product-images-list" aria-label="Immagini caricate"></ul>
       </section>
     </section>
+    <section class="panel admin-panel" id="shipping" aria-labelledby="shipping-title">
+      <h2 id="shipping-title">Spedizione standard — Italia</h2>
+      <form id="shipping-settings-form">
+        <div class="field"><label for="shipping-cost">Costo fisso (€)</label><input id="shipping-cost" type="number" min="0" step="0.01" required></div>
+        <div class="field"><label for="shipping-threshold">Spedizione gratuita da (€ di prodotti, inclusi)</label><input id="shipping-threshold" type="number" min="0" step="0.01" required></div>
+        <button id="save-shipping" type="submit" class="button button-primary">Salva tariffe</button>
+      </form>
+    </section>
     <section class="panel admin-panel" id="orders" aria-labelledby="orders-title">
       <h2 id="orders-title">Ordini</h2><p>Consulta i dettagli e lo stato corrente di ogni ordine.</p>
       <div class="table-scroll" tabindex="0" role="region" aria-label="Elenco ordini">
@@ -78,6 +87,13 @@
       <section id="order-detail" class="order-detail" aria-labelledby="detail-title" tabindex="-1" hidden>
         <div class="section-heading"><h3 id="detail-title">Dettaglio ordine</h3><button id="close-detail" type="button" class="button button-secondary">Chiudi dettaglio</button></div>
         <p id="detail-summary"></p>
+        <p id="detail-amounts"></p>
+        <form id="order-tracking-form">
+          <h4>Tracking spedizione</h4>
+          <div class="field"><label for="tracking-carrier">Corriere</label><input id="tracking-carrier" maxlength="100"></div>
+          <div class="field"><label for="tracking-code">Codice di tracciamento</label><input id="tracking-code" maxlength="150"></div>
+          <button id="save-tracking" type="submit" class="button button-secondary">Salva tracking</button>
+        </form>
         <div id="order-status-actions" class="admin-sections" role="group" aria-label="Aggiorna stato ordine"></div>
         <h4>Storico degli stati</h4>
         <ul id="order-status-history"></ul>

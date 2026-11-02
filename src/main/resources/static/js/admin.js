@@ -161,6 +161,9 @@ async function showOrder(id) {
     if (request !== detailRequest) return;
     byId('detail-title').textContent = 'Ordine #' + order.id;
     byId('detail-summary').textContent = orderDate(order.date) + ' UTC · ' + order.shipment + ' · Totale ' + money(order.total, order.currency);
+    byId('detail-amounts').textContent = 'Subtotale prodotti: ' + money(order.subtotal, order.currency) + ' · Spedizione: ' + (Number(order.shippingCost) === 0 ? 'Gratuita' : money(order.shippingCost, order.currency));
+    byId('tracking-carrier').value = order.carrier || '';
+    byId('tracking-code').value = order.trackingCode || '';
     byId('order-detail').dataset.orderId = String(order.id);
     renderOrderActions(order);
     renderOrderHistory(order);
@@ -185,6 +188,7 @@ async function showOrder(id) {
 async function refreshAdmin() {
   byId('refresh').disabled = true;
   const results = await Promise.allSettled([
+    loadShippingSettings(),
     adminRequest('/dashboard').then(data => {
       byId('total-orders').textContent = data.totalOrders;
       byId('total-products').textContent = data.totalProducts;
@@ -205,6 +209,47 @@ async function refreshAdmin() {
   const failure = results.find(result => result.status === 'rejected');
   if (failure) { notify(failure.reason.message, true); return false; }
   return true;
+}
+
+async function loadShippingSettings() {
+  const settings = await adminRequest('/shipping-settings');
+  byId('shipping-cost').value = settings.cost;
+  byId('shipping-threshold').value = settings.freeThreshold;
+}
+
+function validShippingAmount(value) {
+  return /^\d+(?:\.\d{1,2})?$/.test(value) && Number.isFinite(Number(value)) && Number(value) <= 99999999999999999.99;
+}
+
+async function saveShippingSettings(event) {
+  event.preventDefault();
+  const cost = byId('shipping-cost').value.trim(), freeThreshold = byId('shipping-threshold').value.trim();
+  if (!validShippingAmount(cost) || !validShippingAmount(freeThreshold)) {
+    notify('Inserisci importi non negativi con al massimo due decimali.', true); return;
+  }
+  byId('save-shipping').disabled = true;
+  try {
+    const settings = await adminRequest('/shipping-settings', {method: 'PUT', body: JSON.stringify({cost, freeThreshold})});
+    byId('shipping-cost').value = settings.cost;
+    byId('shipping-threshold').value = settings.freeThreshold;
+    notify('Tariffe salvate. I preventivi con importi diversi devono essere riconfermati.');
+  } catch (error) { notify(error.message, true); }
+  finally { byId('save-shipping').disabled = false; }
+}
+
+async function saveOrderTracking(event) {
+  event.preventDefault();
+  const id = byId('order-detail').dataset.orderId;
+  if (!id) return;
+  const carrier = byId('tracking-carrier').value.trim(), trackingCode = byId('tracking-code').value.trim();
+  if (carrier.length > 100 || trackingCode.length > 150) { notify('Corriere o codice di tracciamento troppo lungo.', true); return; }
+  byId('save-tracking').disabled = true;
+  try {
+    await adminRequest('/orders/' + id + '/tracking', {method: 'PUT', body: JSON.stringify({carrier, trackingCode})});
+    if (byId('order-detail').dataset.orderId === id) await showOrder(id);
+    notify('Tracking salvato.');
+  } catch (error) { notify(error.message, true); }
+  finally { byId('save-tracking').disabled = false; }
 }
 
 async function saveProduct(event) {
@@ -236,6 +281,8 @@ async function saveProduct(event) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  byId('shipping-settings-form').addEventListener('submit', saveShippingSettings);
+  byId('order-tracking-form').addEventListener('submit', saveOrderTracking);
   byId('product-image-upload-form').addEventListener('submit', uploadProductImage);
   byId('product-form').addEventListener('submit', saveProduct);
   byId('new-product').addEventListener('click', () => editProduct());

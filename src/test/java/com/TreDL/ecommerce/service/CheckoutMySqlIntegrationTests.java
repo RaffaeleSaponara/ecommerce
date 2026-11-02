@@ -96,7 +96,7 @@ class CheckoutMySqlIntegrationTests extends CheckoutIntegrationContract {
             assertThat(rs.next()).isTrue();
             assertThat(rs.getBytes(1)).containsExactly(CheckoutService.keyBytes(key)).hasSize(128);
             assertThat(rs.getBytes(2)).containsExactly(CheckoutService.requestHash(confirm(quote))).hasSize(32);
-            assertThat(rs.getBigDecimal(3)).isEqualTo(new BigDecimal("0.40")); return null;
+            assertThat(rs.getBigDecimal(3)).isEqualTo(new BigDecimal("6.30")); return null;
         },order.id());
         assertThat(jdbc.queryForList("SELECT line_number FROM order_items WHERE id_order=? ORDER BY line_number",Integer.class,order.id()))
                 .containsExactly(1,2);
@@ -206,7 +206,8 @@ class CheckoutMySqlIntegrationTests extends CheckoutIntegrationContract {
             int finalQuantity = operation.equals("add") ? 3 : 1;
             int quotedQuantity = quoteFirst ? 2 : finalQuantity;
             assertThat(quote.items()).extracting(line -> line.quantity()).containsExactly(quotedQuantity, 1);
-            assertThat(quote.total()).isEqualTo(new BigDecimal("0.10").multiply(BigDecimal.valueOf(quotedQuantity)).add(new BigDecimal("0.20")));
+            assertThat(quote.subtotal()).isEqualTo(new BigDecimal("0.10").multiply(BigDecimal.valueOf(quotedQuantity)).add(new BigDecimal("0.20")));
+            assertThat(quote.total()).isEqualTo(quote.subtotal().add(quote.shippingCost()));
             assertThat(signer.verify(quote.quoteToken(), alice.getId()).items()).isEqualTo(quote.items());
             assertThat(cartIds()).hasSize(finalQuantity + 1);
             assertThat(orders.count()).isZero();

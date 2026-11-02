@@ -58,7 +58,7 @@
           <strong>Da definire</strong>
         </div>
         <div class="summary-total">
-          <span>Totale</span>
+          <span>Subtotale prodotti (spedizione nel preventivo)</span>
           <strong>€<span id="totale">0.00</span></strong>
         </div>
         <fieldset id="checkout-address-controls" class="address-controls">
@@ -261,7 +261,7 @@
       currentQuote = quote;
       document.getElementById("price-confirmation").hidden = false;
       document.getElementById("quote-summary").textContent =
-        `Totale confermato: ${money(quote.total)}. Valido fino alle ${new Date(quote.expiresAt * 1000).toLocaleTimeString("it-IT")}.`;
+        `Subtotale prodotti: ${money(quote.subtotal ?? quote.total)} · Spedizione standard Italia: ${Number(quote.shippingCost ?? 0) === 0 ? "Gratuita" : money(quote.shippingCost)} · Totale finale confermato: ${money(quote.total)}. Valido fino alle ${new Date(quote.expiresAt * 1000).toLocaleTimeString("it-IT")}.`;
       const lines = document.getElementById("quote-lines");
       lines.replaceChildren();
       quote.items.forEach(item => {

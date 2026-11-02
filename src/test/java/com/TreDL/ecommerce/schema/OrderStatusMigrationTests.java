@@ -13,7 +13,7 @@ class OrderStatusMigrationTests {
         try(Connection db=DriverManager.getConnection(url,"sa","");Statement s=db.createStatement()) {
             s.executeUpdate("INSERT INTO customers(id,username,password,email,role) VALUES(1,'old','test','old@test','USER')");
             s.executeUpdate("INSERT INTO orders(id,id_customer,date,total,currency,ship_status,idempotency_key,request_hash) VALUES(1,1,CURRENT_TIMESTAMP,12.50,'EUR','In elaborazione',X'01',REPEAT('a',32))");
-            var upgrade=Flyway.configure().dataSource(url,"sa","").locations("classpath:db/checkout-v2").cleanDisabled(true).load();
+            var upgrade=Flyway.configure().dataSource(url,"sa","").locations("classpath:db/checkout-v2").target("5").cleanDisabled(true).load();
             assertThat(upgrade.migrate().migrationsExecuted).isEqualTo(1);
             try(ResultSet row=s.executeQuery("SELECT ship_status,total,stock_deducted FROM orders WHERE id=1")) {
                 assertThat(row.next()).isTrue(); assertThat(row.getString(1)).isEqualTo("In elaborazione");

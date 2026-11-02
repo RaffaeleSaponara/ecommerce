@@ -5,7 +5,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 const html = fs.readFileSync(path.resolve(__dirname, '../../main/resources/templates/cart.html'), 'utf8');
 const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
-const quote = { quoteToken: 'signed.exact-token', expiresAt: 1803643500, currency: 'EUR', total: 0.4,
+const quote = { quoteToken: 'signed.exact-token', expiresAt: 1803643500, currency: 'EUR', subtotal: 0.4, shippingCost: 0, total: 0.4,
   items: [{ productName: '<script>untrusted name</script>', quantity: 2, unitPrice: 0.2, subtotal: 0.4 }] };
 
 function page({ storage = new Map(),
@@ -74,6 +74,22 @@ test('displays signed server totals safely and requires explicit checkbox confir
   assert.deepEqual(JSON.parse(request.body), { quoteToken: quote.quoteToken, confirmPrices: true, shippingAddressId: 17, billingAddressId: null });
   assert.equal(p.storage.size, 0);
   assert.match(p.get('checkout-status').textContent, /42/);
+});
+
+test('quote shows server subtotal, paid or free shipping and final total without sending amounts', async () => {
+  for (const amounts of [{subtotal: '78.99', shippingCost: '5.90', total: '84.89'}, {subtotal: '79.00', shippingCost: '0.00', total: '79.00'}, {subtotal: '80.00', shippingCost: '0.00', total: '80.00'}]) {
+    const p = page({quoteResponse: async () => ({ok: true, text: async () => JSON.stringify({...quote, ...amounts})})});
+    await p.quote();
+    const summary = p.get('quote-summary').textContent;
+    assert.match(summary, /Subtotale prodotti:/);
+    assert.ok(summary.includes(amounts.subtotal.replace('.', ',')));
+    assert.ok(summary.includes(amounts.total.replace('.', ',')));
+    assert.equal(summary.includes('Gratuita'), amounts.shippingCost === '0.00');
+    await p.confirm();
+    const body = JSON.parse(p.calls.find(call => call.url === '/cart/checkout').body);
+    assert.equal(Object.hasOwn(body, 'shippingCost'), false);
+    assert.equal(Object.hasOwn(body, 'total'), false);
+  }
 });
 
 test('ambiguous network failure retains exact key and request across a page reload', async () => {
@@ -268,7 +284,8 @@ test('pending stores exact address IDs and replays after address deletion or sel
 });
 
 test('legacy pending without addresses is retried unchanged', async () => {
-  const storage = new Map([['3dl.checkout.v2.pending', JSON.stringify({ key: 'legacy-key', quote })]]);
+  const {subtotal, shippingCost, ...legacyQuote} = quote;
+  const storage = new Map([['3dl.checkout.v2.pending', JSON.stringify({ key: 'legacy-key', quote: legacyQuote })]]);
   const p = page({ storage }); await p.start();
   p.get('shippingAddressId').value = '';
   await p.confirm();

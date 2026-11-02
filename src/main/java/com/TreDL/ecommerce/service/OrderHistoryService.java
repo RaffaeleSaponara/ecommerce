@@ -20,7 +20,8 @@ public class OrderHistoryService {
         this.orders = orders;
     }
 
-    public record Summary(Long id, String date, BigDecimal total, String currency, String shipment, AddressSnapshot shippingAddress, AddressSnapshot billingAddress, List<com.TreDL.ecommerce.dto.OrderDTO.StatusChange> statusHistory) {
+    public record Summary(Long id, String date, BigDecimal total, String currency, String shipment, AddressSnapshot shippingAddress, AddressSnapshot billingAddress, List<com.TreDL.ecommerce.dto.OrderDTO.StatusChange> statusHistory, BigDecimal subtotal,BigDecimal shippingCost,String carrier,String trackingCode) {
+        public Summary(Long id,String date,BigDecimal total,String currency,String shipment,AddressSnapshot shippingAddress,AddressSnapshot billingAddress,List<com.TreDL.ecommerce.dto.OrderDTO.StatusChange> statusHistory){this(id,date,total,currency,shipment,shippingAddress,billingAddress,statusHistory,total,new BigDecimal("0.00"),null,null);}
         public Summary(Long id,String date,BigDecimal total,String currency,String shipment,AddressSnapshot shippingAddress,AddressSnapshot billingAddress) {this(id,date,total,currency,shipment,shippingAddress,billingAddress,List.of());}
         public Summary(Long id,String date,BigDecimal total,String currency,String shipment) { this(id,date,total,currency,shipment,null,null); }
     }
@@ -34,7 +35,7 @@ public class OrderHistoryService {
                 .map(order -> new Summary(order.getId(),
                         DATE.format(order.getDate().atOffset(ZoneOffset.UTC).atZoneSameInstant(ZoneId.of("Europe/Rome"))),
                         order.getTotal(), order.getCurrency(), order.getShipment(), order.getShippingAddress(), order.getBillingAddress(),
-                        order.getStatusHistory().stream().map(change -> new com.TreDL.ecommerce.dto.OrderDTO.StatusChange(change.getChangedAt(),change.getPreviousStatus(),change.getNewStatus())).toList()))
+                        order.getStatusHistory().stream().map(change -> new com.TreDL.ecommerce.dto.OrderDTO.StatusChange(change.getChangedAt(),change.getPreviousStatus(),change.getNewStatus())).toList(),order.getSubtotal(),order.getShippingCost(),order.getCarrier(),order.getTrackingCode()))
                 .toList();
     }
 }

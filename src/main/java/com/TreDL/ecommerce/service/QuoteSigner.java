@@ -26,7 +26,9 @@ public class QuoteSigner {
     private final Clock clock;
 
     public record Payload(int version, long customerId, long expiresAt, String currency,
-                          BigDecimal total, List<QuoteLineDTO> items) {}
+                          BigDecimal total, List<QuoteLineDTO> items,BigDecimal subtotal,BigDecimal shippingCost) {
+ public Payload(int version,long customerId,long expiresAt,String currency,BigDecimal total,List<QuoteLineDTO> items){this(version,customerId,expiresAt,currency,total,items,total,new BigDecimal("0.00"));}
+}
 
     @Autowired
     public QuoteSigner(@Value("${checkout.quote-secret-base64:}") String secret) {
@@ -63,7 +65,7 @@ public class QuoteSigner {
             if (!MessageDigest.isEqual(mac(bytes), signature)) throw new IllegalArgumentException();
             Payload payload = mapper.readValue(bytes, Payload.class);
             // Require one exact encoding, including field order, decimal scale and Base64 form.
-            if (!token.equals(sign(payload)) || payload.version() != 1 || payload.customerId() != customerId)
+            if (!token.equals(sign(payload)) || payload.version() != 2 || payload.customerId() != customerId)
                 throw new IllegalArgumentException();
             requireUnexpired(payload);
             return payload;

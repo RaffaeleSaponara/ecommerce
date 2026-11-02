@@ -14,7 +14,7 @@ class QuoteSignerTests {
     private final Clock clock = Clock.fixed(Instant.parse("2026-10-27T12:00:00Z"),ZoneOffset.UTC);
     private QuoteSigner.Payload payload() {
         var line = new QuoteLineDTO(7L,"Jig",new BigDecimal("12.30"),2,new BigDecimal("24.60"));
-        return new QuoteSigner.Payload(1,41L,clock.instant().plusSeconds(300).getEpochSecond(),"EUR",
+        return new QuoteSigner.Payload(2,41L,clock.instant().plusSeconds(300).getEpochSecond(),"EUR",
                 new BigDecimal("24.60"),List.of(line));
     }
     @Test void signedQuoteSurvivesRestartWithStableConfiguredKey() {

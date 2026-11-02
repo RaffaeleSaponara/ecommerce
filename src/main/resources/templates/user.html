@@ -107,6 +107,9 @@
             <details>
               <summary>Dettaglio ordine e indirizzi</summary>
               <p>Stato: <strong th:text="${order.shipment}"></strong></p>
+              <p>Subtotale prodotti: <span th:text="${#numbers.formatDecimal(order.subtotal, 1, 'POINT', 2, 'COMMA')}"></span> € · Spedizione: <span th:text="${order.shippingCost.signum() == 0 ? 'Gratuita' : #numbers.formatDecimal(order.shippingCost, 1, 'POINT', 2, 'COMMA') + ' €'}"></span></p>
+              <p th:if="${order.carrier != null and !#strings.isEmpty(order.carrier)}">Corriere: <span th:text="${order.carrier}"></span></p>
+              <p th:if="${order.trackingCode != null and !#strings.isEmpty(order.trackingCode)}">Codice di tracciamento: <span th:text="${order.trackingCode}"></span></p>
               <p th:if="${#lists.isEmpty(order.statusHistory)}">Nessun cambio di stato registrato.</p>
               <ul th:unless="${#lists.isEmpty(order.statusHistory)}">
                 <li th:each="change : ${order.statusHistory}"><span th:text="${change.date}"></span> UTC · <span th:text="${change.previousStatus}"></span> → <span th:text="${change.newStatus}"></span></li>

@@ -38,6 +38,38 @@ function page(responder = () => ({ok: true, json: async () => []}), confirm = ()
 const product = {id: 7, nome: 'Jig', prezzo: '12.50', categoria: 'Pesca', descrizione: 'Artigianale', image: '/images/b1.jpg', stock: 5};
 const order = {id: 3, date: '2026-10-28T12:00:00', total: '25.00', currency: 'EUR', shipment: 'In elaborazione', items: [{productName: 'Jig', unitPrice: '12.50', quantity: 2, subtotal: '25.00'}]};
 
+test('shipping settings use protected API and reject invalid monetary values', async () => {
+  const p = page(() => ({ok: true, json: async () => ({cost: '5.90', freeThreshold: '79.00'})}));
+  await p.run('loadShippingSettings()');
+  assert.equal(p.byId('shipping-cost').value, '5.90');
+  assert.equal(p.byId('shipping-threshold').value, '79.00');
+  p.byId('shipping-cost').value = '6.50';
+  await p.run('saveShippingSettings({preventDefault(){}})');
+  const call = p.calls.find(call => call.options.method === 'PUT');
+  assert.equal(call.url, '/api/admin/shipping-settings');
+  assert.equal(call.options.headers['X-CSRF-TOKEN'], 'csrf-test');
+  assert.deepEqual(JSON.parse(call.options.body), {cost: '6.50', freeThreshold: '79.00'});
+  for (const invalid of ['-1', 'NaN', '1.001', '']) {
+    p.byId('shipping-cost').value = invalid;
+    const before = p.calls.length;
+    await p.run('saveShippingSettings({preventDefault(){}})');
+    assert.equal(p.calls.length, before);
+  }
+});
+
+test('tracking saves as text independently from order status and amounts', async () => {
+  const p = page(() => ({ok: true, json: async () => ({...order, subtotal: '25.00', shippingCost: '0.00', carrier: '<b>Corriere</b>', trackingCode: 'ABC123'})}));
+  await p.run('showOrder(3)');
+  assert.equal(p.byId('tracking-carrier').value, '<b>Corriere</b>');
+  assert.equal(p.byId('tracking-code').value, 'ABC123');
+  await p.run('saveOrderTracking({preventDefault(){}})');
+  const call = p.calls.find(call => call.options.method === 'PUT');
+  assert.equal(call.url, '/api/admin/orders/3/tracking');
+  assert.deepEqual(JSON.parse(call.options.body), {carrier: '<b>Corriere</b>', trackingCode: 'ABC123'});
+  assert.equal(call.options.headers['X-CSRF-TOKEN'], 'csrf-test');
+  assert.match(p.byId('detail-amounts').textContent, /Gratuita/);
+});
+
 test('product and order content remain text, edit retains product fields', () => {
   const p = page();
   const malicious = '<img src=x onerror=alert(1)>';

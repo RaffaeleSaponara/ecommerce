@@ -24,6 +24,7 @@ public class CheckoutService {
     private final OrdersRepository orders;
     private final QuoteSigner signer;
     @PersistenceContext private EntityManager entityManager;
+    @org.springframework.beans.factory.annotation.Autowired private ShippingService shipping;
 
     public CheckoutService(CustomersRepository customers, CartRepository carts,
                            OrdersRepository orders, QuoteSigner signer) {
@@ -37,10 +38,12 @@ public class CheckoutService {
         Customers customer = lockCustomer(authenticatedEmail);
         Cart cart = nonEmptyCart(customer);
         List<QuoteLineDTO> lines = currentLines(cart, LockModeType.PESSIMISTIC_READ);
-        BigDecimal total = total(lines);
+        BigDecimal subtotal = total(lines);
+        BigDecimal shippingCost=shipping.cost(shipping.locked(),subtotal);
+        BigDecimal total=Money.validate(subtotal.add(shippingCost));
         long expiry = signer.expiresAt();
-        var payload = new QuoteSigner.Payload(1, customer.getId(), expiry, "EUR", total, lines);
-        return new QuoteDTO(signer.sign(payload), expiry, "EUR", total, lines);
+        var payload = new QuoteSigner.Payload(2, customer.getId(), expiry, "EUR", total, lines,subtotal,shippingCost);
+        return new QuoteDTO(signer.sign(payload), expiry, "EUR", total, lines,subtotal,shippingCost);
     }
 
     public OrderDTO checkout(String authenticatedEmail, String clientKey, CheckoutRequest request) {
@@ -60,10 +63,12 @@ public class CheckoutService {
         QuoteSigner.Payload confirmed = signer.verify(request.quoteToken(), customer.getId());
         Cart cart = nonEmptyCart(customer);
         List<QuoteLineDTO> current = currentLines(cart, LockModeType.PESSIMISTIC_WRITE);
-        BigDecimal total = total(current);
+        BigDecimal subtotal=total(current);
+        BigDecimal shippingCost=shipping.cost(shipping.locked(),subtotal);
+        BigDecimal total=Money.validate(subtotal.add(shippingCost));
         // Catalog locks may have blocked past the quote's validity window.
         signer.requireUnexpired(confirmed);
-        if (!current.equals(confirmed.items()) || !"EUR".equals(confirmed.currency()) || !total.equals(confirmed.total()))
+        if (!current.equals(confirmed.items()) || !"EUR".equals(confirmed.currency()) || !total.equals(confirmed.total()) || !subtotal.equals(confirmed.subtotal()) || !shippingCost.equals(confirmed.shippingCost()))
             throw new CheckoutException(CONFLICT, "Cart or prices changed; request and confirm a new quote");
 
         if (request.shippingAddressId() == null)
@@ -82,6 +87,7 @@ public class CheckoutService {
         order.setIdempotencyKey(key);
         order.setRequestHash(hash);
         order.setTotal(total);
+        order.setSubtotal(subtotal);order.setShippingCost(shippingCost);
         int lineNumber = 1;
         for (QuoteLineDTO line : current) {
             Products product = entityManager.find(Products.class, line.productId());
