@@ -12,6 +12,14 @@ public class Orders {
     @Column(nullable = false, precision = 19, scale = 2) private BigDecimal total;
     @Column(nullable = false, columnDefinition = "CHAR(3)") private String currency = "EUR";
     @Column(name = "ship_status", nullable = false) private String shipment;
+    // Existing orders are treated as already deducted by the experimental data policy.
+    @Column(name="stock_deducted",nullable=false) private Boolean stockDeducted = true;
+    @OneToMany(mappedBy="order",cascade=CascadeType.PERSIST) @OrderBy("id ASC")
+    private List<OrderStatusChange> statusHistory = new ArrayList<>();
+    public Boolean getStockDeducted() { return stockDeducted; }
+    public void setStockDeducted(Boolean value) { stockDeducted=value; }
+    public List<OrderStatusChange> getStatusHistory() { return List.copyOf(statusHistory); }
+    public void recordStatusChange(String previous, String next) { statusHistory.add(new OrderStatusChange(this, previous, next)); }
     @Column(name = "idempotency_key", nullable = false, length = 128, columnDefinition = "VARBINARY(128)") private byte[] idempotencyKey;
     @Column(name = "request_hash", nullable = false, length = 32, columnDefinition = "BINARY(32)") private byte[] requestHash;
     @ManyToOne(optional = false) @JoinColumn(name = "id_customer", nullable = false) private Customers customer;

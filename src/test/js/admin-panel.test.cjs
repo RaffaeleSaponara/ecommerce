@@ -5,7 +5,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 const source = fs.readFileSync(path.resolve(__dirname, '../../main/resources/static/js/admin.js'), 'utf8');
 
-function page(responder = () => ({ok: true, json: async () => []})) {
+function page(responder = () => ({ok: true, json: async () => []}), confirm = () => true) {
   const elements = new Map(), calls = [], listeners = {};
   function element(tag) {
     return {tag, dataset: {}, files: [], children: [], listeners: {}, hidden: false, disabled: false, value: '', textContent: '',
@@ -26,7 +26,7 @@ function page(responder = () => ({ok: true, json: async () => []})) {
   form.elements.stock.value = '0';
   form.reportValidity = () => true;
   form.reset = () => Object.values(form.elements).forEach(field => field.value = '');
-  const context = vm.createContext({Intl, console, FormData, AbortController,
+  const context = vm.createContext({Intl, console, FormData, AbortController, window: {confirm},
     document: {getElementById: byId, createElement: element,
       querySelector: selector => ({content: selector.includes('_csrf_header') ? 'X-CSRF-TOKEN' : 'csrf-test'}),
       addEventListener: (name, action) => listeners[name] = action},
@@ -134,6 +134,60 @@ test('empty collections show actionable empty states', () => {
 
 const image = {id: 11, url: '/media/products/12345678-1234-1234-1234-123456789abc.png', primary: true};
 const tick = () => new Promise(setImmediate);
+
+test('order actions follow forward transitions, legacy confirmed state and terminal states', () => {
+  const p = page();
+  for (const [status, expected] of [
+    ['In elaborazione', ['IN_PREPARAZIONE', 'ANNULLATO']], ['CONFERMATO', ['IN_PREPARAZIONE', 'ANNULLATO']],
+    ['IN_PREPARAZIONE', ['SPEDITO', 'ANNULLATO']], ['SPEDITO', ['CONSEGNATO']],
+    ['CONSEGNATO', []], ['ANNULLATO', []], ['unknown', []]
+  ]) {
+    p.context.status = status;
+    assert.deepEqual(Array.from(p.run('orderTransitions(status)')), expected);
+  }
+});
+
+test('status history renders persisted dates and transitions as text and handles old orders', async () => {
+  const malicious = '<img src=x onerror=alert(1)>';
+  const p = page(() => ({ok: true, json: async () => ({...order, statusHistory: [{date: '2026-11-02T12:30:00', previousStatus: malicious, newStatus: 'IN_PREPARAZIONE'}]})}));
+  await p.run('showOrder(3)');
+  assert.equal(p.byId('order-status-history').children[0].textContent, '2026-11-02 12:30:00 UTC · ' + malicious + ' → In preparazione');
+  p.context.order = order;
+  p.run('renderOrderHistory(order)');
+  assert.equal(p.byId('order-status-history').textContent, 'Nessun cambio di stato registrato.');
+});
+
+test('cancel requires confirmation and sends protected status request only after approval', async () => {
+  const denied = page(undefined, () => false);
+  await denied.run("updateOrderStatus(3, 'ANNULLATO')");
+  assert.equal(denied.calls.length, 0);
+  let confirmedMessage;
+  const p = page(url => ({ok: true, json: async () => url.endsWith('/dashboard') ? {} : []}), message => { confirmedMessage = message; return true; });
+  await p.run("updateOrderStatus(3, 'ANNULLATO')");
+  assert.match(confirmedMessage, /#3/);
+  const update = p.calls[0];
+  assert.equal(update.url, '/api/admin/orders/3/status');
+  assert.equal(update.options.method, 'POST');
+  assert.deepEqual(JSON.parse(update.options.body), {status: 'ANNULLATO'});
+  assert.equal(update.options.headers['X-CSRF-TOKEN'], 'csrf-test');
+  assert.equal(update.options.credentials, 'same-origin');
+  assert.match(p.byId('admin-message').textContent, /annullato/);
+});
+
+test('invalid state response is visible, buttons recover and concurrent clicks send one mutation', async () => {
+  let resolve;
+  const p = page(() => new Promise(done => { resolve = done; }));
+  p.context.order = {...order, shipment: 'IN_PREPARAZIONE'};
+  p.run('renderOrderActions(order)');
+  const first = p.run("updateOrderStatus(3, 'SPEDITO')");
+  await p.run("updateOrderStatus(3, 'ANNULLATO')");
+  assert.equal(p.calls.length, 1);
+  assert.equal(p.byId('order-status-actions').children[0].disabled, true);
+  resolve({ok: false, status: 409, json: async () => ({message: 'Transizione non consentita'})});
+  await first;
+  assert.equal(p.byId('admin-message').textContent, 'Transizione non consentita');
+  assert.equal(p.byId('order-status-actions').children[0].disabled, false);
+});
 
 test('image upload keeps browser multipart boundary, CSRF and refreshes persisted primary/catalog', async () => {
   let uploaded = false;

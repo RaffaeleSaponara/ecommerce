@@ -12,7 +12,7 @@ class StockMigrationTests {
         Flyway.configure().dataSource(url,"sa","").locations("classpath:db/checkout-v2").target("3").cleanDisabled(true).load().migrate();
         try(Connection db=DriverManager.getConnection(url,"sa","");Statement statement=db.createStatement()) {
             statement.executeUpdate("INSERT INTO products(id,nome,prezzo) VALUES(1,'Esistente',12.50)");
-            Flyway upgraded=Flyway.configure().dataSource(url,"sa","").locations("classpath:db/checkout-v2").cleanDisabled(true).load();
+            Flyway upgraded=Flyway.configure().dataSource(url,"sa","").locations("classpath:db/checkout-v2").target("4").cleanDisabled(true).load();
             assertThat(upgraded.migrate().migrationsExecuted).isEqualTo(1);
             try(ResultSet row=statement.executeQuery("SELECT nome,prezzo,stock FROM products WHERE id=1")) {
                 assertThat(row.next()).isTrue();assertThat(row.getString(1)).isEqualTo("Esistente");

@@ -20,7 +20,8 @@ public class OrderHistoryService {
         this.orders = orders;
     }
 
-    public record Summary(Long id, String date, BigDecimal total, String currency, String shipment, AddressSnapshot shippingAddress, AddressSnapshot billingAddress) {
+    public record Summary(Long id, String date, BigDecimal total, String currency, String shipment, AddressSnapshot shippingAddress, AddressSnapshot billingAddress, List<com.TreDL.ecommerce.dto.OrderDTO.StatusChange> statusHistory) {
+        public Summary(Long id,String date,BigDecimal total,String currency,String shipment,AddressSnapshot shippingAddress,AddressSnapshot billingAddress) {this(id,date,total,currency,shipment,shippingAddress,billingAddress,List.of());}
         public Summary(Long id,String date,BigDecimal total,String currency,String shipment) { this(id,date,total,currency,shipment,null,null); }
     }
 
@@ -32,7 +33,8 @@ public class OrderHistoryService {
         return orders.findByCustomerEmailOrderByDateDescIdDesc(authenticatedEmail).stream()
                 .map(order -> new Summary(order.getId(),
                         DATE.format(order.getDate().atOffset(ZoneOffset.UTC).atZoneSameInstant(ZoneId.of("Europe/Rome"))),
-                        order.getTotal(), order.getCurrency(), order.getShipment(), order.getShippingAddress(), order.getBillingAddress()))
+                        order.getTotal(), order.getCurrency(), order.getShipment(), order.getShippingAddress(), order.getBillingAddress(),
+                        order.getStatusHistory().stream().map(change -> new com.TreDL.ecommerce.dto.OrderDTO.StatusChange(change.getChangedAt(),change.getPreviousStatus(),change.getNewStatus())).toList()))
                 .toList();
     }
 }

@@ -3,6 +3,7 @@
 let editingProductId = null;
 let originalStock = '0';
 let detailRequest = 0;
+let orderUpdateBusy = false;
 const byId = id => document.getElementById(id);
 const money = (value, currency = 'EUR') => new Intl.NumberFormat('it-IT', {style: 'currency', currency}).format(value);
 const orderDate = value => String(value).replace('T', ' ');
@@ -102,6 +103,57 @@ function renderOrders(orders) {
   }
 }
 
+const orderStatusLabels = {CONFERMATO: 'Confermato', IN_PREPARAZIONE: 'In preparazione', SPEDITO: 'Spedito', CONSEGNATO: 'Consegnato', ANNULLATO: 'Annullato'};
+
+function orderTransitions(shipment) {
+  const status = shipment === 'In elaborazione' ? 'CONFERMATO' : shipment;
+  const next = {CONFERMATO: 'IN_PREPARAZIONE', IN_PREPARAZIONE: 'SPEDITO', SPEDITO: 'CONSEGNATO'}[status];
+  return [...(next ? [next] : []), ...(['CONFERMATO', 'IN_PREPARAZIONE'].includes(status) ? ['ANNULLATO'] : [])];
+}
+
+function renderOrderActions(order) {
+  const actions = byId('order-status-actions');
+  actions.replaceChildren();
+  const transitions = orderTransitions(order.shipment);
+  for (const status of transitions) {
+    const button = actionButton(status === 'ANNULLATO' ? 'Annulla ordine' : 'Segna come ' + orderStatusLabels[status].toLowerCase(), () => updateOrderStatus(order.id, status));
+    button.disabled = orderUpdateBusy;
+    actions.appendChild(button);
+  }
+  if (!transitions.length) actions.textContent = 'Nessuna transizione disponibile per questo stato.';
+}
+
+function renderOrderHistory(order) {
+  const history = byId('order-status-history');
+  history.replaceChildren();
+  for (const change of order.statusHistory || []) {
+    const item = document.createElement('li');
+    item.textContent = orderDate(change.date) + ' UTC · ' + (orderStatusLabels[change.previousStatus] || change.previousStatus) + ' → ' + (orderStatusLabels[change.newStatus] || change.newStatus);
+    history.appendChild(item);
+  }
+  if (!history.children.length) history.textContent = 'Nessun cambio di stato registrato.';
+}
+
+async function updateOrderStatus(id, status) {
+  if (orderUpdateBusy) return;
+  if (status === 'ANNULLATO' && !window.confirm('Annullare l’ordine #' + id + '? Le quantità saranno reintegrate nel magazzino.')) return;
+  orderUpdateBusy = true;
+  byId('order-status-actions').querySelectorAll('button').forEach(button => { button.disabled = true; });
+  notify('Aggiornamento stato ordine…');
+  try {
+    await adminRequest('/orders/' + id + '/status', {method: 'POST', body: JSON.stringify({status})});
+    const refreshed = await refreshAdmin();
+    // Reload persisted state rather than assuming that another admin has not changed it.
+    if (!byId('order-detail').hidden && byId('order-detail').dataset.orderId === String(id)) await showOrder(id);
+    if (refreshed) notify(status === 'ANNULLATO' ? 'Ordine annullato. Scorte reintegrate.' : 'Stato ordine aggiornato.');
+  } catch (error) {
+    notify(error.message, true);
+  } finally {
+    orderUpdateBusy = false;
+    byId('order-status-actions').querySelectorAll('button').forEach(button => { button.disabled = false; });
+  }
+}
+
 async function showOrder(id) {
   const request = ++detailRequest;
   try {
@@ -109,6 +161,9 @@ async function showOrder(id) {
     if (request !== detailRequest) return;
     byId('detail-title').textContent = 'Ordine #' + order.id;
     byId('detail-summary').textContent = orderDate(order.date) + ' UTC · ' + order.shipment + ' · Totale ' + money(order.total, order.currency);
+    byId('order-detail').dataset.orderId = String(order.id);
+    renderOrderActions(order);
+    renderOrderHistory(order);
     const body = byId('detail-rows');
     body.replaceChildren();
     if (!order.items.length) emptyRow(body, 4, 'Nessun articolo presente.');

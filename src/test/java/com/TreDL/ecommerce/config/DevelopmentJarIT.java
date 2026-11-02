@@ -110,7 +110,7 @@ class DevelopmentJarIT {
         env.forEach((key,value) -> properties.append(key).append('=').append(value).append('\n'));
         Files.writeString(directory.resolve(".env"),properties);
         start(Map.of("SERVER_PORT","0"),"--spring.profiles.active=dev");ready();
-        assertThat(output()).contains("Initialized JPA EntityManagerFactory","Successfully applied 1 migration");
+        assertThat(output()).contains("Initialized JPA EntityManagerFactory","Successfully applied 5 migrations");
         HttpClient http=HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
         URI base=URI.create("http://127.0.0.1:"+port);
         assertThat(http.send(HttpRequest.newBuilder(base.resolve("/")).GET().build(),HttpResponse.BodyHandlers.discarding()).statusCode()).isEqualTo(200);
@@ -137,6 +137,11 @@ class DevelopmentJarIT {
             try(ResultSet r=s.executeQuery("SELECT COUNT(*) FROM products")){r.next();assertThat(r.getInt(1)).isEqualTo(3);}
             try(ResultSet r=s.executeQuery("SELECT COUNT(*) FROM orders")){r.next();assertThat(r.getInt(1)).isZero();}
             try(ResultSet r=s.executeQuery("SELECT COUNT(*) FROM flyway_schema_history WHERE version='1' AND success=1")){r.next();assertThat(r.getInt(1)).isEqualTo(1);}
+            try(ResultSet r=s.executeQuery("SELECT version FROM flyway_schema_history WHERE success=1 ORDER BY installed_rank")) {
+                var versions=new ArrayList<String>();
+                while(r.next())versions.add(r.getString(1));
+                assertThat(versions).containsExactly("1","2","3","4","5");
+            }
         }
     }
 

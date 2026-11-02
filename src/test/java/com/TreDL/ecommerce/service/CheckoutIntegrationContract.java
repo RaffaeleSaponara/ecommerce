@@ -162,7 +162,7 @@ abstract class CheckoutIntegrationContract {
                 .containsExactly(new BigDecimal("0.10"), new BigDecimal("0.40"));
         String html = response.getResponse().getContentAsString();
         assertThat(html).contains("#" + firstOrder.id(), "#" + secondOrder.id(),
-                "28/10/2026 13:00", "0,40 EUR", "In elaborazione")
+                "28/10/2026 13:00", "0,40 EUR", "CONFERMATO")
                 .doesNotContain("Lo storico ordini non", "Non hai ancora effettuato ordini.");
         assertThat(orders.count()).isEqualTo(3);
     }

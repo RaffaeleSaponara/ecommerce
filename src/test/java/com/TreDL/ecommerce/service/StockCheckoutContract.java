@@ -31,7 +31,7 @@ abstract class StockCheckoutContract {
     Customers alice,bob; Products product;
     long aliceAddress,bobAddress;
     @BeforeEach void setup() {
-        for(String table:List.of("order_items","orders","cart_products","cart","product_images","products","customer_addresses","customers")) jdbc.update("DELETE FROM "+table);
+        for(String table:List.of("order_status_changes","order_items","orders","cart_products","cart","product_images","products","customer_addresses","customers")) jdbc.update("DELETE FROM "+table);
         alice=customer("alice");bob=customer("bob");
         product=new Products();product.setNome("Ultima esca");product.setPrezzo(new BigDecimal("12.50"));product.setStock(5);products.saveAndFlush(product);
         var input=new AddressRequest("Mario Rossi","Via Roma","1","00100","Roma","RM","IT",null,false);

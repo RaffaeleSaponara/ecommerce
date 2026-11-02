@@ -105,7 +105,12 @@
         <tr th:each="order : ${orders}">
           <td><span th:text="${'#' + order.id}"></span>
             <details>
-              <summary>Indirizzi dell'ordine</summary>
+              <summary>Dettaglio ordine e indirizzi</summary>
+              <p>Stato: <strong th:text="${order.shipment}"></strong></p>
+              <p th:if="${#lists.isEmpty(order.statusHistory)}">Nessun cambio di stato registrato.</p>
+              <ul th:unless="${#lists.isEmpty(order.statusHistory)}">
+                <li th:each="change : ${order.statusHistory}"><span th:text="${change.date}"></span> UTC · <span th:text="${change.previousStatus}"></span> → <span th:text="${change.newStatus}"></span></li>
+              </ul>
               <p th:if="${order.shippingAddress == null}">Indirizzo non disponibile per questo ordine</p>
               <div th:each="address, addressStatus : ${ {order.shippingAddress, order.billingAddress} }" th:if="${address != null}">
                 <strong th:text="${addressStatus.index == 0 ? 'Spedizione' : 'Fatturazione'}"></strong>

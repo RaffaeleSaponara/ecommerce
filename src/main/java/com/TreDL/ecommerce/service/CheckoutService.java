@@ -77,7 +77,8 @@ public class CheckoutService {
         order.setShippingAddress(shipping);
         order.setBillingAddress(billing);
         order.setDate(LocalDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.MICROS));
-        order.setShipment("In elaborazione");
+        order.setShipment("CONFERMATO");
+        order.setStockDeducted(true);
         order.setIdempotencyKey(key);
         order.setRequestHash(hash);
         order.setTotal(total);

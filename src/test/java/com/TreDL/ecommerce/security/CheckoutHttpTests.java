@@ -55,6 +55,9 @@ class CheckoutHttpTests {
     @MockitoBean CustomersService customersService;
     @MockitoBean ProductsService productsService;
     @MockitoBean CheckoutService checkoutService;
+    // CartService has a persistence context for stock checks. This MVC slice keeps
+    // the real service but does not start JPA or connect to a database.
+    @MockitoBean jakarta.persistence.EntityManagerFactory entityManagerFactory;
 
     private Customers customer;
     private Products product;
@@ -90,7 +93,8 @@ class CheckoutHttpTests {
                         .content("{\"quoteToken\":\"signed-quote\",\"confirmPrices\":true}"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$", aMapWithSize(8)))
+                .andExpect(jsonPath("$", aMapWithSize(9)))
+                .andExpect(jsonPath("$.statusHistory", hasSize(0)))
                 .andExpect(jsonPath("$.shippingAddress").value(org.hamcrest.Matchers.nullValue()))
                 .andExpect(jsonPath("$.billingAddress").value(org.hamcrest.Matchers.nullValue()))
                 .andExpect(jsonPath("$.date").value("2026-10-27T12:00:00"))

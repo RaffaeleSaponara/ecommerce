@@ -78,6 +78,9 @@
       <section id="order-detail" class="order-detail" aria-labelledby="detail-title" tabindex="-1" hidden>
         <div class="section-heading"><h3 id="detail-title">Dettaglio ordine</h3><button id="close-detail" type="button" class="button button-secondary">Chiudi dettaglio</button></div>
         <p id="detail-summary"></p>
+        <div id="order-status-actions" class="admin-sections" role="group" aria-label="Aggiorna stato ordine"></div>
+        <h4>Storico degli stati</h4>
+        <ul id="order-status-history"></ul>
         <div class="table-scroll" tabindex="0" role="region" aria-label="Articoli ordinati">
           <table class="orders-table"><thead><tr><th scope="col">Prodotto</th><th scope="col">Prezzo unitario</th><th scope="col">Quantità</th><th scope="col">Subtotale</th></tr></thead><tbody id="detail-rows"></tbody></table>
         </div>

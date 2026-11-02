@@ -11,6 +11,8 @@ node --test src/test/js/*.test.cjs
 ```
 
 Su Linux/macOS usare ./mvnw. Non servono credenziali locali per i test.
+In IntelliJ eseguire `clean verify` (o `clean install`) senza `-P dev`:
+`dev` è un profilo Spring per l'avvio dell'applicazione, non un profilo Maven.
 Non aggiungere override esterni di datasource/profili Spring alla configurazione
 Maven di IntelliJ. I test usano il profilo test dal loro classpath.
 

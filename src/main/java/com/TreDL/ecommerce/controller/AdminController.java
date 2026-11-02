@@ -2,6 +2,7 @@ package com.TreDL.ecommerce.controller;
 
 import com.TreDL.ecommerce.dto.*;
 import com.TreDL.ecommerce.service.AdminService;
+import com.TreDL.ecommerce.service.OrderManagementService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +26,12 @@ public class AdminController {
     public ProductDTO update(@PathVariable long id, @RequestBody AdminProductRequest request) { return admin.update(id, request); }
     @GetMapping("/orders") public List<OrderDTO> orders() { return admin.orders(); }
     @GetMapping("/orders/{id}") public OrderDTO order(@PathVariable long id) { return admin.order(id); }
+    @org.springframework.beans.factory.annotation.Autowired private OrderManagementService orderManagement;
+    public record StatusRequest(String status) {}
+    @PostMapping("/orders/{id}/status")
+    public OrderDTO status(@PathVariable long id, @RequestBody StatusRequest request) {
+        return orderManagement.update(id,request==null?null:request.status());
+    }
 
     @ExceptionHandler({IllegalArgumentException.class, HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
