@@ -35,9 +35,11 @@ class AuthLimitsHttpTests {
     @Autowired AuthAttemptLimiterTests.MutableClock clock;
     @MockitoBean CustomersRepository customers;
     @MockitoBean RegistrationService registration;
+    @MockitoBean EmailVerificationService verification;
     @BeforeEach void fixture() {
         clock.advance(Duration.ofHours(1));
         Customers c=new Customers();c.setEmail("alice@example.com");c.setPassword(encoder.encode("test-password"));c.setRole("USER");
+        c.setEmailVerified(true);
         when(customers.findByEmail("alice@example.com")).thenReturn(Optional.of(c));
     }
     MockHttpServletRequestBuilder login(String email,String password,String ip) {
@@ -76,12 +78,12 @@ class AuthLimitsHttpTests {
     }
     @Test void signupHasIndependentLimitAndCsrfRejectionsDoNotConsumeIt() throws Exception {
         for(int i=0;i<11;i++)mvc.perform(post("/signup")).andExpect(status().isForbidden());
-        for(int i=0;i<10;i++)mvc.perform(post("/signup").with(csrf())).andExpect(redirectedUrl("/login"));
+        for(int i=0;i<10;i++)mvc.perform(post("/signup").with(csrf())).andExpect(redirectedUrl("/login?registered"));
         mvc.perform(post("/signup").with(csrf())).andExpect(redirectedUrl("/registrazione?error=limited"));
         verify(registration,times(10)).register(null,null,null,null);
         mvc.perform(login("alice@example.com","test-password","127.0.0.1")).andExpect(authenticated());
         clock.advance(Duration.ofMinutes(15));
-        mvc.perform(post("/signup").with(csrf())).andExpect(redirectedUrl("/login"));
+        mvc.perform(post("/signup").with(csrf())).andExpect(redirectedUrl("/login?registered"));
     }
     @Test void csrfAndAlternativeEndpointsCannotAuthenticate() throws Exception {
         mvc.perform(post("/login").param("username","alice@example.com").param("password","test-password")).andExpect(status().isForbidden());

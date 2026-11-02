@@ -17,7 +17,7 @@ class RegistrationConflictTests {
         var service=mock(RegistrationService.class);
         doThrow(new DataIntegrityViolationException("Internal database detail",new SQLException(detail,state,vendor)))
                 .when(service).register(any(),any(),any(),any());
-        assertThat(new CustomersController(service).signup("Name","a@example.com","good-password1","good-password1"))
-                .isEqualTo("redirect:/registrazione?error="+code);
+        assertThat(new CustomersController(service,mock(com.TreDL.ecommerce.service.EmailVerificationService.class)).signup("Name","a@example.com","good-password1","good-password1",new org.springframework.mock.web.MockHttpServletRequest()))
+                .isEqualTo(code.equals("email")?"redirect:/login?registered":"redirect:/registrazione?error="+code);
     }
 }

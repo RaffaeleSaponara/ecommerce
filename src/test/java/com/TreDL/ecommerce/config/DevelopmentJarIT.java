@@ -110,7 +110,7 @@ class DevelopmentJarIT {
         env.forEach((key,value) -> properties.append(key).append('=').append(value).append('\n'));
         Files.writeString(directory.resolve(".env"),properties);
         start(Map.of("SERVER_PORT","0"),"--spring.profiles.active=dev");ready();
-        assertThat(output()).contains("Initialized JPA EntityManagerFactory","Successfully applied 8 migrations");
+        assertThat(output()).contains("Initialized JPA EntityManagerFactory","Successfully applied 9 migrations");
         HttpClient http=HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
         URI base=URI.create("http://127.0.0.1:"+port);
         assertThat(http.send(HttpRequest.newBuilder(base.resolve("/")).GET().build(),HttpResponse.BodyHandlers.discarding()).statusCode()).isEqualTo(200);
@@ -140,7 +140,7 @@ class DevelopmentJarIT {
             try(ResultSet r=s.executeQuery("SELECT version FROM flyway_schema_history WHERE success=1 ORDER BY installed_rank")) {
                 var versions=new ArrayList<String>();
                 while(r.next())versions.add(r.getString(1));
-                assertThat(versions).containsExactly("1","2","3","4","5","6","7","8");
+                assertThat(versions).containsExactly("1","2","3","4","5","6","7","8","9");
             }
         }
     }

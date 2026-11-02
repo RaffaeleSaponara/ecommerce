@@ -27,6 +27,7 @@ public class SecurityConfig {
                 .addFilterBefore(new com.TreDL.ecommerce.security.AuthAttemptFilter(limits),org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/forgot-password","/reset-password").permitAll()
+                        .requestMatchers("/verify-email","/resend-verification").permitAll()
                         .requestMatchers("/admin", "/admin/**", "/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/", "/home", "/registrazione", "/signup", "/prodotti", "/prodotti/**", "/api/products/*", "/media/products/*", "/css/**", "/js/**", "/images/**", "/videos/**", "/auth/check").permitAll() // Catalogo pubblico e risorse statiche
                         .anyRequest().authenticated() // Tutti gli altri URL richiedono autenticazione

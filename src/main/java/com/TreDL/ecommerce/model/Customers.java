@@ -30,6 +30,13 @@ public class Customers {
     private String email;
     @Column(name = "role", nullable = false)
     private String role;
+    @Column(name="email_verified",nullable=false) private boolean emailVerified=false;
+    public boolean isEmailVerified(){return emailVerified;}
+    public void setEmailVerified(boolean value){emailVerified=value;}
+    // Preserve the existing constructor API; verification is always explicit for new objects.
+    public Customers(Long id,List<Orders> orders,Cart cart,String username,String password,String email,String role) {
+        this.id=id;this.orders=orders;this.cart=cart;this.username=username;this.password=password;this.email=email;this.role=role;
+    }
 
 
     public List<Orders> getOrders() {

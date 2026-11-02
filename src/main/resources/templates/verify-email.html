@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="referrer" content="no-referrer"><title>Verifica email — Lure Lab</title>
+<link rel="stylesheet" href="/css/account.css"><link rel="stylesheet" href="/css/responsive.css"><script src="/js/navigation.js" defer></script></head>
+<body><a class="skip-link" href="#main-content">Vai al contenuto</a>
+<nav class="site-nav" aria-label="Navigazione principale"><a class="brand" href="/">Lure Lab</a><div class="nav-actions"><a class="icon-link" href="/login">Torna al login</a></div></nav>
+<main class="auth-shell" id="main-content" tabindex="-1">
+  <section class="auth-intro"><span class="eyebrow">Il tuo account</span><h1>Conferma il tuo indirizzo.</h1><p>La verifica completa la registrazione. Non esegue il login.</p></section>
+  <section class="auth-card"><h2>Verifica email</h2>
+    <p th:if="${message != null}" th:text="${message}" role="alert" class="error-message"></p>
+    <form th:if="${message == null and token != null}" method="post" th:action="@{/verify-email}">
+      <input type="hidden" name="token" th:value="${token}"><p>Premi il pulsante per confermare l’indirizzo email associato al link. Il link è valido per 24 ore.</p>
+      <button type="submit" class="submit-button">Conferma indirizzo email</button>
+    </form>
+    <p th:if="${message == null and token == null}" role="alert">Link non valido. Richiedi una nuova email di verifica.</p>
+    <p><a href="/resend-verification">Richiedi un nuovo link</a></p><p><a href="/login">Torna al login</a></p>
+  </section>
+</main></body></html>

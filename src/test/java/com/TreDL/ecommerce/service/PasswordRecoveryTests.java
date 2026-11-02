@@ -51,7 +51,7 @@ class PasswordRecoveryTests {
     static final String OLD="original-pass1",NEXT="new-password123";
     @BeforeEach void fixture() {
         time.advance(Duration.ofDays(1));messages.clear();jdbc.update("DELETE FROM password_reset_tokens");customers.deleteAll();
-        alice=new Customers();alice.setUsername("Alice");alice.setEmail("alice@example.com");alice.setRole("USER");alice.setPassword(passwords.encode(OLD));customers.saveAndFlush(alice);
+        alice=new Customers();alice.setUsername("Alice");alice.setEmail("alice@example.com");alice.setRole("USER");alice.setEmailVerified(true);alice.setPassword(passwords.encode(OLD));customers.saveAndFlush(alice);
         doAnswer(invocation->{assertThat(TransactionSynchronizationManager.isActualTransactionActive()).isFalse();messages.add(invocation.getArgument(0));return null;})
                 .when(smtp).send(any(SimpleMailMessage.class));
     }

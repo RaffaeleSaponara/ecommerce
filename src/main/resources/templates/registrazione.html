@@ -85,7 +85,6 @@
           <button class="submit-button" type="submit">Crea account</button>
         </form>
 
-        <p th:if="${param.error != null and param.error[0] == 'email'}" class="error-message" role="alert">Questa email è già registrata. <a href="/login">Accedi al tuo account</a>.</p>
         <p th:if="${param.error != null and param.error[0] == 'password'}" class="error-message" role="alert">Le due password non coincidono. Reinseriscile uguali in entrambi i campi.</p>
         <p th:if="${param.error != null and param.error[0] == 'username'}" class="error-message" role="alert">Nome utente già utilizzato. Scegline un altro.</p>
         <p th:if="${param.error != null and param.error[0] == 'usernameInvalid'}" class="error-message" role="alert">Inserisci un nome utente da 3 a 50 caratteri, senza caratteri di controllo.</p>

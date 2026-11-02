@@ -41,10 +41,11 @@ public class RegistrationService {
         String normalized=normalizeEmail(email);
         if(normalized.length()>254 || normalized.indexOf('@')>64 || !EMAIL.matcher(normalized).matches()) throw new InvalidRegistration("emailInvalid");
         validatePassword(password,confirmation);
-        if(customers.findByEmail(normalized).isPresent()) throw new InvalidRegistration("email");
         if(customers.findByUsername(name).isPresent()) throw new InvalidRegistration("username");
+        if(customers.findByEmail(normalized).isPresent()) throw new InvalidRegistration("email");
         Customers customer=new Customers();
         customer.setUsername(name); customer.setEmail(normalized);
+        customer.setEmailVerified(false);
         customer.setPassword(passwords.encode(password)); customer.setRole("USER");
         customers.saveAndFlush(customer);
     }

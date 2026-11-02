@@ -27,6 +27,10 @@ public class RecoveryMail {
     public void changed(String email) {
         send(email,"Password aggiornata — Lure Lab","La password del tuo account Lure Lab è stata aggiornata.\nSe non sei stato tu, contattaci. Questa email non contiene credenziali.");
     }
+    public void verification(String email,String token) {
+        send(email,"Verifica il tuo indirizzo email — Lure Lab","Per completare la registrazione apri il link e conferma l’indirizzo entro 24 ore:\n\n"
+            +publicUrl+"/verify-email?token="+token+"\n\nSolo il link più recente è valido. Se non hai richiesto la registrazione, ignora questa email.");
+    }
     private void send(String email,String subject,String body) {
         if(!enabled)return;
         try {

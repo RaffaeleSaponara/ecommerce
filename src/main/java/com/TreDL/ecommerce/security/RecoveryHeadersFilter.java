@@ -8,8 +8,10 @@ import java.io.IOException;
 public final class RecoveryHeadersFilter extends OncePerRequestFilter {
     private final AntPathRequestMatcher forgot=new AntPathRequestMatcher("/forgot-password");
     private final AntPathRequestMatcher reset=new AntPathRequestMatcher("/reset-password");
+    private final AntPathRequestMatcher verify=new AntPathRequestMatcher("/verify-email");
+    private final AntPathRequestMatcher resend=new AntPathRequestMatcher("/resend-verification");
     @Override protected void doFilterInternal(HttpServletRequest request,HttpServletResponse response,FilterChain chain) throws ServletException,IOException {
-        if(forgot.matches(request) || reset.matches(request)) {
+        if(forgot.matches(request) || reset.matches(request) || verify.matches(request) || resend.matches(request)) {
             response.setHeader("Referrer-Policy","no-referrer");
             response.setHeader("Cache-Control","no-store, max-age=0");
             response.setHeader("X-Robots-Tag","noindex, nofollow");

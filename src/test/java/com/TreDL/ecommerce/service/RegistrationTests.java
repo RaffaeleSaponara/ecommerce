@@ -16,7 +16,7 @@ class RegistrationTests {
     @Test void validCanonicalEmailHasOnlyEncodedPasswordAndServerRole() {
         service.register("  Alice  ","  ALICE@Example.com  ","good-password1","good-password1");
         verify(customers).saveAndFlush(argThat(c -> c.getUsername().equals("Alice") && c.getEmail().equals("alice@example.com")
-                && c.getRole().equals("USER") && !c.getPassword().equals("good-password1") && encoder.matches("good-password1",c.getPassword())));
+                && c.getRole().equals("USER") && !c.isEmailVerified() && !c.getPassword().equals("good-password1") && encoder.matches("good-password1",c.getPassword())));
     }
     @ParameterizedTest @ValueSource(strings={"", "   ", "no-email", "a@", "@example.com", "a..b@example.com", "a@-bad.com", "a@bad", "a b@example.com"})
     void badEmailIsRejected(String email) { rejected("Alice",email,"good-password1","good-password1","emailInvalid"); }

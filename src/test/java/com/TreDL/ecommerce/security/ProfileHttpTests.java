@@ -34,6 +34,7 @@ class ProfileHttpTests {
     }
     Customers create(String name) {
         Customers c=new Customers();c.setUsername(name);c.setEmail(name+"@profile.test");c.setRole("USER");c.setPassword(passwords.encode(OLD));
+        c.setEmailVerified(true);
         return customers.saveAndFlush(c);
     }
     MockHttpSession login(String email,String password) throws Exception {

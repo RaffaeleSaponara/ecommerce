@@ -27,7 +27,7 @@ class RegistrationMySqlTests {
     @Autowired org.springframework.security.crypto.password.PasswordEncoder passwords;
     @BeforeEach void clear(){ customers.deleteAll(); }
     @Test void caseInsensitiveLoginPreservesHistoricalEmailAndUniqueIndexRejectsVariants() throws Exception {
-        jdbc.update("INSERT INTO customers(username,email,password,role) VALUES(?,?,?,?)","Legacy","  Legacy@Example.com  ",passwords.encode("old-password"),"USER");
+        jdbc.update("INSERT INTO customers(username,email,password,role,email_verified) VALUES(?,?,?,?,TRUE)","Legacy","  Legacy@Example.com  ",passwords.encode("old-password"),"USER");
         mvc.perform(post("/login").with(csrf()).param("username"," LEGACY@example.COM ").param("password","old-password"))
                 .andExpect(status().is3xxRedirection()).andExpect(authenticated());
         assertThat(jdbc.queryForObject("SELECT email FROM customers WHERE username='Legacy'",String.class)).isEqualTo("  Legacy@Example.com  ");
@@ -48,7 +48,7 @@ class RegistrationMySqlTests {
             var second=pool.submit(()->signup(name2,email2,ready,start));
             assertThat(ready.await(10,TimeUnit.SECONDS)).isTrue();start.countDown();
             assertThat(List.of(first.get(30,TimeUnit.SECONDS),second.get(30,TimeUnit.SECONDS)))
-                    .containsExactlyInAnyOrder("/login","/registrazione?error="+code);
+                    .containsExactlyInAnyOrder("/login?registered",code.equals("email")?"/login?registered":"/registrazione?error="+code);
             assertThat(customers.count()).isEqualTo(1);
             assertThat(customers.findAll().get(0).getRole()).isEqualTo("USER");
         } finally {start.countDown();pool.shutdownNow();assertThat(pool.awaitTermination(10,TimeUnit.SECONDS)).isTrue();}

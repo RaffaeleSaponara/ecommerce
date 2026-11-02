@@ -146,8 +146,9 @@ class AdminHttpTests {
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
+    @WithMockUser(username="ADMIN@example.test",roles = "ADMIN")
     void adminPageRendersAndCustomerAreaOffersAdminNavigation() throws Exception {
+        customer("ADMIN");
         mvc.perform(get("/admin")).andExpect(status().isOk()).andExpect(view().name("admin"))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("name=\"_csrf\"")));
         mvc.perform(get("/user")).andExpect(status().isOk()).andExpect(model().attribute("isAdmin", true))
@@ -155,14 +156,16 @@ class AdminHttpTests {
     }
 
     @Test
-    @WithMockUser(roles = "USER")
+    @WithMockUser(username="USER@example.test",roles = "USER")
     void customerAreaDoesNotExposeAdminNavigation() throws Exception {
+        customer("USER");
         mvc.perform(get("/user")).andExpect(status().isOk()).andExpect(model().attribute("isAdmin", false))
                 .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("href=\"/admin\""))));
     }
 
     private Customers customer(String role) {
         Customers customer = new Customers();
+        customer.setEmailVerified(true);
         customer.setUsername("test-" + role); customer.setEmail(role + "@example.test");
         customer.setPassword(passwords.encode("test-password")); customer.setRole(role);
         return customers.saveAndFlush(customer);

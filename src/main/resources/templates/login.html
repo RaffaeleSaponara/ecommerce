@@ -58,6 +58,8 @@
 
       <div class="auth-card">
         <h2>Login</h2>
+        <p th:if="${param.registered != null}" role="status">Richiesta di registrazione ricevuta. Se l’indirizzo è associato a un account da verificare, riceverai le istruzioni via email. Potrai accedere solo dopo la verifica.</p>
+        <p th:if="${param.emailVerified != null}" role="status">Email verificata correttamente. Ora puoi accedere con le tue credenziali.</p>
         <p th:if="${param.passwordReset != null}" role="status">Password reimpostata. Accedi con la nuova password.</p>
         <p th:if="${param.sessionExpired != null}" role="status">Sessione terminata per sicurezza. Accedi di nuovo.</p>
         <p th:if="${param.limited != null}" role="alert" class="error-message">Troppi tentativi. Accesso temporaneamente limitato: attendi e riprova.</p>
@@ -77,11 +79,12 @@
           <button class="submit-button" type="submit">Accedi</button>
         </form>
 
-        <p th:if="${param.error}" class="error-message">Credenziali non valide. Controlla email e password.</p>
+        <p th:if="${param.error}" class="error-message">Credenziali non valide. Controlla email e password e assicurati di aver verificato l’indirizzo email.</p>
         <p th:if="${param.logout}" class="status-message">Logout completato.</p>
 
         <div class="auth-links">
           <p><a href="/forgot-password">Password dimenticata?</a></p>
+          <p><a href="/resend-verification">Non hai ricevuto l’email di verifica?</a></p>
           Non hai ancora un account? <a href="/registrazione">Registrati</a>
         </div>
       </div>

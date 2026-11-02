@@ -49,6 +49,7 @@ class SessionSecurityTests {
     @MockitoBean CheckoutService checkoutService;
     @MockitoBean OrderHistoryService orderHistoryService;
     @MockitoBean ProfileService profileService;
+    @MockitoBean EmailVerificationService emailVerificationService;
 
     private Customers customer;
     private Products product;
@@ -57,6 +58,7 @@ class SessionSecurityTests {
     @BeforeEach
     void fixtures() {
         customer = new Customers();
+        customer.setEmailVerified(true);
         customer.setEmail("alice@example.com");
         customer.setPassword(passwords.encode("test-password"));
         customer.setRole("USER");
@@ -274,9 +276,9 @@ class SessionSecurityTests {
         mvc.perform(post("/signup").with(csrf()).param("username", "New")
                         .param("email", "new@example.com").param("password", "new-password1")
                         .param("confirmPassword", "new-password1").param("role", "ADMIN"))
-                .andExpect(redirectedUrl("/login"));
+                .andExpect(redirectedUrl("/login?registered"));
         verify(customersRepository).saveAndFlush(argThat(saved ->
-                passwords.matches("new-password1", saved.getPassword()) && saved.getRole().equals("USER")));
+                passwords.matches("new-password1", saved.getPassword()) && saved.getRole().equals("USER") && !saved.isEmailVerified()));
     }
 
     @Test
@@ -284,11 +286,11 @@ class SessionSecurityTests {
         mvc.perform(post("/signup").with(csrf()).param("username", "Alice")
                         .param("email", customer.getEmail()).param("password", "test-password1")
                         .param("confirmPassword", "test-password1"))
-                .andExpect(redirectedUrl("/registrazione?error=email"));
+                .andExpect(redirectedUrl("/login?registered"));
         verify(customersService, never()).addCustomer(any());
-        mvc.perform(get("/registrazione").param("error", "email"))
+        mvc.perform(get("/login").param("registered", ""))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Questa email è già registrata")))
+                .andExpect(content().string(containsString("Richiesta di registrazione ricevuta")))
                 .andExpect(content().string(not(containsString("Le due password non coincidono"))));
     }
 

@@ -67,6 +67,7 @@ class CheckoutHttpTests {
     void fixtures() {
         customer = new Customers(41L, null, null, "Checkout customer",
                 passwords.encode("checkout-password"), "checkout@example.com", "USER");
+        customer.setEmailVerified(true);
         product = new Products();
         org.springframework.test.util.ReflectionTestUtils.setField(product, "id", 7L);
         product.setPrezzo(new BigDecimal("12.50")); product.setNome("Jig");
