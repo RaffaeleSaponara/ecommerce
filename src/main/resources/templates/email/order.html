@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title th:text="${subject}">3DL — Il tuo ordine</title></head>
+<body style="margin:0;padding:24px;background:#f7f5ef;color:#17231e;font-family:Arial,sans-serif;line-height:1.6">
+  <main style="max-width:600px;margin:auto;padding:28px;background:#ffffff;border-radius:8px">
+    <p style="font-weight:bold;letter-spacing:1px">3DL · Lure Lab</p>
+    <h1 style="font-size:24px" th:text="${subject}">Il tuo ordine</h1>
+    <p th:each="line : ${lines}" th:text="${line}" style="margin:12px 0;overflow-wrap:anywhere"></p>
+    <hr style="border:0;border-top:1px solid #dddddd"><p>Grazie per aver scelto Lure Lab.</p>
+  </main>
+</body></html>

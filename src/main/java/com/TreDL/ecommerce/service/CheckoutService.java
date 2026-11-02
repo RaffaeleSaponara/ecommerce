@@ -24,6 +24,7 @@ public class CheckoutService {
     private final OrdersRepository orders;
     private final QuoteSigner signer;
     @PersistenceContext private EntityManager entityManager;
+    @org.springframework.beans.factory.annotation.Autowired private OrderMailEvents orderMail;
     @org.springframework.beans.factory.annotation.Autowired private ShippingService shipping;
 
     public CheckoutService(CustomersRepository customers, CartRepository carts,
@@ -97,6 +98,7 @@ public class CheckoutService {
         orders.saveAndFlush(order); // Includes all rows; any failure rolls everything back.
         cart.getProducts().clear();
         carts.saveAndFlush(cart);
+        orderMail.confirmed(order);
         return OrderDTO.convertToDTO(order);
     }
 

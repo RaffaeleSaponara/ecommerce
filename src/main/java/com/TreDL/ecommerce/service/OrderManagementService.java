@@ -12,6 +12,7 @@ import static org.springframework.http.HttpStatus.*;
 @Service
 public class OrderManagementService {
     @PersistenceContext private EntityManager em;
+    @org.springframework.beans.factory.annotation.Autowired private OrderMailEvents orderMail;
 
     @Transactional(isolation=Isolation.READ_COMMITTED)
     public OrderDTO update(long id, String requested) {
@@ -47,6 +48,7 @@ public class OrderManagementService {
         order.recordStatusChange(order.getShipment(),next.name());
         order.setShipment(next.name());
         em.flush();
+        orderMail.transitioned(order);
         return OrderDTO.convertToDTO(order);
     }
 }
