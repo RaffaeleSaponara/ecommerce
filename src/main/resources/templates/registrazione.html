@@ -8,8 +8,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/account.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <script src="/js/navigation.js" defer></script>
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Vai al contenuto</a>
   <nav class="site-nav" aria-label="Navigazione principale">
     <a class="brand" href="/">
       <img src="/images/3Dlogo_resize.png" alt="Lure Lab">
@@ -20,7 +23,7 @@
         <a href="/">Home</a>
         <a href="/home">Catalogo</a>
         <a href="/prodotti">Shop</a>
-        <a href="https://wa.me/3406894426" target="_blank">Custom</a>
+        <a href="https://wa.me/3406894426" target="_blank" rel="noopener noreferrer">Custom</a>
       </div>
       <div class="auth-container">
         <a href="/login" class="login-button" id="loginButton">Login</a>
@@ -31,7 +34,7 @@
     </div>
   </nav>
 
-  <main>
+  <main id="main-content" tabindex="-1">
     <section class="auth-shell">
       <div class="auth-intro">
         <span class="eyebrow">Nuovo account</span>

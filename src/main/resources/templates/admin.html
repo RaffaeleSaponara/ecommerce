@@ -9,8 +9,11 @@
   <link rel="stylesheet" href="/css/account.css">
   <link rel="stylesheet" href="/css/admin.css">
   <script src="/js/admin.js" defer></script>
+  <link rel="stylesheet" href="/css/responsive.css">
+  <script src="/js/navigation.js" defer></script>
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Vai al contenuto</a>
   <nav class="site-nav" aria-label="Navigazione principale">
     <a class="brand" href="/"><img src="/images/3Dlogo_resize.png" alt="Lure Lab"><span>Lure Lab</span></a>
     <div class="nav-actions">
@@ -19,7 +22,7 @@
       <form method="post" th:action="@{/logout}"><button class="logout-button" type="submit">Logout</button></form>
     </div>
   </nav>
-  <main class="admin-main">
+  <main id="main-content" tabindex="-1" class="admin-main">
     <header class="page-hero">
       <div><span class="eyebrow">Area amministratore</span><h1>Il negozio, a colpo d’occhio.</h1></div>
       <p>Gestisci il catalogo e consulta gli ordini confermati dai clienti.</p>

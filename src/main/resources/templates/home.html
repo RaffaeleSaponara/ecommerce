@@ -682,9 +682,12 @@
             }
         }
     </style>
+  <link rel="stylesheet" href="/css/responsive.css">
+  <script src="/js/navigation.js" defer></script>
 </head>
 <body>
-<nav class="site-nav">
+  <a class="skip-link" href="#main-content">Vai al contenuto</a>
+<nav class="site-nav" aria-label="Navigazione principale">
     <a class="brand" href="/">
         <img src="/images/3Dlogo_resize.png" alt="Lure Lab">
         <span>Lure Lab</span>
@@ -705,7 +708,7 @@
     </div>
 </nav>
 
-<main>
+<main id="main-content" tabindex="-1">
     <section class="catalog-hero">
         <div class="hero-copy">
             <span class="eyebrow">Catalogo artigianale</span>
