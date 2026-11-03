@@ -32,6 +32,7 @@ function page({ storage = new Map(),
   let addressBook;
   const context = vm.createContext({
     console, Intl, Date,
+    window: { location: { assign(url) { calls.push({ redirect: url }); } } },
     AddressBook: { mount(options) { addressBook = options; } },
     crypto: { randomUUID: () => `client-attempt-${++keyNumber}` },
     sessionStorage: { getItem: key => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value), removeItem: key => storage.delete(key) },
@@ -41,7 +42,7 @@ function page({ storage = new Map(),
       addEventListener: (name, callback) => listeners.set(name, callback) },
     fetch: async (url, options = {}) => {
       calls.push({ url, ...options });
-      if (url === '/cart/checkout') return checkoutResponse();
+      if (url === '/cart/checkout' || url === '/cart/stripe/checkout') return checkoutResponse();
       if (url === '/cart/quote') return quoteResponse();
       if (url === '/cart/add' || url.startsWith('/cart/remove/')) return cartMutationResponse();
       if (url === '/cart/view') return cartViewResponse();
@@ -341,4 +342,38 @@ test('quote/cart pending guards also prevent starting an address mutation', asyn
   response.resolve({ ok: true, text: async () => JSON.stringify(quote) }); await quoting;
   await p.saveAddress(async () => { writes++; });
   assert.equal(writes, 1);
+});
+
+
+test('Stripe uses separate request storage, retains key after timeout and redirects on recovery', async () => {
+  const storage = new Map();
+  const first = page({ storage, checkoutResponse: async () => { throw new Error('timeout'); } });
+  await first.quote();
+  first.get('stripeTestCheckout').checked = true;
+  first.get('confirmPrices').checked = true;
+  await first.submit();
+  const sent = first.calls.find(c => c.url === '/cart/stripe/checkout');
+  assert.ok(sent);
+  assert.ok(storage.has('3dl.checkout.stripe.pending'));
+  assert.ok(!storage.has('3dl.checkout.v2.pending'));
+  const retry = page({ storage, checkoutResponse: async () => ({ok:true,text:async()=>JSON.stringify({state:{orderId:42},redirectUrl:'https://checkout.stripe.com/c/test'})}) });
+  await retry.start();
+  retry.get('confirmPrices').checked = true;
+  await retry.submit();
+  assert.equal(retry.calls.find(c => c.url === '/cart/stripe/checkout').headers['Idempotency-Key'], sent.headers['Idempotency-Key']);
+  assert.deepEqual(retry.calls.find(c => c.redirect), {redirect:'https://checkout.stripe.com/c/test'});
+  assert.equal(storage.size, 0);
+});
+
+
+test('Stripe double click sends one request and a missing redirect returns to persisted order', async () => {
+  let finish;
+  const p = page({checkoutResponse: () => new Promise(resolve => {finish=resolve;})});
+  await p.quote();p.get('stripeTestCheckout').checked=true;p.get('confirmPrices').checked=true;
+  const pending=p.submit();await p.submit();
+  assert.equal(p.calls.filter(c=>c.url==='/cart/stripe/checkout').length,1);
+  finish({ok:true,text:async()=>JSON.stringify({state:{orderId:42},redirectUrl:null})});
+  await pending;
+  assert.equal(p.calls.find(c=>c.redirect).redirect,'/user/orders/42/payment');
+  assert.ok(!p.calls.some(c=>c.url==='/cart/checkout'));
 });

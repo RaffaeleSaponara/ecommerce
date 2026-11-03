@@ -100,7 +100,7 @@ class StripeSessionsTests extends StripeDomainTests {
         org.springframework.test.util.ReflectionTestUtils.setField(changed,"em",
             org.springframework.test.util.ReflectionTestUtils.getField(sessions,"em"));
         doAnswer(call->{frozen=call.getArgument(0);
-            assertThat(frozen.get("success_url")).isEqualTo("http://127.0.0.1:9085/user?checkoutReturn=success");return response(frozen);}).when(gateway).create(anyMap(),anyString());
+            assertThat(frozen.get("success_url")).isEqualTo("http://127.0.0.1:9085/user/orders/"+orders.findAll().get(0).getId()+"/payment/success");return response(frozen);}).when(gateway).create(anyMap(),anyString());
         changed.obtain(id);
         var wrongKey=new StripeCheckoutSessions(transactions,gateway,clock,"https://changed.test","sk_test_other_fixture");
         org.springframework.test.util.ReflectionTestUtils.setField(wrongKey,"em",

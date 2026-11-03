@@ -20,6 +20,12 @@ class StripeDisabledTests extends StockCheckoutContract {
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper mapper;
     @Autowired PaymentAttemptsRepository payments;
+    @Test void customerCheckoutIsUnavailableByDefault() throws Exception {
+        mvc.perform(post("/cart/stripe/checkout").with(user(alice.getEmail())).with(csrf())
+            .header("Idempotency-Key","disabled").contentType("application/json").content("{}"))
+            .andExpect(status().isServiceUnavailable());
+        assertThat(orders.count()).isZero();
+    }
     @Test void stripeDomainHasNoBeanInTheNormalApplication() {
         assertThat(context.getEnvironment().getProperty("payments.stripe.enabled",Boolean.class,false)).isFalse();
         assertThat(context.getBeansOfType(StripePaymentDomain.class)).isEmpty();

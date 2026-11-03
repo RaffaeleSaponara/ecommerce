@@ -81,7 +81,7 @@ class StripeCheckoutSessions {
             if(sum!=amount || !"EUR".equals(o.getCurrency()) || a.getAmount().compareTo(o.getTotal())!=0)throw new IllegalStateException("Snapshot incoerenti");
             Map<String,Object> params=Map.of("mode","payment","payment_method_types",List.of("card"),
                 "line_items",lines,"metadata",Map.of("order_id",o.getId().toString(),"attempt_id",id),
-                "success_url",base+"/user?checkoutReturn=success","cancel_url",base+"/user?checkoutReturn=cancel",
+                "success_url",base+"/user/orders/"+o.getId()+"/payment/success","cancel_url",base+"/user/orders/"+o.getId()+"/payment/cancel",
                 "expires_at",clock.instant().plusSeconds(1860).getEpochSecond());
             try{a.freezeSession(json.writeValueAsString(Map.of("params",params,"key",keyHash,"api",Stripe.API_VERSION)),now());}
             catch(Exception e){throw new IllegalStateException("Impossibile congelare la richiesta");}
