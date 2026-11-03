@@ -17,6 +17,13 @@ public class PaymentAttempt {
     public String getSessionRequest(){return sessionRequest;}
     public LocalDateTime getSessionStartedAt(){return sessionStartedAt;}
     public String getSessionId(){return sessionId;}
+    public String getPaymentId(){return paymentId;}
+    public void scheduleReconciliation(LocalDateTime next){nextReconcileAt=next;}
+    public void bindVerifiedSession(String session,String payment){
+        if(sessionId!=null && !sessionId.equals(session))throw new IllegalStateException("Conflicting session");
+        if(paymentId!=null && payment!=null && !paymentId.equals(payment))throw new IllegalStateException("Conflicting payment");
+        sessionId=session;if(payment!=null)paymentId=payment;
+    }
     public void freezeSession(String request,LocalDateTime now){
         if(sessionRequest!=null)throw new IllegalStateException("Request already frozen");
         sessionRequest=Objects.requireNonNull(request);sessionStartedAt=now;
@@ -54,7 +61,7 @@ public class PaymentAttempt {
     public String getCurrency(){return currency;}
     public LocalDateTime getExpiresAt(){return expiresAt;}
     public LocalDateTime getCloseRequestedAt(){return closeRequestedAt;}
-    public void requestClosure(LocalDateTime now){if(closeRequestedAt==null)closeRequestedAt=now;updatedAt=now;}
+    public void requestClosure(LocalDateTime now){if(closeRequestedAt==null)closeRequestedAt=now;updatedAt=now;nextReconcileAt=now;}
     public void transition(PaymentStatus next,LocalDateTime now){
         if(!getStatus().allows(Objects.requireNonNull(next)))throw new IllegalStateException("Payment transition not allowed");
         status=next.name();updatedAt=now;if(next.terminal())nextReconcileAt=null;
