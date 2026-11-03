@@ -12,6 +12,20 @@ import java.util.UUID;
     @UniqueConstraint(name="uq_payment_session",columnNames="provider_session_id"),
     @UniqueConstraint(name="uq_payment_reference",columnNames="provider_payment_id")})
 public class PaymentAttempt {
+    @Column(name="session_request",columnDefinition="TEXT") private String sessionRequest;
+    @Column(name="session_started_at") private LocalDateTime sessionStartedAt;
+    public String getSessionRequest(){return sessionRequest;}
+    public LocalDateTime getSessionStartedAt(){return sessionStartedAt;}
+    public String getSessionId(){return sessionId;}
+    public void freezeSession(String request,LocalDateTime now){
+        if(sessionRequest!=null)throw new IllegalStateException("Request already frozen");
+        sessionRequest=Objects.requireNonNull(request);sessionStartedAt=now;
+    }
+    public void associateSession(String session,String payment,LocalDateTime expiry,LocalDateTime now){
+        if(sessionId!=null && !sessionId.equals(session))throw new IllegalStateException("Conflicting session");
+        sessionId=session;if(payment!=null)paymentId=payment;
+        expiresAt=expiry;transition(PaymentStatus.PENDING,now);
+    }
     @Id @Column(length=36) private String id;
     @OneToOne(optional=false,fetch=FetchType.LAZY) @JoinColumn(name="id_order",nullable=false,updatable=false) private Orders order;
     @Column(nullable=false,length=16) private String status;
