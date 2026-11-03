@@ -1,7 +1,7 @@
 package com.TreDL.ecommerce.model;
 
 public enum OrderStatus {
-    CONFERMATO, IN_PREPARAZIONE, SPEDITO, CONSEGNATO, ANNULLATO;
+    IN_ATTESA_PAGAMENTO, CONFERMATO, IN_PREPARAZIONE, SPEDITO, CONSEGNATO, ANNULLATO;
 
     public static OrderStatus current(String value) {
         // Existing checkout orders keep their original persisted value until updated.
@@ -12,6 +12,7 @@ public enum OrderStatus {
 
     public boolean allows(OrderStatus next) {
         return switch (this) {
+            case IN_ATTESA_PAGAMENTO -> next == CONFERMATO || next == ANNULLATO;
             case CONFERMATO -> next == IN_PREPARAZIONE || next == ANNULLATO;
             case IN_PREPARAZIONE -> next == SPEDITO || next == ANNULLATO;
             case SPEDITO -> next == CONSEGNATO;

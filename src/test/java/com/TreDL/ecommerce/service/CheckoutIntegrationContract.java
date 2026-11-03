@@ -47,7 +47,7 @@ abstract class CheckoutIntegrationContract {
         @Override public Instant instant() { return now; }
     }
     @TestConfiguration static class TimeConfiguration {
-        @Bean TestClock checkoutTestClock() { return new TestClock(); }
+        @Bean @Primary TestClock checkoutTestClock() { return new TestClock(); }
         @Bean @Primary QuoteSigner testQuoteSigner(TestClock clock) {
             return new QuoteSigner("dGVzdC1vbmx5LWNoZWNrb3V0LWtleS0zMi1ieXRlcyEhISE=", clock);
         }

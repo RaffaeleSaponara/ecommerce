@@ -68,7 +68,7 @@ abstract class CheckoutV2SchemaContract {
     @Test
     void migrationIsVersionedValidatedAndRepeatableWithoutChanges() {
         flyway.validate();
-        assertThat(flyway.info().current().getVersion().toString()).isEqualTo("9");
+        assertThat(flyway.info().current().getVersion().toString()).isEqualTo("11");
         assertThat(flyway.migrate().migrationsExecuted).isZero();
     }
 

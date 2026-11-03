@@ -104,7 +104,7 @@ class CheckoutV2ModelTests {
         assertThrows(IllegalArgumentException.class, () -> o.addItem(new OrderItem(new Orders(),3,p,1)));
         assertThrows(UnsupportedOperationException.class, () -> o.getItems().clear());
     }
-    @Test void jpaValidatesV1AndPreservesHistory() throws Exception {
+    @Test void jpaValidatesCurrentSchemaAndPreservesHistory() throws Exception {
         String url = "jdbc:h2:mem:model_" + UUID.randomUUID() + ";MODE=MySQL;DATABASE_TO_LOWER=TRUE";
         // Holding this connection keeps only this ephemeral in-memory DB alive.
         try (Connection keeper = DriverManager.getConnection(url,"sa", "")) {
@@ -116,7 +116,9 @@ class CheckoutV2ModelTests {
                 .build();
             try (SessionFactory factory = new MetadataSources(registry).addAnnotatedClass(Customers.class)
                     .addAnnotatedClass(Products.class).addAnnotatedClass(Cart.class).addAnnotatedClass(Orders.class)
-                    .addAnnotatedClass(OrderItem.class).buildMetadata().buildSessionFactory()) {
+                    .addAnnotatedClass(OrderItem.class).addAnnotatedClass(OrderStatusChange.class)
+                    .addAnnotatedClass(PaymentAttempt.class).addAnnotatedClass(PaymentEvent.class)
+                    .addAnnotatedClass(Refund.class).buildMetadata().buildSessionFactory()) {
                 Long orderId; Long productId; Long customerId;
                 try (Session s = factory.openSession()) {
                     Transaction tx = s.beginTransaction();

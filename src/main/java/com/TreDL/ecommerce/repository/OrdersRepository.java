@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface OrdersRepository extends JpaRepository<Orders, Long> {
     // Cancelled orders no longer contribute to confirmed order totals.
-    @org.springframework.data.jpa.repository.Query("select coalesce(sum(o.total), 0) from Orders o where o.shipment <> 'ANNULLATO'")
+    @org.springframework.data.jpa.repository.Query("select coalesce(sum(o.total), 0) from Orders o where o.shipment not in ('ANNULLATO','IN_ATTESA_PAGAMENTO') and (o.paymentFlow = 'LEGACY' or exists (select p.id from PaymentAttempt p where p.order = o and p.status = 'SUCCEEDED'))")
     java.math.BigDecimal sumConfirmedOrderTotals();
     @org.springframework.data.jpa.repository.EntityGraph(attributePaths = "statusHistory")
     java.util.List<Orders> findByCustomerEmailOrderByDateDescIdDesc(String email);

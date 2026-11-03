@@ -48,6 +48,15 @@ public class CheckoutService {
     }
 
     public OrderDTO checkout(String authenticatedEmail, String clientKey, CheckoutRequest request) {
+        return OrderDTO.convertToDTO(createOrder(authenticatedEmail,clientKey,request,PaymentFlow.LEGACY));
+    }
+
+    // Internal seam only: no controller exposes this path.
+    Orders reserveStripe(String authenticatedEmail,String clientKey,CheckoutRequest request) {
+        return createOrder(authenticatedEmail,clientKey,request,PaymentFlow.STRIPE_TEST);
+    }
+
+    private Orders createOrder(String authenticatedEmail,String clientKey,CheckoutRequest request,PaymentFlow flow) {
         byte[] key = keyBytes(clientKey);
         if (request == null || !request.confirmPrices())
             throw new CheckoutException(BAD_REQUEST, "Explicit price confirmation is required");
@@ -57,9 +66,10 @@ public class CheckoutService {
         // the waiter sees the preceding commit rather than a pre-lock snapshot.
         Optional<Orders> previous = orders.findByCustomerIdAndIdempotencyKey(customer.getId(), key);
         if (previous.isPresent()) {
+            if(previous.get().getPaymentFlow()!=flow)throw new CheckoutException(CONFLICT,"Idempotency key belongs to another checkout flow");
             if (!MessageDigest.isEqual(previous.get().getRequestHash(), hash))
                 throw new CheckoutException(CONFLICT, "Idempotency key already used for another request");
-            return OrderDTO.convertToDTO(previous.get());
+            return previous.get();
         }
         QuoteSigner.Payload confirmed = signer.verify(request.quoteToken(), customer.getId());
         Cart cart = nonEmptyCart(customer);
@@ -83,7 +93,8 @@ public class CheckoutService {
         order.setShippingAddress(shipping);
         order.setBillingAddress(billing);
         order.setDate(LocalDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.MICROS));
-        order.setShipment("CONFERMATO");
+        order.setPaymentFlow(flow);
+        order.setShipment(flow==PaymentFlow.LEGACY ? "CONFERMATO" : "IN_ATTESA_PAGAMENTO");
         order.setStockDeducted(true);
         order.setIdempotencyKey(key);
         order.setRequestHash(hash);
@@ -98,8 +109,8 @@ public class CheckoutService {
         orders.saveAndFlush(order); // Includes all rows; any failure rolls everything back.
         cart.getProducts().clear();
         carts.saveAndFlush(cart);
-        orderMail.confirmed(order);
-        return OrderDTO.convertToDTO(order);
+        if(flow==PaymentFlow.LEGACY)orderMail.confirmed(order);
+        return order;
     }
 
     private AddressSnapshot address(Customers customer, Long id) {
