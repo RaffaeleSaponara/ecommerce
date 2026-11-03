@@ -105,7 +105,15 @@
         </div>
       </section>
     </section>
+    <section th:if="${stripePaymentsEnabled == true}" id="stripe-financial-panel" aria-label="Pagamenti e rimborsi Stripe test">
+      <h2>Pagamenti e rimborsi Stripe — test</h2>
+      <p id="stripe-financial-status" role="status" aria-live="polite">Seleziona un ordine per verificarne lo stato finanziario.</p>
+      <div id="stripe-financial-actions"></div>
+      <h3>Rimborsi e anomalie</h3><button type="button" id="stripe-financial-refresh">Aggiorna stato finanziario</button>
+      <ul id="stripe-refund-list"></ul><ul id="stripe-anomaly-list"></ul>
+    </section>
   </main>
   <footer>&copy; 2026 Lure Lab</footer>
+<script src="/js/admin-refunds.js" defer></script>
 </body>
 </html>

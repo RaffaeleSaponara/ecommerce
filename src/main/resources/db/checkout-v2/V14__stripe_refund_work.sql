@@ -1,0 +1,16 @@
+ALTER TABLE payment_attempts ADD COLUMN paid_verified_at DATETIME(6) NULL;
+ALTER TABLE payment_attempts ADD COLUMN verified_charge_id VARCHAR(255) NULL;
+ALTER TABLE payment_events ADD COLUMN resolved_at DATETIME(6) NULL;
+ALTER TABLE refunds ADD COLUMN request_json TEXT NULL;
+ALTER TABLE refunds ADD COLUMN first_sent_at DATETIME(6) NULL;
+ALTER TABLE refunds ADD COLUMN next_attempt_at DATETIME(6) NULL;
+ALTER TABLE refunds ADD COLUMN lease_token VARCHAR(36) NULL;
+ALTER TABLE refunds ADD COLUMN lease_until DATETIME(6) NULL;
+ALTER TABLE refunds ADD COLUMN retries INT NOT NULL DEFAULT 0;
+ALTER TABLE refunds ADD COLUMN provider_status VARCHAR(32) NULL;
+ALTER TABLE refunds ADD COLUMN issue VARCHAR(64) NULL;
+CREATE INDEX ix_refund_work ON refunds(status,next_attempt_at,lease_until);
+CREATE INDEX ix_event_anomaly ON payment_events(outcome,resolved_at);
+ALTER TABLE refunds ADD COLUMN create_blocked BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE refunds ADD CONSTRAINT ck_refund_retries CHECK (retries >= 0);
+ALTER TABLE refunds ADD CONSTRAINT ck_refund_frozen CHECK ((first_sent_at IS NULL AND request_json IS NULL) OR (first_sent_at IS NOT NULL AND request_json IS NOT NULL));

@@ -46,6 +46,13 @@ public class PaymentAttempt {
     @Column(name="close_requested_at") private LocalDateTime closeRequestedAt;
     @Column(name="next_reconcile_at") private LocalDateTime nextReconcileAt;
 
+    @Column(name="paid_verified_at") private LocalDateTime paidVerifiedAt;
+    @Column(name="verified_charge_id",length=255) private String verifiedChargeId;
+    public void recordVerifiedCapture(String session,String payment,String charge,LocalDateTime at){
+        bindVerifiedSession(session,payment);
+        if(verifiedChargeId!=null && !verifiedChargeId.equals(charge))throw new IllegalStateException("Conflicting capture");
+        verifiedChargeId=java.util.Objects.requireNonNull(charge);paidVerifiedAt=at;
+    }
     protected PaymentAttempt() {}
     public PaymentAttempt(Orders order,LocalDateTime now,LocalDateTime expiresAt) {
         if(order.getPaymentFlow()!=PaymentFlow.STRIPE_TEST) throw new IllegalArgumentException("Stripe order required");

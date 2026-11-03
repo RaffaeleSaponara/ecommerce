@@ -19,6 +19,15 @@ public class Refund {
     @Column(name="provider_refund_id",length=255) private String providerRefundId;
     @Column(name="created_at",nullable=false) private LocalDateTime createdAt;
     @Column(name="updated_at",nullable=false) private LocalDateTime updatedAt;
+    @Column(name="request_json",columnDefinition="TEXT") private String requestJson;
+    @Column(name="first_sent_at") private LocalDateTime firstSentAt;
+    @Column(name="next_attempt_at") private LocalDateTime nextAttemptAt;
+    @Column(name="lease_token",length=36) private String leaseToken;
+    @Column(name="lease_until") private LocalDateTime leaseUntil;
+    @Column(nullable=false) private int retries;
+    @Column(name="provider_status",length=32) private String providerStatus;
+    @Column(length=64) private String issue;
+    @Column(name="create_blocked",nullable=false) private boolean createBlocked;
     protected Refund() {}
     public RefundStatus getStatus(){return RefundStatus.valueOf(status);}
 }

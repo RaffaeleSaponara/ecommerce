@@ -175,6 +175,7 @@ async function showOrder(id) {
     byId('tracking-code').value = order.trackingCode || '';
     byId('order-detail').dataset.orderId = String(order.id);
     renderOrderActions(order);
+    if (typeof window.showOrderFinancials === "function") window.showOrderFinancials(order.id);
     renderOrderHistory(order);
     const body = byId('detail-rows');
     body.replaceChildren();

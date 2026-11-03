@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.*;
 public class StripeCheckoutModel {
     @Value("${payments.stripe.enabled:false}") private boolean stripe;
     @Value("${payments.stripe.customer-checkout.enabled:false}") private boolean customer;
+    @ModelAttribute("stripePaymentsEnabled")
+    public boolean stripeEnabled(){return stripe;}
     @ModelAttribute("stripeCustomerCheckoutEnabled")
     public boolean enabled(){return stripe && customer;}
 }
