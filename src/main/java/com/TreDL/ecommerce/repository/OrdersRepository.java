@@ -9,7 +9,11 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
     // Cancelled orders no longer contribute to confirmed order totals.
     @org.springframework.data.jpa.repository.Query("select coalesce(sum(o.total), 0) from Orders o where o.shipment <> 'ANNULLATO'")
     java.math.BigDecimal sumConfirmedOrderTotals();
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = "statusHistory")
     java.util.List<Orders> findByCustomerEmailOrderByDateDescIdDesc(String email);
+    // Scalar snapshots avoid loading products or one collection per order.
+    @org.springframework.data.jpa.repository.Query("select new com.TreDL.ecommerce.dto.OrderHistoryLine(i.order.id, i.productName, i.quantity, i.unitPrice) from OrderItem i where i.order.customer.email = :email order by i.order.id, i.lineNumber")
+    java.util.List<com.TreDL.ecommerce.dto.OrderHistoryLine> historyLines(@org.springframework.data.repository.query.Param("email") String email);
     java.util.Optional<Orders> findByCustomerIdAndIdempotencyKey(Long customerId, byte[] idempotencyKey);
 
 }

@@ -145,9 +145,21 @@
         <tr th:each="order : ${orders}">
           <td><span th:text="${'#' + order.id}"></span>
             <details>
-              <summary>Dettaglio ordine e indirizzi</summary>
+              <summary>Dettaglio ordine e prodotti</summary>
+              <p>Ordine <strong th:text="${'#' + order.id}"></strong> del <span th:text="${order.date}"></span></p>
+              <h3>Prodotti acquistati</h3>
+              <p th:if="${#lists.isEmpty(order.items)}">Articoli non disponibili per questo ordine.</p>
+              <ul th:unless="${#lists.isEmpty(order.items)}">
+                <li th:each="item : ${order.items}">
+                  <strong th:text="${item.productName}"></strong><br>
+                  Quantità: <span th:text="${item.quantity}"></span> · Prezzo unitario:
+                  <span th:text="${#numbers.formatDecimal(item.unitPrice, 1, 'POINT', 2, 'COMMA') + ' €'}"></span><br>
+                  Totale riga: <span th:text="${#numbers.formatDecimal(item.subtotal(), 1, 'POINT', 2, 'COMMA') + ' €'}"></span>
+                </li>
+              </ul>
               <p>Stato: <strong th:text="${order.shipment}"></strong></p>
               <p>Subtotale prodotti: <span th:text="${#numbers.formatDecimal(order.subtotal, 1, 'POINT', 2, 'COMMA')}"></span> € · Spedizione: <span th:text="${order.shippingCost.signum() == 0 ? 'Gratuita' : #numbers.formatDecimal(order.shippingCost, 1, 'POINT', 2, 'COMMA') + ' €'}"></span></p>
+              <p>Totale ordine: <strong th:text="${#numbers.formatDecimal(order.total, 1, 'POINT', 2, 'COMMA') + ' ' + order.currency}"></strong></p>
               <p th:if="${order.carrier != null and !#strings.isEmpty(order.carrier)}">Corriere: <span th:text="${order.carrier}"></span></p>
               <p th:if="${order.trackingCode != null and !#strings.isEmpty(order.trackingCode)}">Codice di tracciamento: <span th:text="${order.trackingCode}"></span></p>
               <p th:if="${#lists.isEmpty(order.statusHistory)}">Nessun cambio di stato registrato.</p>
