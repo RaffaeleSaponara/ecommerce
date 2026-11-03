@@ -16,11 +16,12 @@ public interface ProductsRepository extends JpaRepository<Products, Long> {
     java.util.Optional<Products> findByIdForUpdate(@Param("id") long id);
 
     List<Products> findAll();
+    List<Products> findByActiveTrue();
 
     // LOCATE treats %, _ and backslashes as literal name characters.
     @Query("""
             select p from Products p
-            where (:q is null or locate(lower(:q), lower(p.nome)) > 0)
+            where p.active = true and (:q is null or locate(lower(:q), lower(p.nome)) > 0)
               and (:category is null or lower(p.categoria) = lower(:category))
               and (:minPrice is null or p.prezzo >= :minPrice)
               and (:maxPrice is null or p.prezzo <= :maxPrice)

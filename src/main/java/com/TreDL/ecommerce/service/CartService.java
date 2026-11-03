@@ -52,6 +52,8 @@ public class CartService {
         Products current = entityManager.find(Products.class, product.getId());
         if (current == null) throw new CheckoutException(org.springframework.http.HttpStatus.CONFLICT, "Prodotto non più disponibile");
         entityManager.refresh(current);
+        if (!current.isActive()) throw new CheckoutException(org.springframework.http.HttpStatus.CONFLICT,
+                "Prodotto archiviato, non più acquistabile. Rimuovilo dal carrello.");
         long quantity = cart.getProducts() == null ? 0 : cart.getProducts().stream()
                 .filter(item -> java.util.Objects.equals(item.getId(), current.getId())).count();
         if (quantity >= current.getStock()) throw new CheckoutException(org.springframework.http.HttpStatus.CONFLICT,

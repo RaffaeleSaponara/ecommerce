@@ -10,6 +10,10 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @Table(name = "products")
 public class Products {
+    @Column(nullable = false)
+    private boolean active = true;
+    public boolean isActive() { return active; }
+    public void setActive(boolean active) { this.active = active; }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

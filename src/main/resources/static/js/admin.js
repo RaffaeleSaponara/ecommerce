@@ -62,12 +62,21 @@ function renderProducts(products) {
   if (!products.length) emptyRow(body, 5, 'Nessun prodotto. Crea il primo prodotto dal modulo.');
   for (const product of products) {
     const row = document.createElement('tr');
-    cell(row, product.nome);
+    cell(row, product.nome + (product.active === false ? ' — ARCHIVIATO' : ' — ATTIVO'));
     cell(row, product.categoria);
     cell(row, money(product.prezzo));
     cell(row, product.stock === 0 ? '0 — Esaurito' : product.stock);
     const action = cell(row, '');
     action.appendChild(actionButton('Modifica #' + product.id, () => editProduct(product)));
+    action.appendChild(actionButton(product.active === false ? 'Riattiva' : 'Archivia', async () => {
+      try {
+        await adminRequest('/products/' + product.id + '/publication', {
+          method: 'PUT', body: JSON.stringify({active: product.active === false})
+        });
+        renderProducts(await adminRequest('/products'));
+        notify(product.active === false ? 'Prodotto riattivato.' : 'Prodotto archiviato.');
+      } catch (error) { notify(error.message, true); }
+    }));
     body.appendChild(row);
   }
 }

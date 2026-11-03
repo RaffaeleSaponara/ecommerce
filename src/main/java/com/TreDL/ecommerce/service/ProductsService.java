@@ -17,7 +17,7 @@ public class ProductsService {
     }
 
     public List<Products> getAllProducts() {
-        return productRepository.findAll();
+        return productRepository.findByActiveTrue();
     }
 
     public List<Products> getAllProducts(String q, String category, String minPrice, String maxPrice) {

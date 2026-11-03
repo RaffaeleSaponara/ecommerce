@@ -31,6 +31,7 @@ public class ProductImagesService {
 
     public ProductDetailDTO detail(long productId) {
         Products product = product(productId, false);
+        if (!product.isActive()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Prodotto non trovato");
         ProductDTO dto = ProductDTO.convertToDTO(product);
         String image = dto.getImage();
         // Legacy images are local static paths only; never return arbitrary schemes or traversal.

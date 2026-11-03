@@ -76,7 +76,7 @@ test('product and order content remain text, edit retains product fields', () =>
   p.context.products = [{...product, nome: malicious, categoria: malicious}];
   p.run('renderProducts(products)');
   const row = p.byId('product-rows').children[0];
-  assert.equal(row.children[0].textContent, malicious);
+  assert.equal(row.children[0].textContent, malicious + ' — ATTIVO');
   assert.equal(row.children[1].textContent, malicious);
   row.children[4].children[0].listeners.click();
   assert.equal(p.byId('product-form').elements.nome.value, malicious);
@@ -166,6 +166,25 @@ test('empty collections show actionable empty states', () => {
 
 const image = {id: 11, url: '/media/products/12345678-1234-1234-1234-123456789abc.png', primary: true};
 const tick = () => new Promise(setImmediate);
+
+test('publication actions archive and reactivate with CSRF and refresh the product list', async () => {
+  for (const active of [true, false]) {
+    const p = page(() => ({ok: true, json: async () => []}));
+    p.context.products = [{...product, active}];
+    p.run('renderProducts(products)');
+    const row = p.byId('product-rows').children[0];
+    assert.equal(row.children[0].textContent, 'Jig — ' + (active ? 'ATTIVO' : 'ARCHIVIATO'));
+    const button = row.children[4].children[1];
+    assert.equal(button.textContent, active ? 'Archivia' : 'Riattiva');
+    await button.listeners.click();
+    const call = p.calls[0];
+    assert.equal(call.url, '/api/admin/products/7/publication');
+    assert.equal(call.options.method, 'PUT');
+    assert.equal(call.options.headers['X-CSRF-TOKEN'], 'csrf-test');
+    assert.deepEqual(JSON.parse(call.options.body), {active: !active});
+    assert.equal(p.calls[1].url, '/api/admin/products');
+  }
+});
 
 test('order actions follow forward transitions, legacy confirmed state and terminal states', () => {
   const p = page();

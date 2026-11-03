@@ -17,7 +17,7 @@ class EmailVerificationMigrationMySqlTests {
             Flyway.configure().dataSource(url,mysql.getUsername(),mysql.getPassword()).locations("classpath:db/checkout-v2").target("8").load().migrate();
             try(Connection db=DriverManager.getConnection(url,mysql.getUsername(),mysql.getPassword());Statement sql=db.createStatement()) {
                 sql.executeUpdate("INSERT INTO customers(id,username,email,password,role) VALUES(1,'Legacy','legacy@example.com','original-user-hash','USER'),(2,'Admin','admin@example.com','original-admin-hash','ADMIN')");
-                var migration=Flyway.configure().dataSource(url,mysql.getUsername(),mysql.getPassword()).locations("classpath:db/checkout-v2").load();assertThat(migration.migrate().migrationsExecuted).isEqualTo(1);
+                var migration=Flyway.configure().dataSource(url,mysql.getUsername(),mysql.getPassword()).locations("classpath:db/checkout-v2").target("9").load();assertThat(migration.migrate().migrationsExecuted).isEqualTo(1);
                 try(var rows=sql.executeQuery("SELECT id,password,role,email_verified FROM customers ORDER BY id")) {
                     assertThat(rows.next()).isTrue();assertThat(rows.getLong(1)).isEqualTo(1);assertThat(rows.getString(2)).isEqualTo("original-user-hash");assertThat(rows.getString(3)).isEqualTo("USER");assertThat(rows.getBoolean(4)).isTrue();
                     assertThat(rows.next()).isTrue();assertThat(rows.getLong(1)).isEqualTo(2);assertThat(rows.getString(2)).isEqualTo("original-admin-hash");assertThat(rows.getString(3)).isEqualTo("ADMIN");assertThat(rows.getBoolean(4)).isTrue();

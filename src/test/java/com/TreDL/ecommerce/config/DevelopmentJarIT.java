@@ -140,7 +140,7 @@ class DevelopmentJarIT {
             try(ResultSet r=s.executeQuery("SELECT version FROM flyway_schema_history WHERE success=1 ORDER BY installed_rank")) {
                 var versions=new ArrayList<String>();
                 while(r.next())versions.add(r.getString(1));
-                assertThat(versions).containsExactly("1","2","3","4","5","6","7","8","9");
+                assertThat(versions).containsExactly("1","2","3","4","5","6","7","8","9","10");
             }
         }
     }

@@ -154,6 +154,8 @@ public class CheckoutService {
             // Refresh even if cart loading put the product in the first-level cache.
             // Hold catalog locks through commit so a price cannot change after verification.
             entityManager.refresh(product, lockMode);
+            if (!product.isActive()) throw new CheckoutException(CONFLICT,
+                    "Prodotto archiviato, non più acquistabile: " + product.getNome() + ". Rimuovilo dal carrello.");
             if (product.getStock() < entry.getValue()) throw new CheckoutException(CONFLICT,
                     "Disponibilità insufficiente per " + product.getNome() + ": " + product.getStock() + " unità disponibili");
             BigDecimal price = Money.validate(product.getPrezzo());

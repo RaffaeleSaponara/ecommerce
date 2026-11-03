@@ -52,6 +52,14 @@ public class AdminService {
                 .stream().map(OrderDTO::convertToDTO).toList();
     }
 
+    @Transactional
+    public ProductDTO publication(long id, boolean active) {
+        Products product = products.findByIdForUpdate(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Prodotto non trovato"));
+        product.setActive(active);
+        return ProductDTO.convertToDTO(product);
+    }
+
     public OrderDTO order(long id) {
         return OrderDTO.convertToDTO(orders.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ordine non trovato")));

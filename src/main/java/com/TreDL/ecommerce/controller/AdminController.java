@@ -25,6 +25,12 @@ public class AdminController {
     @PutMapping("/products/{id}")
     public ProductDTO update(@PathVariable long id, @RequestBody AdminProductRequest request) { return admin.update(id, request); }
     @GetMapping("/orders") public List<OrderDTO> orders() { return admin.orders(); }
+    public record PublicationRequest(Boolean active) {}
+    @PutMapping("/products/{id}/publication")
+    public ProductDTO publication(@PathVariable long id, @RequestBody PublicationRequest request) {
+        if (request == null || request.active() == null) throw new IllegalArgumentException("Stato di pubblicazione obbligatorio");
+        return admin.publication(id, request.active());
+    }
     @GetMapping("/orders/{id}") public OrderDTO order(@PathVariable long id) { return admin.order(id); }
     @org.springframework.beans.factory.annotation.Autowired private OrderManagementService orderManagement;
     @org.springframework.beans.factory.annotation.Autowired private com.TreDL.ecommerce.service.ShippingService shipping;

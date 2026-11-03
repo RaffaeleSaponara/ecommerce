@@ -15,6 +15,9 @@ public class ProductDTO {
     private String image;
     private int quantita;
     private int stock;
+    private boolean active = true;
+    public boolean isActive() { return active; }
+    public void setActive(boolean active) { this.active = active; }
 
 
     public static ProductDTO convertToDTO(Products prodotto) {
@@ -26,6 +29,7 @@ public class ProductDTO {
         userDTO.setPrezzo(prodotto.getPrezzo());
         userDTO.setImage(prodotto.getImage());
         userDTO.setStock(prodotto.getStock());
+        userDTO.setActive(prodotto.isActive());
         return userDTO;
     }
 
