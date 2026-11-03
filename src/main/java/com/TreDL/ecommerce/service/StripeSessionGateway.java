@@ -9,4 +9,7 @@ interface StripeSessionGateway {
     }
     Session create(Map<String,Object> parameters,String key);
     Session retrieve(String id);
+    default Session expire(String id){throw new SessionFailure(false);}
+    default String paymentState(String id){throw new SessionFailure(false);}
+    default String cancelPayment(String id){throw new SessionFailure(false);}
 }

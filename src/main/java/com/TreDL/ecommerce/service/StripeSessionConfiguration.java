@@ -31,6 +31,22 @@ class StripeSessionConfiguration {
                 // Do not propagate provider messages, request bodies or credentials.
                 return new SessionFailure(Integer.valueOf(409).equals(error.getStatusCode()) || Integer.valueOf(429).equals(error.getStatusCode()));
             }
+            public Session expire(String id){
+                try{return convert(com.stripe.model.checkout.Session.retrieve(id,options(null)).expire(Map.of(),options("3dl-expire-"+id)));}
+                catch(Exception e){throw new SessionFailure(false);}
+            }
+            public String paymentState(String id){
+                try{var payment=com.stripe.model.PaymentIntent.retrieve(id,options(null));
+                    if(!Boolean.FALSE.equals(payment.getLivemode()))throw new SessionFailure(false);
+                    return payment.getStatus();
+                }catch(Exception e){throw new SessionFailure(false);}
+            }
+            public String cancelPayment(String id){
+                try{var p=com.stripe.model.PaymentIntent.retrieve(id,options(null)).cancel(Map.of(),options("3dl-cancel-"+id));
+                    if(!Boolean.FALSE.equals(p.getLivemode()))throw new SessionFailure(false);
+                    return p.getStatus();
+                }catch(Exception e){throw new SessionFailure(false);}
+            }
             private Session convert(com.stripe.model.checkout.Session s){
                 if(s.getLivemode()==null || s.getExpiresAt()==null)throw new SessionFailure(false);
                 return new Session(s.getId(),s.getPaymentIntent(),s.getAmountTotal()==null?-1:s.getAmountTotal(),

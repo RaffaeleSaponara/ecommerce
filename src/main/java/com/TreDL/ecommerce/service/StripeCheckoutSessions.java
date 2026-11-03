@@ -59,8 +59,17 @@ class StripeCheckoutSessions {
                 remote.live(),remote.status(),remote.paymentStatus(),null,remote.expiresAt(),remote.metadata());
         return remote; // status and payment_status are independent; neither confirms an order.
     }
-    private Prepared prepare(String id){
-        PaymentAttempt a=locked(id);eligible(a);
+    StripeSessionGateway.Session inspect(String id){
+        if(TransactionSynchronizationManager.isActualTransactionActive())throw new IllegalStateException("External call requires no ambient transaction");
+        Prepared p=tx.execute(s->prepare(id,true));
+        var remote=p.session()==null?gateway.create(p.params(),"3dl-session-"+p.id()):gateway.retrieve(p.session());
+        validate(p,remote);return remote;
+    }
+    private Prepared prepare(String id){return prepare(id,false);}
+    private Prepared prepare(String id,boolean inspection){
+        PaymentAttempt a=locked(id);
+        if(!inspection)eligible(a);
+        else if(a.getOrder().getPaymentFlow()!=PaymentFlow.STRIPE_TEST || a.getSessionRequest()==null)throw new SessionFailure(false);
         if(a.getSessionRequest()==null){
             if(!a.getExpiresAt().isAfter(now()))throw new SessionFailure(false);
             Orders o=a.getOrder();long amount=o.getTotal().movePointRight(2).longValueExact();
