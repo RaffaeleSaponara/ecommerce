@@ -6,6 +6,10 @@ import java.util.*;
 @Entity
 @Table(name = "orders", uniqueConstraints = @UniqueConstraint(name = "uq_orders_customer_key", columnNames = {"id_customer", "idempotency_key"}))
 public class Orders {
+    @Column(name="payment_flow", nullable=false, length=16)
+    private String paymentFlow = PaymentFlow.LEGACY.name();
+    public PaymentFlow getPaymentFlow() { return PaymentFlow.valueOf(paymentFlow); }
+    public void setPaymentFlow(PaymentFlow flow) { paymentFlow=Objects.requireNonNull(flow).name(); }
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
     /** UTC by application convention. */
     @Column(nullable = false) private LocalDateTime date;

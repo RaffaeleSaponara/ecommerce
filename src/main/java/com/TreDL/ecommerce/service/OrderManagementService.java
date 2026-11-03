@@ -13,6 +13,8 @@ import static org.springframework.http.HttpStatus.*;
 public class OrderManagementService {
     @PersistenceContext private EntityManager em;
     @org.springframework.beans.factory.annotation.Autowired private OrderMailEvents orderMail;
+    @org.springframework.beans.factory.annotation.Autowired private OrderStockService stock;
+    @org.springframework.beans.factory.annotation.Autowired private com.TreDL.ecommerce.repository.PaymentAttemptsRepository payments;
 
     @Transactional(isolation=Isolation.READ_COMMITTED)
     public OrderDTO update(long id, String requested) {
@@ -23,28 +25,17 @@ public class OrderManagementService {
         if(order==null) throw new ResponseStatusException(NOT_FOUND,"Ordine non trovato");
         em.refresh(order,LockModeType.PESSIMISTIC_WRITE);
         OrderStatus current=OrderStatus.current(order.getShipment());
+        if(order.getPaymentFlow()==PaymentFlow.STRIPE_TEST) {
+            var attempt=payments.findByOrderId(id).orElse(null);
+            if(attempt==null || attempt.getStatus()!=PaymentStatus.SUCCEEDED)
+                throw new ResponseStatusException(CONFLICT,"Ordine Stripe non pagato: operazione amministrativa non consentita");
+            if(next==OrderStatus.CONFERMATO || next==OrderStatus.IN_ATTESA_PAGAMENTO || next==OrderStatus.ANNULLATO)
+                throw new ResponseStatusException(CONFLICT,"Operazione riservata al dominio pagamenti; annullamento Stripe non ancora disponibile");
+        }
         // Retry after a successful write is a no-op, including cancellation.
         if(current==next) return OrderDTO.convertToDTO(order);
         if(!current.allows(next)) throw new ResponseStatusException(CONFLICT,"Transizione di stato non consentita");
-        if(next==OrderStatus.ANNULLATO) {
-            if(Boolean.TRUE.equals(order.getStockDeducted())) {
-                Map<Long,Integer> quantities=new TreeMap<>();
-                for(OrderItem item:order.getItems()) {
-                    if(item.getProduct()==null) throw new ResponseStatusException(CONFLICT,"Prodotto dell'ordine non più disponibile: annullamento non eseguito");
-                    quantities.merge(item.getProduct().getId(),item.getQuantity(),Math::addExact);
-                }
-                // Same product ordering as checkout prevents product-lock cycles.
-                for(var entry:quantities.entrySet()) {
-                    Products product=em.find(Products.class,entry.getKey(),LockModeType.PESSIMISTIC_WRITE);
-                    if(product==null) throw new ResponseStatusException(CONFLICT,"Prodotto dell'ordine non trovato");
-                    em.refresh(product,LockModeType.PESSIMISTIC_WRITE);
-                    long restored=(long)product.getStock()+entry.getValue();
-                    if(restored>Integer.MAX_VALUE) throw new ResponseStatusException(CONFLICT,"Reintegro superiore alla quantità massima: annullamento non eseguito");
-                    product.setStock((int)restored);
-                }
-                order.setStockDeducted(false);
-            }
-        }
+        if(next==OrderStatus.ANNULLATO)stock.restore(order);
         order.recordStatusChange(order.getShipment(),next.name());
         order.setShipment(next.name());
         em.flush();

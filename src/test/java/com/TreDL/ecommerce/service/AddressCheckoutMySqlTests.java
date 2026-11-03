@@ -67,7 +67,9 @@ class AddressCheckoutMySqlTests {
         JsonNode order=submit("addressed-order",request,200);
         assertThat(order.get("shippingAddress").get("recipientName").asText()).isEqualTo("Mario Rossi");
         assertThat(order.get("billingAddress").get("recipientName").asText()).isEqualTo("Anna Bianchi");
-        assertThat(order.get("total").decimalValue()).isEqualByComparingTo("3.00");
+        assertThat(order.get("subtotal").decimalValue()).isEqualByComparingTo("3.00");
+        assertThat(order.get("shippingCost").decimalValue()).isEqualByComparingTo("5.90");
+        assertThat(order.get("total").decimalValue()).isEqualByComparingTo("8.90");
         mvc.perform(put("/api/addresses/"+shipping).with(user(alice.getEmail())).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(body("Modificato",false)))
             .andExpect(status().isOk());
         for(long id:new long[]{shipping,billing})mvc.perform(delete("/api/addresses/"+id).with(user(alice.getEmail())).with(csrf())).andExpect(status().isOk());
