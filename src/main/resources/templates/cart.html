@@ -80,6 +80,7 @@
           <p id="quote-summary"></p>
           <ul id="quote-lines"></ul>
         </div>
+        <label th:if="${stripeCustomerCheckoutEnabled == true}"><input type="checkbox" id="stripeTestCheckout"> Paga con Stripe (test)</label>
         <form method="post" th:action="@{/cart/checkout}" id="checkoutForm">
           <label><input type="checkbox" id="confirmPrices" disabled> Confermo i prodotti e i prezzi del preventivo</label>
           <button type="submit" class="payment-button" id="paymentButton" disabled>Conferma ordine</button>
@@ -204,7 +205,9 @@
     }
 
     // One client-generated key is retained with the exact confirmed token across retries/reloads.
-    const pendingStorageKey = "3dl.checkout.v2.pending";
+    const legacyStorageKey = "3dl.checkout.v2.pending";
+    const stripeStorageKey = "3dl.checkout.stripe.pending";
+    let pendingStorageKey = legacyStorageKey;
     let currentQuote = null;
     let pendingCheckout = null;
     let checkoutBusy = false;
@@ -303,6 +306,8 @@
     }
     function syncCheckoutControls() {
       updateAddressLock();
+      const stripeChoice = document.getElementById("stripeTestCheckout");
+      if (stripeChoice) stripeChoice.disabled = !!pendingCheckout || checkoutBusy || quoteBusy || cartMutationBusy || addressMutationBusy;
       const busy = checkoutBusy || quoteBusy || cartMutationBusy || addressMutationBusy;
       document.getElementById("quoteButton").disabled = !!pendingCheckout || busy;
       document.getElementById("paymentButton").disabled = busy || !currentQuote || !document.getElementById("confirmPrices").checked || (!pendingCheckout && !selectedAddresses());
@@ -338,11 +343,13 @@
       syncCheckoutControls();
       try {
         if (!pendingCheckout) {
-          const attempt = { key: crypto.randomUUID(), quote: currentQuote, ...selectedAddresses() };
+          const stripe = !!document.getElementById("stripeTestCheckout")?.checked;
+          pendingStorageKey = stripe ? stripeStorageKey : legacyStorageKey;
+          const attempt = { key: crypto.randomUUID(), quote: currentQuote, ...selectedAddresses(), ...(stripe ? { stripe: true } : {}) };
           sessionStorage.setItem(pendingStorageKey, JSON.stringify(attempt));
           pendingCheckout = attempt;
         }
-        const response = await fetch("/cart/checkout", {
+        const response = await fetch(pendingCheckout.stripe ? "/cart/stripe/checkout" : "/cart/checkout", {
           method: "POST",
           headers: { ...csrfHeaders(), "Content-Type": "application/json", "Idempotency-Key": pendingCheckout.key },
           body: JSON.stringify({ quoteToken: pendingCheckout.quote.quoteToken, confirmPrices: true,
@@ -365,6 +372,11 @@
           throw new Error("Risposta non disponibile. Riprova: la stessa richiesta non creerà un secondo ordine.");
         }
         const order = parseExactJson(await response.text());
+        if (pendingCheckout.stripe) {
+          sessionStorage.removeItem(pendingStorageKey);
+          window.location.assign(order.redirectUrl || '/user/orders/' + order.state.orderId + '/payment');
+          return;
+        }
         sessionStorage.removeItem(pendingStorageKey);
         pendingCheckout = null;
         invalidateQuote();
@@ -382,8 +394,11 @@
       document.getElementById("checkoutForm").addEventListener("submit", submitCheckout);
       document.getElementById("confirmPrices").addEventListener("change", syncCheckoutControls);
       try {
+        pendingStorageKey = sessionStorage.getItem(stripeStorageKey) ? stripeStorageKey : legacyStorageKey;
         pendingCheckout = JSON.parse(sessionStorage.getItem(pendingStorageKey));
         if (pendingCheckout) {
+          const stripeChoice = document.getElementById("stripeTestCheckout");
+          if (stripeChoice) stripeChoice.checked = !!pendingCheckout.stripe;
           displayQuote(pendingCheckout.quote);
           document.getElementById("quoteButton").disabled = true;
           statusText("Ordine in attesa di risposta: conferma e riprova la stessa richiesta.");

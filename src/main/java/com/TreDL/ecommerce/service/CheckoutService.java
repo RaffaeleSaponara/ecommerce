@@ -82,6 +82,11 @@ public class CheckoutService {
         if (!current.equals(confirmed.items()) || !"EUR".equals(confirmed.currency()) || !total.equals(confirmed.total()) || !subtotal.equals(confirmed.subtotal()) || !shippingCost.equals(confirmed.shippingCost()))
             throw new CheckoutException(CONFLICT, "Cart or prices changed; request and confirm a new quote");
 
+        // The Stripe session adapter rejects zero totals. Reject before reserving stock,
+        // rather than leaving an order that can never obtain a payment session.
+        if (flow == PaymentFlow.STRIPE_TEST && total.signum() == 0)
+            throw new CheckoutException(BAD_REQUEST, "Il checkout Stripe richiede un totale maggiore di zero");
+
         if (request.shippingAddressId() == null)
             throw new CheckoutException(BAD_REQUEST, "Shipping address is required");
         AddressSnapshot shipping = address(customer, request.shippingAddressId());

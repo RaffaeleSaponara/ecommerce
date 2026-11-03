@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="referrer" content="no-referrer"><title>Pagamento ordine — 3DL</title><link rel="stylesheet" href="/css/account.css"><link rel="stylesheet" href="/css/responsive.css"><script src="/js/navigation.js" defer></script></head>
+<body><a class="skip-link" href="#main-content">Vai al contenuto</a><nav class="site-nav" aria-label="Navigazione principale"><a class="brand" href="/">Lure Lab</a><a href="/user">I miei ordini</a><a href="/cart">Carrello</a></nav><main id="main-content" class="container"><h1 th:text="${'Pagamento ordine #' + payment.orderId}">Pagamento ordine</h1>
+<p>Il ritorno da Stripe non conferma né annulla l’ordine. Qui è mostrato esclusivamente lo stato registrato dal negozio.</p>
+<p>Stato ordine: <strong th:text="${payment.orderStatus}"></strong></p><p>Stato pagamento: <strong th:text="${payment.paymentStatus}"></strong></p>
+<p role="status" th:text="${payment.message}"></p>
+<form th:if="${payment.resumable}" method="post" th:action="@{/user/orders/{id}/payment/resume(id=${payment.orderId})}"><button type="submit">Riprendi pagamento test</button></form>
+<p><a th:href="@{/user/orders/{id}/payment(id=${payment.orderId})}">Aggiorna stato</a> · <a href="/user">I miei ordini</a></p>
+<p>Se il tentativo è scaduto, non verrà creata automaticamente un’altra sessione né ripristinato il carrello.</p>
+</main></body></html>

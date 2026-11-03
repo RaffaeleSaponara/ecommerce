@@ -144,6 +144,7 @@
         </tr>
         <tr th:each="order : ${orders}">
           <td><span th:text="${'#' + order.id}"></span>
+<p th:if="${stripeCustomerCheckoutEnabled == true and order.shipment == 'IN_ATTESA_PAGAMENTO'}"><a th:href="@{/user/orders/{id}/payment(id=${order.id})}">Stato e ripresa pagamento test</a></p>
             <details>
               <summary>Dettaglio ordine e prodotti</summary>
               <p>Ordine <strong th:text="${'#' + order.id}"></strong> del <span th:text="${order.date}"></span></p>
