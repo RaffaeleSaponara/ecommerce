@@ -20,6 +20,10 @@ class StripeDisabledTests extends StockCheckoutContract {
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper mapper;
     @Autowired PaymentAttemptsRepository payments;
+    @Test void refundEndpointsAreUnavailableByDefault() throws Exception {
+        mvc.perform(post("/api/admin/stripe/orders/1/cancel-refund").with(user("admin").roles("ADMIN")).with(csrf())
+            .contentType("application/json").content("{\"confirmed\":true}")).andExpect(status().isNotFound());
+    }
     @Test void customerCheckoutIsUnavailableByDefault() throws Exception {
         mvc.perform(post("/cart/stripe/checkout").with(user(alice.getEmail())).with(csrf())
             .header("Idempotency-Key","disabled").contentType("application/json").content("{}"))

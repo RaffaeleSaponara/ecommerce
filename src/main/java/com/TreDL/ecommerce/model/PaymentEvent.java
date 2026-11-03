@@ -19,5 +19,6 @@ public class PaymentEvent {
     @Column(name="received_at",nullable=false) private LocalDateTime receivedAt;
     @Column(name="processed_at") private LocalDateTime processedAt;
     @Column(length=32) private String outcome;
+    @Column(name="resolved_at") private LocalDateTime resolvedAt;
     protected PaymentEvent() {}
 }
