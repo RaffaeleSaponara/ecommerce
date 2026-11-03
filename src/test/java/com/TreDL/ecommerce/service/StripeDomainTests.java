@@ -24,7 +24,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(properties="payments.stripe.enabled=true")
+@SpringBootTest(properties={"payments.stripe.enabled=true","payments.stripe.secret-key=sk_test_fixture_only"})
 @AutoConfigureMockMvc
 class StripeDomainTests extends StockCheckoutContract {
     @Autowired StripePaymentDomain domain;
