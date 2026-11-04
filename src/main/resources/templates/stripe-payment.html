@@ -7,4 +7,4 @@
 <form th:if="${payment.resumable}" method="post" th:action="@{/user/orders/{id}/payment/resume(id=${payment.orderId})}"><button type="submit">Riprendi pagamento test</button></form>
 <p><a th:href="@{/user/orders/{id}/payment(id=${payment.orderId})}">Aggiorna stato</a> · <a href="/user">I miei ordini</a></p>
 <p>Se il tentativo è scaduto, non verrà creata automaticamente un’altra sessione né ripristinato il carrello.</p>
-</main></body></html>
+</main><footer><nav th:replace="~{fragments/legal :: links}"></nav></footer></body></html>

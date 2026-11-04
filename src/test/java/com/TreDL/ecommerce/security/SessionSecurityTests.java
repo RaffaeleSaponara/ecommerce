@@ -36,10 +36,19 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 // MVC slice: real security chain, password encoder and user lookup; no datasource or external services.
-@WebMvcTest({AuthController.class, HomeController.class, CartController.class,
+@WebMvcTest({LegalController.class, AuthController.class, HomeController.class, CartController.class,
         CustomersController.class, ProductsController.class, OrdersController.class})
 @Import({SecurityConfig.class, CustomUserDetailsService.class, RegistrationService.class})
 class SessionSecurityTests {
+    @ParameterizedTest
+    @ValueSource(strings={"/privacy","/cookies","/termini","/spedizioni-resi"})
+    void legalDraftsArePublicAndClearlyMarked(String path) throws Exception {
+        mvc.perform(get(path)).andExpect(status().isOk()).andExpect(view().name("legal"))
+            .andExpect(content().string(containsString("BOZZA NON DEFINITIVA")))
+            .andExpect(content().string(containsString("DA COMPLETARE")))
+            .andExpect(content().string(containsString("/privacy")))
+            .andExpect(content().string(containsString("noindex, nofollow")));
+    }
     @Autowired MockMvc mvc;
     @Autowired PasswordEncoder passwords;
     @MockitoBean CustomersRepository customersRepository;

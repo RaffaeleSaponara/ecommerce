@@ -1,12 +1,9 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lure Lab - Esche artigianali</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
       --ink: #101411;
@@ -35,7 +32,7 @@
       background:
         linear-gradient(135deg, rgba(217, 232, 228, 0.55), transparent 32%),
         linear-gradient(180deg, #fbf8f0 0%, var(--surface) 52%, #eef1ec 100%);
-      font-family: "Inter", Arial, sans-serif;
+      font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
     }
 
     a {
@@ -941,6 +938,7 @@
   </main>
 
   <footer class="site-footer">
+    <nav th:replace="~{fragments/legal :: links}"></nav>
     <div class="footer-inner">
       <span>© 2026 Lure Lab</span>
       <span>Esche artigianali, piccole serie e richieste custom.</span>

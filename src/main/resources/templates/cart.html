@@ -6,9 +6,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Carrello - Lure Lab</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/account.css">
   <link rel="stylesheet" href="/css/responsive.css">
   <script src="/js/navigation.js" defer></script>
@@ -83,7 +80,9 @@
         <label th:if="${stripeCustomerCheckoutEnabled == true}"><input type="checkbox" id="stripeTestCheckout"> Paga con Stripe (test)</label>
         <form method="post" th:action="@{/cart/checkout}" id="checkoutForm">
           <label><input type="checkbox" id="confirmPrices" disabled> Confermo i prodotti e i prezzi del preventivo</label>
-          <button type="submit" class="payment-button" id="paymentButton" disabled>Conferma ordine</button>
+          <p>Spedizione standard in Italia: costo e totale sono indicati nel preventivo qui sopra. Tempi di consegna: [DA COMPLETARE]. Recesso generalmente entro 14 giorni dalla consegna, salvo eccezioni di legge; garanzia legale di conformità di due anni sui beni nuovi per consumatori. Costi e modalità di reso: [DA COMPLETARE].</p>
+          <p>Consulta <a href="/termini">Termini e condizioni</a>, <a href="/spedizioni-resi">Spedizioni e resi</a> e <a href="/privacy">Privacy Policy</a>. <strong>Bozze non definitive: informazioni del venditore e condizioni da completare prima della vendita pubblica.</strong></p>
+          <button type="submit" class="payment-button" id="paymentButton" disabled>Ordina con obbligo di pagare</button>
         </form>
         <p id="checkout-status" role="status" aria-live="polite"></p>
       </aside>
@@ -91,6 +90,7 @@
   </main>
 
   <footer>
+    <nav th:replace="~{fragments/legal :: links}"></nav>
     &copy; 2026 Lure Lab. Tutti i diritti riservati.
   </footer>
 

@@ -11,4 +11,4 @@
     <form method="post" th:action="@{/resend-verification}"><div class="field"><label for="verification-email">Email</label><input id="verification-email" name="email" type="email" maxlength="254" autocomplete="email" required></div><button class="submit-button" type="submit">Invia nuovo link</button></form>
     <p><a href="/login">Torna al login</a></p>
   </section>
-</main></body></html>
+</main><footer><nav th:replace="~{fragments/legal :: links}"></nav></footer></body></html>
