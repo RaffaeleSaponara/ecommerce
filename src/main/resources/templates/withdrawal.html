@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>Recesso — Lure Lab</title><link rel="stylesheet" href="/css/account.css"><link rel="stylesheet" href="/css/responsive.css"><link rel="stylesheet" href="/css/legal.css"><script src="/js/navigation.js" defer></script></head>
+<body><a class="skip-link" href="#main-content">Vai al contenuto</a><nav class="site-nav" aria-label="Navigazione principale"><a href="/">Lure Lab</a><a href="/user">I miei ordini</a></nav>
+<main id="main-content" class="legal-document" tabindex="-1"><h1>Esercita il diritto di recesso</h1>
+<p>Documentazione del negozio: BOZZA NON DEFINITIVA. Questa funzione registra la dichiarazione senza annullare l'ordine, eseguire rimborsi o modificare le scorte.</p>
+<p th:if="${error}" th:text="${error}" role="alert"></p>
+<form th:if="${choices != null and !choices.isEmpty()}" method="post" th:action="@{/recesso}">
+ <div class="field"><label for="withdrawal-order">Ordine dal cui intero contratto intendi recedere</label><select id="withdrawal-order" name="orderId" required><option th:each="order : ${choices}" th:value="${order.id}" th:text="${'Ordine #' + order.id + ' — ' + order.date}"></option></select></div>
+ <div class="field"><label for="withdrawal-name">Nome e cognome del consumatore</label><input id="withdrawal-name" name="name" maxlength="150" autocomplete="name" required></div>
+ <p>Email per la ricevuta: <strong th:text="${receiptEmail}"></strong>. Prima di confermare controlla il numero d'ordine: dichiari di recedere dall'intero contratto relativo all'ordine selezionato. Non è necessario indicare un motivo.</p>
+ <label><input type="checkbox" name="confirmed" value="true" required> Confermo di voler esercitare il recesso per l'ordine selezionato e ricevere la ricevuta all'email del mio account.</label>
+ <button type="submit" class="button button-primary">Conferma recesso</button>
+</form>
+<p th:if="${choices != null and choices.isEmpty()}">Nessun ordine associato al tuo account.</p>
+<section th:if="${receipt != null}"><h2>Dichiarazione registrata</h2><p th:text="${'Email ricevuta: ' + receipt.email}"></p><p>La ricevuta email è accodata; ciò non significa che sia già stata recapitata. Puoi conservarne una copia qui sotto.</p><pre style="white-space:pre-wrap;overflow-wrap:anywhere" th:text="${receipt.declaration}"></pre><a th:href="@{/recesso/{id}/ricevuta(id=${receipt.id})}">Scarica ricevuta testuale</a></section>
+<section th:if="${requests != null}"><h2>Dichiarazioni ricevute — verifica manuale</h2><p>La registrazione non decide l'ammissibilità, il termine o il rimborso.</p><article th:each="request : ${requests}"><h3 th:text="${'Ordine #' + request.orderId}"></h3><pre style="white-space:pre-wrap;overflow-wrap:anywhere" th:text="${request.declaration}"></pre></article></section>
+<p>Non blocchiamo automaticamente la funzione in base alla data dell'ordine: il termine può dipendere dalla consegna e dalle informazioni ricevute. Per altri casi consulta <a href="/spedizioni-resi">Spedizioni e resi</a>.</p>
+</main><footer><nav th:replace="~{fragments/legal :: links}"></nav></footer></body></html>

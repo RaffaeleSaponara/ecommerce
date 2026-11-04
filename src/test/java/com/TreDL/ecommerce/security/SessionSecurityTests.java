@@ -38,7 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 // MVC slice: real security chain, password encoder and user lookup; no datasource or external services.
 @WebMvcTest({LegalController.class, AuthController.class, HomeController.class, CartController.class,
         CustomersController.class, ProductsController.class, OrdersController.class})
-@Import({SecurityConfig.class, CustomUserDetailsService.class, RegistrationService.class})
+@Import({SecurityConfig.class, CustomUserDetailsService.class, RegistrationService.class, SellerInfo.class})
 class SessionSecurityTests {
     @ParameterizedTest
     @ValueSource(strings={"/privacy","/cookies","/termini","/spedizioni-resi"})
@@ -59,6 +59,7 @@ class SessionSecurityTests {
     @MockitoBean OrderHistoryService orderHistoryService;
     @MockitoBean ProfileService profileService;
     @MockitoBean EmailVerificationService emailVerificationService;
+    @MockitoBean ShippingService shippingService;
 
     private Customers customer;
     private Products product;

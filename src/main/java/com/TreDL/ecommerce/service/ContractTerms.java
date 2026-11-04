@@ -11,7 +11,9 @@ import java.util.Locale;
 /** Capture the actual draft pages at purchase, including Stripe reservations before payment. */
 @Component
 public class ContractTerms {
-    public static final String VERSION="DRAFT-TEST-2026-11-04-v1";
+    public static final String VERSION="DRAFT-TEST-2026-11-04-v2";
+    @org.springframework.beans.factory.annotation.Autowired private SellerInfo seller;
+    @org.springframework.beans.factory.annotation.Autowired private ShippingService shipping;
     private final TemplateEngine templates;
     public ContractTerms(TemplateEngine templates){this.templates=templates;}
     public void capture(Orders order){
@@ -19,6 +21,8 @@ public class ContractTerms {
         for(String section:new String[]{"terms","shipping"}){
             Context context=new Context(Locale.ITALIAN);
             context.setVariable("section",section);context.setVariable("title",section.equals("terms")?"Termini e condizioni":"Spedizioni e resi");
+            context.setVariable("seller",seller);context.setVariable("shipping",shipping.settings());
+            context.setVariable("contractVersion",VERSION);
             String html=templates.process("legal",context);
             text.append(org.springframework.web.util.HtmlUtils.htmlUnescape(html.replaceAll("(?s)<head>.*?</head>","")
                 .replaceAll("<[^>]+>","\n").replaceAll("[\\t ]+"," ").replaceAll("\\n\\s*\\n+","\n"))).append("\n");
