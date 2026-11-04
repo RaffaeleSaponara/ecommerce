@@ -26,6 +26,7 @@ public class CheckoutService {
     @PersistenceContext private EntityManager entityManager;
     @org.springframework.beans.factory.annotation.Autowired private OrderMailEvents orderMail;
     @org.springframework.beans.factory.annotation.Autowired private ShippingService shipping;
+    @org.springframework.beans.factory.annotation.Autowired private ContractTerms contracts;
 
     public CheckoutService(CustomersRepository customers, CartRepository carts,
                            OrdersRepository orders, QuoteSigner signer) {
@@ -111,6 +112,7 @@ public class CheckoutService {
             product.setStock(product.getStock() - line.quantity());
             order.addItem(new OrderItem(order, lineNumber++, product, line.quantity()));
         }
+        contracts.capture(order);
         orders.saveAndFlush(order); // Includes all rows; any failure rolls everything back.
         cart.getProducts().clear();
         carts.saveAndFlush(cart);

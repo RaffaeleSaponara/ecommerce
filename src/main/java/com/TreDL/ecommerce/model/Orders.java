@@ -6,6 +6,16 @@ import java.util.*;
 @Entity
 @Table(name = "orders", uniqueConstraints = @UniqueConstraint(name = "uq_orders_customer_key", columnNames = {"id_customer", "idempotency_key"}))
 public class Orders {
+    @Column(name="contract_version",length=80,updatable=false) private String contractVersion;
+    @Column(name="contract_captured_at",updatable=false) private LocalDateTime contractCapturedAt;
+    @Column(name="contract_text",columnDefinition="TEXT",updatable=false) private String contractText;
+    public String getContractVersion(){return contractVersion;}
+    public LocalDateTime getContractCapturedAt(){return contractCapturedAt;}
+    public String getContractText(){return contractText;}
+    public void captureContract(String version,LocalDateTime date,String text){
+        if(contractText!=null)throw new IllegalStateException("Contract already captured");
+        contractVersion=Objects.requireNonNull(version);contractCapturedAt=Objects.requireNonNull(date);contractText=Objects.requireNonNull(text);
+    }
     @Column(name="payment_flow", nullable=false, length=16)
     private String paymentFlow = PaymentFlow.LEGACY.name();
     public PaymentFlow getPaymentFlow() { return PaymentFlow.valueOf(paymentFlow); }

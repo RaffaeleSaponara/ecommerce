@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow"><title th:text="${title + ' — Lure Lab (bozza)'}"></title>
+  <link rel="stylesheet" href="/css/account.css"><link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/legal.css">
+  <script src="/js/navigation.js" defer></script>
+</head>
+<body><a class="skip-link" href="#main-content">Vai al contenuto</a>
+<nav class="site-nav" aria-label="Navigazione principale"><a class="brand" href="/">Lure Lab</a><a href="/prodotti">Shop</a></nav>
+<main id="main-content" class="legal-document" tabindex="-1">
+  <h1 th:text="${title}"></h1>
+  <aside class="legal-draft" role="note"><strong>BOZZA NON DEFINITIVA — NON VALIDATA PER IL LANCIO PUBBLICO.</strong>
+    <p>I campi [DA COMPLETARE] richiedono dati reali e decisioni del venditore. Questa pagina non certifica la conformità del negozio. Non usare dati personali reali per le prove.</p>
+    <p>Venditore e titolare del trattamento: [DA COMPLETARE: denominazione/nome, sede, partita IVA, dati del registro imprese se applicabili, email e contatti]. Versione e data di efficacia: [DA COMPLETARE].</p>
+  </aside>
+  <section th:if="${section == 'privacy'}">
+    <h2>Dati e finalità</h2>
+    <p>Account: username, email, hash della password, ruolo e verifica email. Acquisti: carrello, destinatario, indirizzi, note di consegna, prodotti, importi, stati dell'ordine e tracking. Pagamenti: riferimenti Stripe a sessioni, pagamenti e rimborsi; il negozio non raccoglie i dati completi delle carte.</p>
+    <p>Per proteggere gli accessi sono trattati identificativi derivati da IP ed email e token di verifica/recupero memorizzati come hash. Le note di consegna sono facoltative: non inserire dati sanitari o altre informazioni sensibili.</p>
+    <h2>Basi giuridiche e conferimento</h2>
+    <p>Gestione dell'account e degli acquisti: esecuzione del contratto o misure precontrattuali; adempimenti fiscali e contabili: obblighi legali; sicurezza: [DA COMPLETARE: base giuridica e valutazione dell'interesse legittimo]. Senza i dati necessari non è possibile erogare il servizio richiesto. Non è previsto marketing nel flusso attuale.</p>
+    <h2>Destinatari e trasferimenti</h2>
+    <p>Possono intervenire personale autorizzato, hosting, provider email, fornitori di pagamento e soggetti incaricati della consegna. [DA COMPLETARE: identità, ruoli privacy, accordi, paesi e garanzie per eventuali trasferimenti extra SEE]. Stripe gestisce il checkout ospitato; seguendo il collegamento WhatsApp si accede a un servizio esterno con la propria informativa.</p>
+    <h2>Conservazione</h2>
+    <p>[DA COMPLETARE: periodi o criteri per account, ordini/documenti fiscali, indirizzi, email, token scaduti, log e backup; procedura di cancellazione]. La scadenza tecnica di un token non equivale necessariamente alla cancellazione del record. La cancellazione dell'account non comporta la cancellazione dei documenti che devono essere conservati per legge.</p>
+    <h2>Diritti e contatti</h2>
+    <p>Puoi chiedere accesso, rettifica, cancellazione, limitazione, portabilità e opposizione nei casi previsti dal GDPR; puoi revocare un eventuale consenso e presentare reclamo al Garante per la protezione dei dati personali. Contatto per le richieste: [DA COMPLETARE: email e procedura]. [DA VERIFICARE: eventuali decisioni automatizzate dei fornitori e obbligo di nomina DPO].</p>
+  </section>
+  <section th:if="${section == 'cookies'}">
+    <h2>Memorizzazioni tecniche del negozio</h2>
+    <ul><li>Cookie di sessione Spring, normalmente JSESSIONID: accesso, sicurezza e continuità della sessione; durata di sessione, da verificare nella configurazione dell'ambiente pubblico.</li>
+      <li>localStorage «isAuthenticated»: indicatore dell'interfaccia; resta fino alla rimozione da parte del sito o dell'utente, senza scadenza automatica.</li>
+      <li>sessionStorage «3dl.checkout.v2.pending» e «3dl.checkout.stripe.pending»: recupero della richiesta di acquisto, preventivo e riferimenti agli indirizzi; rimozione al termine del flusso o della sessione della scheda.</li></ul>
+    <p>Non sono integrati strumenti pubblicitari o analytics nel codice attuale. I font sono di sistema e non richiedono Google Fonts. Le memorizzazioni strettamente necessarie non richiedono il consenso; per questo non è presente un banner.</p>
+    <h2>Servizi esterni e verifica prima del lancio</h2>
+    <p>Il pagamento avviene sulla pagina ospitata da Stripe; WhatsApp si apre soltanto seguendo il relativo link. I servizi esterni hanno proprie informative. [DA COMPLETARE: collegamenti alle informative e verifica dei cookie effettivi di hosting, proxy e fornitori nell'ambiente pubblico].</p>
+    <p>Le memorizzazioni possono essere cancellate dalle impostazioni del browser; bloccare quelle tecniche può impedire accesso, carrello e recupero del checkout. Ogni futuro tracciamento facoltativo richiederà una nuova valutazione e, quando dovuto, consenso preventivo.</p>
+  </section>
+  <section th:if="${section == 'terms'}">
+    <h2>Ambito e prodotti</h2>
+    <p>Vendita di esche e prodotti del catalogo a consumatori, con destinazione Italia. [DA COMPLETARE: requisiti di acquisto, caratteristiche dei prodotti e gestione dei prodotti personalizzati].</p>
+    <h2>Prezzi, pagamento e contratto</h2>
+    <p>Prima dell'invio sono mostrati subtotale prodotti, spedizione e totale in euro. [DA COMPLETARE: trattamento IVA e documentazione fiscale]. Il preventivo ha durata limitata e richiede conferma dei prezzi.</p>
+    <p>[DA COMPLETARE: momento di conclusione del contratto, significato dell'accettazione dell'ordine e del pagamento, metodi disponibili, gestione del percorso legacy e indisponibilità]. Nell'ambiente attuale Stripe è esclusivamente di test: non avvengono incassi reali. Il ritorno dal pagamento non costituisce conferma dell'incasso.</p>
+    <h2>Consegna, recesso e garanzia</h2>
+    <p>Consulta <a href="/spedizioni-resi">Spedizioni e resi</a>. I diritti inderogabili del consumatore non sono esclusi da queste condizioni. [DA COMPLETARE: reclami, assistenza e procedure di risoluzione delle controversie applicabili].</p>
+    <h2>Copia delle condizioni</h2>
+    <p>[DA COMPLETARE: versione contrattuale e modalità di consegna delle condizioni e del modulo di recesso su supporto durevole insieme alla conferma dell'acquisto]. La sola disponibilità di questa pagina modificabile non sostituisce tale consegna.</p>
+  </section>
+  <section th:if="${section == 'shipping'}">
+    <h2>Spedizione in Italia</h2>
+    <p>È prevista una spedizione nazionale standard. Costo e soglia gratuita sono configurabili: l'importo effettivo è mostrato nel preventivo prima dell'ordine, con soglia calcolata sul subtotale prodotti. [DA COMPLETARE: tempi di preparazione/consegna, corrieri, limitazioni territoriali e gestione delle consegne non riuscite].</p>
+    <h2>Recesso e resi</h2>
+    <p>Per i beni acquistati a distanza, il consumatore dispone in generale di 14 giorni dalla consegna per comunicare il recesso, salvo eccezioni previste dalla legge. [DA COMPLETARE: contatto, indirizzo di reso, procedura, modulo tipo, costi di restituzione e modalità/tempi di rimborso conformi alla legge].</p>
+    <p>I beni realizzati su specifiche del consumatore o chiaramente personalizzati possono essere esclusi dal recesso nei casi previsti dalla legge: la dicitura «custom» da sola non basta. [DA VERIFICARE: quali prodotti rientrano nell'eccezione e come informare prima dell'acquisto].</p>
+    <h2>Garanzia legale</h2>
+    <p>Per beni nuovi venduti a consumatori si applica la garanzia legale di conformità di due anni dalla consegna, con i rimedi previsti dalla legge. La personalizzazione non esclude la tutela per difetti di conformità. [DA COMPLETARE: contatti e procedura di assistenza].</p>
+    <h2>Modulo di recesso — bozza</h2>
+    <p>Destinatario: [DA COMPLETARE: venditore, indirizzo ed email]. Comunico il recesso dall'acquisto dei seguenti beni: […]. Ordinati il […] / ricevuti il […]. Nome e indirizzo del consumatore: […]. Data: […]. Firma, solo per comunicazione cartacea: […]. [DA VALIDARE prima dell'uso].</p>
+  </section>
+</main><footer><nav th:replace="~{fragments/legal :: links}"></nav></footer></body></html>

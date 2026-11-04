@@ -4,9 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Registrazione - Lure Lab</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/account.css">
   <link rel="stylesheet" href="/css/responsive.css">
   <script src="/js/navigation.js" defer></script>
@@ -82,6 +79,7 @@
             <input type="password" name="confirmPassword" id="confirmPassword" autocomplete="new-password" maxlength="72" required>
           </div>
 
+          <p>Per sapere come trattiamo i dati dell'account consulta la <a href="/privacy">Privacy Policy</a> e la <a href="/cookies">Cookie Policy</a>. Sono bozze da completare prima del lancio pubblico.</p>
           <button class="submit-button" type="submit">Crea account</button>
         </form>
 
@@ -100,6 +98,7 @@
   </main>
 
   <footer>
+    <nav th:replace="~{fragments/legal :: links}"></nav>
     &copy; 2026 Lure Lab. Tutti i diritti riservati.
   </footer>
 

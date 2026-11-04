@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lure Lab - Catalogo esche</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --ink: #111614;
@@ -38,7 +35,7 @@
                 radial-gradient(circle at 12% 7%, rgba(216, 95, 47, 0.12), transparent 260px),
                 linear-gradient(145deg, rgba(36, 72, 59, 0.1), transparent 42%),
                 var(--surface);
-            font-family: "Inter", Arial, sans-serif;
+            font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
         }
 
         a {
@@ -896,6 +893,7 @@
 </main>
 
 <footer>
+    <nav th:replace="~{fragments/legal :: links}"></nav>
     © 2026 Lure Lab - Catalogo esche artigianali
 </footer>
 

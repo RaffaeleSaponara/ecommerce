@@ -1,14 +1,11 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta name="_csrf" th:content="${_csrf.token}">
   <meta name="_csrf_header" th:content="${_csrf.headerName}">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Area cliente - Lure Lab</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/account.css">
   <link rel="stylesheet" href="/css/responsive.css">
   <script src="/js/navigation.js" defer></script>
@@ -188,6 +185,7 @@
   </main>
 
   <footer>
+    <nav th:replace="~{fragments/legal :: links}"></nav>
     &copy; 2026 Lure Lab. Tutti i diritti riservati.
   </footer>
 

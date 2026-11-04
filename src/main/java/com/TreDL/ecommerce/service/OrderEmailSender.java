@@ -1,10 +1,6 @@
 package com.TreDL.ecommerce.service;
 
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.*;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.event.*;
 import org.springframework.transaction.annotation.*;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -15,21 +11,15 @@ import java.util.*;
 
 @Component
 public class OrderEmailSender {
-    private final ObjectProvider<JavaMailSender> senders;
     private final TemplateEngine templates;
-    private final boolean enabled;
-    private final String from;
-    public OrderEmailSender(ObjectProvider<JavaMailSender> senders,TemplateEngine templates,
-            @Value("${app.mail.enabled:false}") boolean enabled,@Value("${app.mail.from:no-reply@3dl.test}") String from) {
-        this.senders=senders;this.templates=templates;this.enabled=enabled;this.from=from;
+    @org.springframework.beans.factory.annotation.Autowired private org.springframework.jdbc.core.JdbcTemplate jdbc;
+    public OrderEmailSender(TemplateEngine templates) {
+        this.templates=templates;
     }
-    @TransactionalEventListener(phase=TransactionPhase.AFTER_COMMIT)
-    @Transactional(propagation=Propagation.NOT_SUPPORTED)
+    @org.springframework.context.event.EventListener
+    @Transactional(propagation=Propagation.MANDATORY)
     public void deliver(OrderMailEvents.Notice notice) {
-        if(!enabled)return;
-        try {
-            JavaMailSender sender=senders.getIfAvailable();
-            if(sender==null)throw new IllegalStateException("SMTP non configurato");
+            jdbc.queryForObject("SELECT id FROM orders WHERE id=? FOR UPDATE",Long.class,notice.order().id());
             List<String> lines=new ArrayList<>();var order=notice.order();
             String state=switch(notice.kind()){case CONFIRMED->"confermato";case CANCELLED->"annullato";case SHIPPED->"spedito";};
             String subject="3DL — Ordine #"+order.id()+" "+state;
@@ -37,7 +27,7 @@ public class OrderEmailSender {
             lines.add("Data: "+DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").format(notice.occurredAt().atOffset(ZoneOffset.UTC).atZoneSameInstant(ZoneId.of("Europe/Rome")))+" (Europe/Rome)");
             if(notice.kind()==OrderMailEvents.Kind.CONFIRMED) {
                 lines.add("Prodotti acquistati:");
-                order.items().forEach(item->lines.add(item.productName()+" × "+item.quantity()+" — "+money(item.subtotal())));
+                order.items().forEach(item->lines.add(item.productName()+" × "+item.quantity()+" — prezzo unitario: "+money(item.unitPrice())+" — totale riga: "+money(item.subtotal())));
                 lines.add("Subtotale prodotti: "+money(order.subtotal()));
                 lines.add("Spedizione: "+money(order.shippingCost()));lines.add("Totale: "+money(order.total()));
                 var address=order.shippingAddress();lines.add("Indirizzo di spedizione:");
@@ -55,13 +45,18 @@ public class OrderEmailSender {
             }
             Context context=new Context(Locale.ITALY);context.setVariable("subject",subject);context.setVariable("lines",lines);
             String html=templates.process("email/order",context);
-            var message=sender.createMimeMessage();var helper=new MimeMessageHelper(message,true,"UTF-8");
-            helper.setFrom(from);helper.setTo(RegistrationService.normalizeEmail(notice.recipient()));helper.setSubject(subject);
-            helper.setText("3DL · Lure Lab\n\n"+String.join("\n",lines),html);sender.send(message);
-        } catch(Exception error) {
-            // Best effort after commit: no exception/body/recipient is logged or returned to checkout.
-            org.slf4j.LoggerFactory.getLogger(OrderEmailSender.class).warn("Invio email ordine non riuscito; verificare SMTP.");
-        }
+            String contract=null;
+            if(notice.kind()==OrderMailEvents.Kind.CONFIRMED){
+                var stored=jdbc.queryForMap("SELECT contract_version,contract_captured_at,contract_text FROM orders WHERE id=?",order.id());
+                if(stored.get("contract_text")!=null)
+                    contract="Versione: "+stored.get("contract_version")+"\nAcquisita il (UTC): "+stored.get("contract_captured_at")+"\n"+stored.get("contract_text");
+                else contract="ORDINE STORICO: condizioni non acquisite all'acquisto. Nessuna attribuzione retroattiva di condizioni.";
+            }
+            // The order writer already holds the order lock. Uniqueness is also enforced by the database.
+            if(jdbc.queryForObject("SELECT COUNT(*) FROM email_notifications WHERE order_id=? AND event_kind=?",Integer.class,order.id(),notice.kind().name())==0)
+                jdbc.update("INSERT INTO email_notifications(id,order_id,event_kind,recipient,subject,text_body,html_body,contract_text,created_at,next_attempt_at,attempts) VALUES(?,?,?,?,?,?,?,?,?,?,0)",
+                    UUID.randomUUID().toString(),order.id(),notice.kind().name(),RegistrationService.normalizeEmail(notice.recipient()),subject,
+                    "3DL · Lure Lab\n\n"+String.join("\n",lines),html,contract,LocalDateTime.now(ZoneOffset.UTC).truncatedTo(java.time.temporal.ChronoUnit.MICROS),LocalDateTime.now(ZoneOffset.UTC).truncatedTo(java.time.temporal.ChronoUnit.MICROS));
     }
     private String money(BigDecimal amount){return amount.toPlainString().replace('.',',')+" €";}
 }

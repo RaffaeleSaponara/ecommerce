@@ -15,4 +15,4 @@
     <p th:if="${message == null and token == null}" role="alert">Link non valido. Richiedi una nuova email di verifica.</p>
     <p><a href="/resend-verification">Richiedi un nuovo link</a></p><p><a href="/login">Torna al login</a></p>
   </section>
-</main></body></html>
+</main><footer><nav th:replace="~{fragments/legal :: links}"></nav></footer></body></html>

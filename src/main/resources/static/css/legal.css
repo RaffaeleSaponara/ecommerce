@@ -1,0 +1,3 @@
+.legal-document { max-width: 800px; margin: 2rem auto; padding: 0 1.25rem; line-height: 1.7; overflow-wrap: anywhere; }
+.legal-document h2 { margin-top: 2rem; }
+.legal-draft { padding: 1rem; border: 2px solid #a6401d; background: #fff5e8; }

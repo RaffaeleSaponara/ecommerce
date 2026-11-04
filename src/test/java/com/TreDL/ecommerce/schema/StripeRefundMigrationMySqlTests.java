@@ -7,7 +7,7 @@ import static org.assertj.core.api.Assertions.*;
 @org.testcontainers.junit.jupiter.Testcontainers
 class StripeRefundMigrationMySqlTests {
  @org.testcontainers.junit.jupiter.Container static final org.testcontainers.containers.MySQLContainer<?> MYSQL=new org.testcontainers.containers.MySQLContainer<>("mysql:8.4.3").withDatabaseName("refund_upgrade").withUsername("refund_test").withPassword(UUID.randomUUID().toString()).withReuse(false).withTmpFs(java.util.Map.of("/var/lib/mysql","rw,size=1g")).withCreateContainerCmdModifier(c->c.getHostConfig().withPortBindings(new com.github.dockerjava.api.model.PortBinding(com.github.dockerjava.api.model.Ports.Binding.bindIpAndPort("127.0.0.1",0),com.github.dockerjava.api.model.ExposedPort.tcp(3306))));
- @Test void v14PreservesHistoricalOrdersAttemptsAndRefunds() throws Exception {
+ @Test void v14AndV15PreserveHistoricalOrdersAttemptsAndRefunds() throws Exception {
   String url="jdbc:mysql://127.0.0.1:"+MYSQL.getMappedPort(3306)+"/refund_upgrade";
   Flyway.configure().dataSource(url,MYSQL.getUsername(),MYSQL.getPassword()).locations("classpath:db/checkout-v2").target("11").load().migrate();
   try(var db=DriverManager.getConnection(url,MYSQL.getUsername(),MYSQL.getPassword());var s=db.createStatement()){
@@ -32,6 +32,20 @@ class StripeRefundMigrationMySqlTests {
    try(var r=s.executeQuery("SELECT total,payment_flow FROM orders WHERE id=1")){r.next();assertThat(r.getBigDecimal(1)).isEqualByComparingTo("18.40");assertThat(r.getString(2)).isEqualTo("LEGACY");}
    try(var r=s.executeQuery("SELECT paid_verified_at,verified_charge_id FROM payment_attempts WHERE id='old-attempt'")){r.next();assertThat(r.getObject(1)).isNull();assertThat(r.getString(2)).isNull();}
    assertThat(f.migrate().migrationsExecuted).isZero();
+   var email=Flyway.configure().dataSource(url,MYSQL.getUsername(),MYSQL.getPassword()).locations("classpath:db/checkout-v2").target("15").load();
+   assertThat(email.migrate().migrationsExecuted).isEqualTo(1);
+   email.validate();assertThat(email.migrate().migrationsExecuted).isZero();
+   try(var r=s.executeQuery("SELECT total,payment_flow,contract_version,contract_captured_at,contract_text FROM orders WHERE id=1")){
+    assertThat(r.next()).isTrue();assertThat(r.getBigDecimal(1)).isEqualByComparingTo("18.40");assertThat(r.getString(2)).isEqualTo("LEGACY");
+    assertThat(r.getString(3)).isNull();assertThat(r.getObject(4)).isNull();assertThat(r.getString(5)).isNull();
+   }
+   try(var r=s.executeQuery("SELECT COUNT(*) FROM email_notifications")){r.next();assertThat(r.getInt(1)).isZero();}
+   String notification="INSERT INTO email_notifications(id,order_id,event_kind,recipient,subject,text_body,html_body,created_at,next_attempt_at) VALUES('%s',1,'CONFIRMED','fixture@example.test','test','body','body',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)";
+   s.executeUpdate(notification.formatted("first"));
+   assertThatThrownBy(()->s.executeUpdate(notification.formatted("duplicate"))).isInstanceOf(SQLException.class);
+   try(var r=s.executeQuery("SELECT status,amount FROM refunds WHERE id='old-refund'")){
+    r.next();assertThat(r.getString(1)).isEqualTo("REQUESTED");assertThat(r.getBigDecimal(2)).isEqualByComparingTo("18.40");
+   }
   }
  }
 }

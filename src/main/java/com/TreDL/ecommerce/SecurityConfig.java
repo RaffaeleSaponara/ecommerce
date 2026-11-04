@@ -27,6 +27,7 @@ public class SecurityConfig {
                 .sessionManagement(session->session.maximumSessions(-1).sessionRegistry(sessions).expiredUrl("/login?sessionExpired"))
                 .addFilterBefore(new com.TreDL.ecommerce.security.AuthAttemptFilter(limits),org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(org.springframework.http.HttpMethod.GET,"/privacy","/cookies","/termini","/spedizioni-resi").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.POST,"/api/stripe/webhook").permitAll()
                         .requestMatchers("/forgot-password","/reset-password").permitAll()
                         .requestMatchers("/verify-email","/resend-verification").permitAll()
