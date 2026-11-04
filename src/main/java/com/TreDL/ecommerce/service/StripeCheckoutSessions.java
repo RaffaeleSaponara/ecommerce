@@ -79,7 +79,7 @@ class StripeCheckoutSessions {
             if(o.getShippingCost().signum()>0)lines.add(line("Spedizione",o.getShippingCost().movePointRight(2).longValueExact(),1));
             long sum=0;for(var l:lines){var price=(Map<?,?>)l.get("price_data");sum=Math.addExact(sum,Math.multiplyExact(((Number)price.get("unit_amount")).longValue(),((Number)l.get("quantity")).longValue()));}
             if(sum!=amount || !"EUR".equals(o.getCurrency()) || a.getAmount().compareTo(o.getTotal())!=0)throw new IllegalStateException("Snapshot incoerenti");
-            Map<String,Object> params=Map.of("mode","payment","payment_method_types",List.of("card"),
+            Map<String,Object> params=Map.of("mode","payment",
                 "line_items",lines,"metadata",Map.of("order_id",o.getId().toString(),"attempt_id",id),
                 "success_url",base+"/user/orders/"+o.getId()+"/payment/success","cancel_url",base+"/user/orders/"+o.getId()+"/payment/cancel",
                 "expires_at",clock.instant().plusSeconds(1860).getEpochSecond());

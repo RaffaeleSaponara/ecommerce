@@ -34,6 +34,8 @@ class StripeSessionsTests extends StripeDomainTests {
     void order(){id=attempt(reserve().id()).getId();}
     @Test void sessionReferencesAndSnapshotsArePersistedAndReplayed(){
         order();var first=sessions.obtain(id);
+        assertThat(frozen).doesNotContainKeys("payment_method_types", "excluded_payment_method_types");
+        assertThat(frozen.get("mode")).isEqualTo("payment");
         assertThat(sessions.obtain(id)).isEqualTo(first);assertThat(creations).isEqualTo(1);
         assertThat(payments.findById(id).orElseThrow().getSessionId()).isEqualTo(first.id());
         assertThat(payments.findById(id).orElseThrow().getStatus()).isEqualTo(com.TreDL.ecommerce.model.PaymentStatus.PENDING);
@@ -46,6 +48,26 @@ class StripeSessionsTests extends StripeDomainTests {
             .when(gateway).create(anyMap(),anyString());
         assertThatThrownBy(()->sessions.obtain(id)).isInstanceOf(SessionFailure.class);
         sessions.obtain(id);assertThat(creations).isEqualTo(1);
+    }
+    @Test void existingCardOnlyFrozenRequestIsReplayedUnchanged() throws Exception {
+        order();doThrow(new SessionFailure(false)).when(gateway).create(anyMap(),anyString());
+        assertThatThrownBy(()->sessions.obtain(id)).isInstanceOf(SessionFailure.class);
+        var json=new com.fasterxml.jackson.databind.ObjectMapper();
+        var envelope=json.readTree(payments.findById(id).orElseThrow().getSessionRequest());
+        ((com.fasterxml.jackson.databind.node.ObjectNode)envelope.get("params"))
+            .putArray("payment_method_types").add("card");
+        String legacyRequest=json.writeValueAsString(envelope);
+        jdbc.update("UPDATE payment_attempts SET session_request=? WHERE id=?",legacyRequest,id);
+        doAnswer(call->{
+            frozen=call.getArgument(0);
+            assertThat(frozen.get("payment_method_types")).isEqualTo(List.of("card"));
+            return response(frozen);
+        }).when(gateway).create(anyMap(),anyString());
+        var first=sessions.obtain(id);
+        assertThat(sessions.obtain(id)).isEqualTo(first);
+        assertThat(payments.findById(id).orElseThrow().getSessionRequest()).isEqualTo(legacyRequest);
+        verify(gateway,times(2)).create(anyMap(),eq("3dl-session-"+id));
+        verify(gateway).retrieve(first.id());
     }
     @Test void windowAndConfigurationChangesNeverCreateAnotherSession(){
         order();doThrow(new SessionFailure(false)).when(gateway).create(anyMap(),anyString());
