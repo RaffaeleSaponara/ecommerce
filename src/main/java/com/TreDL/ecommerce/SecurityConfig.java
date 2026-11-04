@@ -68,6 +68,9 @@ public class SecurityConfig {
                         .permitAll()
                 )
                 .exceptionHandling(errors -> errors.defaultAuthenticationEntryPointFor(
+                        new org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint("/login"),
+                        new AntPathRequestMatcher("/recesso/**"))
+                        .defaultAuthenticationEntryPointFor(
                         new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
                         new AntPathRequestMatcher("/cart/**"))
                         .defaultAuthenticationEntryPointFor((request, response, error) -> {

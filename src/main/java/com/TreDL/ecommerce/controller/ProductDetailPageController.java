@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Controller
 public class ProductDetailPageController {
+    @org.springframework.beans.factory.annotation.Autowired private com.TreDL.ecommerce.service.ProductInformationService information;
     private final ProductImagesService images;
     public ProductDetailPageController(ProductImagesService images) { this.images = images; }
 
@@ -15,6 +16,7 @@ public class ProductDetailPageController {
     public String detail(@PathVariable long id, Model model, CsrfToken csrf) {
         csrf.getToken();
         model.addAttribute("detail", images.detail(id));
+        model.addAttribute("technical",information.publicData(id));
         return "prodotto";
     }
 }

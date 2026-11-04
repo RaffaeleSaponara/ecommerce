@@ -46,6 +46,12 @@ class StripeRefundMigrationMySqlTests {
    try(var r=s.executeQuery("SELECT status,amount FROM refunds WHERE id='old-refund'")){
     r.next();assertThat(r.getString(1)).isEqualTo("REQUESTED");assertThat(r.getBigDecimal(2)).isEqualByComparingTo("18.40");
    }
+   var legal=Flyway.configure().dataSource(url,MYSQL.getUsername(),MYSQL.getPassword()).locations("classpath:db/checkout-v2").target("16").load();
+   assertThat(legal.migrate().migrationsExecuted).isEqualTo(1);legal.validate();assertThat(legal.migrate().migrationsExecuted).isZero();
+   try(var r=s.executeQuery("SELECT text_body FROM email_notifications WHERE id='first'")){r.next();assertThat(r.getString(1)).isEqualTo("body");}
+   try(var r=s.executeQuery("SELECT COUNT(*) FROM product_information")){r.next();assertThat(r.getInt(1)).isZero();}
+   try(var r=s.executeQuery("SELECT COUNT(*) FROM withdrawal_requests")){r.next();assertThat(r.getInt(1)).isZero();}
+   try(var r=s.executeQuery("SELECT contract_text,total FROM orders WHERE id=1")){r.next();assertThat(r.getString(1)).isNull();assertThat(r.getBigDecimal(2)).isEqualByComparingTo("18.40");}
   }
  }
 }
